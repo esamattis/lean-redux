@@ -2,7 +2,7 @@ import {connectAdvanced} from "react-redux";
 import getOr from "lodash/fp/getOr";
 import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
-import updateObject from "updeep";
+import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
 
 
