@@ -29,7 +29,7 @@ export function connectLean(options=plain) {
             }
 
             const mapState = typeof options.mapState === "function" ? options.mapState : pass;
-            var scopedState = getOr(plain, scope, fullState);
+            var scopedState = {...getOr(plain, scope, fullState), scope};
 
             return mapState(withDefaults(scopedState));
         },
