@@ -89,3 +89,43 @@ test("updating with map state", () => {
     expect(store.getState()).toMatchSnapshot();
 
 });
+
+test("can use function to update the state", () => {
+
+    const store = createStore(leanReducer);
+    var update = null;
+    const Counter = ({count, inc}) => {
+        update = inc;
+        return <div>{count}</div>;
+    };
+
+    const Connected = connectLean({
+        scope: "ascope",
+        defaults: {
+            count: 0,
+        },
+        updates: {
+            inc() {
+                return {count: i => i+1};
+            },
+        },
+    })(Counter);
+
+    const Main = () => {
+        return (
+            <Provider store={store}>
+                <Connected />
+            </Provider>
+        );
+    };
+
+    expect(store.getState()).toMatchSnapshot();
+
+    const component = renderer.create(<Main />);
+    expect(component.toJSON()).toMatchSnapshot();
+    update();
+    expect(component.toJSON()).toMatchSnapshot();
+
+    expect(store.getState()).toMatchSnapshot();
+
+});
