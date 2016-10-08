@@ -3,6 +3,8 @@ import renderer from "react-test-renderer";
 import {createStore} from "redux";
 import {Provider} from "react-redux";
 
+import {get} from "lodash/fp";
+
 import leanReducer, {connectLean} from "../lean";
 
 
@@ -36,14 +38,14 @@ test("basic updating", () => {
         );
     };
 
-    expect(store.getState()).toMatchSnapshot();
+    expect(get(["ascope", "name"], store.getState())).toBe(undefined);
 
     const component = renderer.create(<Main />);
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
 
-    expect(store.getState()).toMatchSnapshot();
+    expect(get(["ascope", "name"], store.getState())).toBe("matti");
 
 });
 
@@ -79,14 +81,14 @@ test("updating with map state", () => {
         );
     };
 
-    expect(store.getState()).toMatchSnapshot();
+    expect(get(["ascope", "name"], store.getState())).toBe(undefined);
 
     const component = renderer.create(<Main />);
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
 
-    expect(store.getState()).toMatchSnapshot();
+    expect(get(["ascope", "name"], store.getState())).toBe("matti");
 
 });
 
@@ -119,13 +121,13 @@ test("can use function to update the state", () => {
         );
     };
 
-    expect(store.getState()).toMatchSnapshot();
+    expect(get(["ascope", "count"], store.getState())).toBe(undefined);
 
     const component = renderer.create(<Main />);
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
 
-    expect(store.getState()).toMatchSnapshot();
+    expect(get(["ascope", "count"], store.getState())).toBe(1);
 
 });

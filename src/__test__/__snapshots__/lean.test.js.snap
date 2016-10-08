@@ -1,69 +1,39 @@
-exports[`test basic updating 1`] = `undefined`;
-
-exports[`test basic updating 2`] = `
+exports[`test basic updating 1`] = `
 <div>
   Hello 
   esa
 </div>
 `;
 
-exports[`test basic updating 3`] = `
+exports[`test basic updating 2`] = `
 <div>
   Hello 
   matti
 </div>
 `;
 
-exports[`test basic updating 4`] = `
-Object {
-  "ascope": Object {
-    "name": "matti",
-  },
-}
-`;
-
-exports[`test can use function to update the state 1`] = `undefined`;
-
-exports[`test can use function to update the state 2`] = `
+exports[`test can use function to update the state 1`] = `
 <div>
   0
 </div>
 `;
 
-exports[`test can use function to update the state 3`] = `
+exports[`test can use function to update the state 2`] = `
 <div>
   1
 </div>
 `;
 
-exports[`test can use function to update the state 4`] = `
-Object {
-  "ascope": Object {
-    "count": 1,
-  },
-}
-`;
-
-exports[`test updating with map state 1`] = `undefined`;
-
-exports[`test updating with map state 2`] = `
+exports[`test updating with map state 1`] = `
 <div>
   Hello 
   ESA
 </div>
 `;
 
-exports[`test updating with map state 3`] = `
+exports[`test updating with map state 2`] = `
 <div>
   Hello 
   MATTI
 </div>
-`;
-
-exports[`test updating with map state 4`] = `
-Object {
-  "ascope": Object {
-    "name": "matti",
-  },
-}
 `;
