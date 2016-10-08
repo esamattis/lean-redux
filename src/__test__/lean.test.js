@@ -131,3 +131,44 @@ test("can use function to update the state", () => {
     expect(get(["ascope", "count"], store.getState())).toBe(1);
 
 });
+
+test("pass scope as a prop", () => {
+
+    const store = createStore(leanReducer);
+    var update = null;
+
+    const My = ({name, changeName}) => {
+        update = changeName;
+        return <div>Hello {name}</div>;
+    };
+
+    const Connected = connectLean({
+        defaults: {
+            name: "esa",
+        },
+        updates: {
+            changeName() {
+                return {name: "matti"};
+            },
+        },
+    })(My);
+
+    const Main = () => {
+        return (
+            <Provider store={store}>
+                <Connected scope="propScope" />
+            </Provider>
+        );
+    };
+
+    expect(get(["propScope", "name"], store.getState())).toBe(undefined);
+
+    const component = renderer.create(<Main />);
+    expect(component.toJSON()).toMatchSnapshot();
+    update();
+    expect(component.toJSON()).toMatchSnapshot();
+
+    expect(get(["propScope", "name"], store.getState())).toBe("matti");
+
+});
+

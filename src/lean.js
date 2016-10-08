@@ -8,8 +8,6 @@ const mapValuesWithKey = mapValues.convert({cap: false});
 
 
 const plain = {};
-const justEmpty = () => plain;
-const getDefault = getOr(plain);
 const pass = o => o;
 const withSlash = s => s ? ("/" + s) : "";
 
@@ -19,41 +17,39 @@ export function thunk(cb) {
 
 export function connectLean(options=plain) {
 
-    // If we have scope and no picker just pick everything from the scope
-    if (!options.mapState && options.scope) {
-        options = {...options, mapState: pass};
-    }
-
-    // Never pass full state to the component
-    if (!options.mapState && !options.scope) {
-        options = {...options, mapState: justEmpty};
-    }
-
-    var actionSuffix = options.scope;
-    if (Array.isArray(actionSuffix)) {
-        actionSuffix = actionSuffix.join(".");
-    }
-
-
     const withDefaults = options.defaults ? s => ({...options.defaults, ...s}) : pass;
 
     var connector = connect(
-        fullState => {
-            var state = getDefault(options.scope, fullState);
-            return options.mapState(withDefaults(state));
+        (fullState, ownProps) => {
+            var scope = ownProps.scope || options.scope;
+
+            if (!scope && typeof options.mapState !== "function") {
+                console.warn("scope and mapState are undefined for connectLean. The component will render on every store update. You have killed performance.");
+                return fullState;
+            }
+
+            const mapState = typeof options.mapState === "function" ? options.mapState : pass;
+            var scopedState = getOr(plain, scope, fullState);
+
+            return mapState(withDefaults(scopedState));
         },
-        dispatch => {
+        (dispatch, ownProps) => {
 
             const dispatchUpdate = (updateName, update) => {
                 if (update && typeof update._thunk === "function") {
                     return update._thunk(dispatchUpdate.bind(null, updateName), options.updates);
+                }
+                var scope = ownProps.scope || options.scope;
+                var actionSuffix = options.scope;
+                if (Array.isArray(actionSuffix)) {
+                    actionSuffix = actionSuffix.join(".");
                 }
 
                 dispatch({
                     type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
                     update,
                     withDefaults,
-                    scope: options.scope,
+                    scope,
                 });
             };
 

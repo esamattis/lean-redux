@@ -24,6 +24,20 @@ exports[`test can use function to update the state 2`] = `
 </div>
 `;
 
+exports[`test pass scope as a prop 1`] = `
+<div>
+  Hello 
+  esa
+</div>
+`;
+
+exports[`test pass scope as a prop 2`] = `
+<div>
+  Hello 
+  matti
+</div>
+`;
+
 exports[`test updating with map state 1`] = `
 <div>
   Hello 
