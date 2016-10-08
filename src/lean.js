@@ -63,6 +63,8 @@ export function connectLean(options=plain) {
             return propsCache = {...ownProps, ...scopedState, ...handlersCache, scope};
         };
 
+    }, {
+        getDisplayName: name => "ConnectLean(" + name + ")",
     });
 }
 
