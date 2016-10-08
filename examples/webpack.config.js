@@ -32,7 +32,7 @@ var config = {
     plugins: [
         new webpack.DefinePlugin({
             "SOURCE": JSON.stringify(sourceFiles),
-            "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+            "process.env.NODE_ENV": JSON.stringify("development"),
         }),
     ],
 };

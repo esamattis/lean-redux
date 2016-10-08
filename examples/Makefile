@@ -1,10 +1,10 @@
 export PATH := ../node_modules/.bin:$(PATH)
 export SHELL := /bin/bash # Required for OS X for some reason
 
-distfile = dist/bundle.js
+distfile = dist/bundle.js dist/bundle.js.map
 
 js: dist-changes-hide
-	NODE_ENV=production webpack -p --progress
+	webpack -d --progress
 
 server:
 	python -m SimpleHTTPServer 8080
@@ -26,7 +26,7 @@ lint:
 
 assert-clean-git: dist-changes-show
 	git checkout $(distfile)
-	@test -z "$(shell git status . --porcelain)" || (echo "Dirty git tree: " && git status . --porcelain ; exit 1)
+	@test -z "$(shell git status --porcelain)" || (echo "Dirty git tree: " && git status . --porcelain ; exit 1)
 
 release: assert-clean-git lint js
 	$(MAKE) dist-changes-show
