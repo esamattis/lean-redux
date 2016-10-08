@@ -17,7 +17,7 @@ DynamicCounters = connectLean({
     defaults: {
         counterCount: 1,
     },
-    updates: {
+    handlers: {
         addCounter(e) {
             e.preventDefault();
             // Instead of accessing the props from the arguments you can also

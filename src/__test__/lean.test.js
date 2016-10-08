@@ -23,7 +23,7 @@ test("basic updating", () => {
         defaults: {
             name: "esa",
         },
-        updates: {
+        handlers: {
             changeName() {
                 return {name: "matti"};
             },
@@ -66,7 +66,7 @@ test("updating with map state", () => {
         mapState(state) {
             return {name: state.name.toUpperCase()};
         },
-        updates: {
+        handlers: {
             changeName() {
                 return {name: "matti"};
             },
@@ -106,7 +106,7 @@ test("can use function to update the state", () => {
         defaults: {
             count: 0,
         },
-        updates: {
+        handlers: {
             inc() {
                 return {count: i => i+1};
             },
@@ -146,7 +146,7 @@ test("pass scope as a prop", () => {
         defaults: {
             name: "esa",
         },
-        updates: {
+        handlers: {
             changeName() {
                 return {name: "matti"};
             },
@@ -186,7 +186,7 @@ test("do not recreate update function on parent prop changes", () => {
         defaults: {
             name: "esa",
         },
-        updates: {
+        handlers: {
             changeName() {
                 return {name: "matti"};
             },
@@ -234,7 +234,7 @@ test("prop scope change generates new update function", () => {
         defaults: {
             name: "esa",
         },
-        updates: {
+        handlers: {
             changeName() {
                 return {name: "matti"};
             },
@@ -293,7 +293,7 @@ test("all props are passed to the update functions", () => {
         defaults: {
             name: "esa",
         },
-        updates: {
+        handlers: {
             changeName(name, _props) {
                 props = _props;
                 return {name};

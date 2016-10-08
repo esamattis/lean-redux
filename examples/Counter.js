@@ -11,7 +11,7 @@ Counter = connectLean({
     defaults: {
         count: 0,
     },
-    updates: {
+    handlers: {
         // The props object is passed to the handlers as the last argument.
         inc(e, _skip1, _skip2, props) {
             e.preventDefault();

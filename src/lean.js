@@ -53,7 +53,7 @@ export function connectLean(options=plain) {
 
 
                     if (update && typeof update._thunk === "function") {
-                        return update._thunk(dispatchUpdate.bind(null, updateName), options.updates);
+                        return update._thunk(dispatchUpdate.bind(null, updateName), options.handlers);
                     }
                     var actionSuffix = scope;
                     if (Array.isArray(actionSuffix)) {
@@ -70,7 +70,7 @@ export function connectLean(options=plain) {
 
                 const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args.concat(propsContainer.props)));
 
-                return cache = {_props: mapValuesWithKey(bindDispatch, options.updates), _container: propsContainer};
+                return cache = {_props: mapValuesWithKey(bindDispatch, options.handlers), _container: propsContainer};
             };
         },
         (stateProps, dispatchProps, ownProps) => {
