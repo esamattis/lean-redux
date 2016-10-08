@@ -1,0 +1,28 @@
+
+.example pre {
+    margin: 0;
+    color: #3a3a3a;
+    float: left;
+    margin-bottom: 50px;
+}
+.example pre code {
+    padding: 20px;
+}
+
+.example .demo {
+    padding: 20px;
+    float: left;
+    width: 300px;
+    margin-bottom: 50px;
+}
+
+.example {
+    border-bottom: 5px solid black;
+}
+
+
+.example:after {
+  content: "";
+  display: table;
+  clear: both;
+}
