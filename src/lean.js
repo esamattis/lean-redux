@@ -19,6 +19,7 @@ export function connectLean(options=plain) {
         var handlersCache = null;
         var propsCache = null;
         var prevScope = {}; // Just some object with unique identity
+        const getProps = () => propsCache;
 
         return (fullState, ownProps) => {
             var scope = ownProps.scope || options.scope;
@@ -40,7 +41,7 @@ export function connectLean(options=plain) {
                 const dispatchUpdate = (updateName, update) => {
 
                     if (update && typeof update._thunk === "function") {
-                        return update._thunk(dispatchUpdate.bind(null, updateName), options.handlers);
+                        return update._thunk(dispatchUpdate.bind(null, updateName), getProps);
                     }
                     var actionSuffix = scope;
                     if (Array.isArray(actionSuffix)) {

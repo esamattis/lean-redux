@@ -14,6 +14,7 @@ import leanReducer from "../src/lean";
 import Counter from "./Counter";
 import MultipleCounters from "./MultipleCounters";
 import DynamicCounters from "./DynamicCounters";
+import Async from "./Async";
 
 
 const store = createStore(leanReducer, applyMiddleware(createLogger()));
@@ -51,6 +52,14 @@ var Main = () => (
             </p>
             <Example source="DynamicCounters.js" >
                 <DynamicCounters />
+            </Example>
+
+            <h2>Async updates</h2>
+            <p>
+                Like bit like redux-thunk
+            </p>
+            <Example source="Async.js" >
+                <Async />
             </Example>
         </div>
     </Provider>
