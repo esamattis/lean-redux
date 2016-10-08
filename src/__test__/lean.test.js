@@ -172,3 +172,52 @@ test("pass scope as a prop", () => {
 
 });
 
+
+test("do not recreate update function on parent prop changes", () => {
+    const store = createStore(leanReducer);
+    var update = null;
+
+    const My = ({name, greeting, changeName}) => {
+        update = changeName;
+        return <div>{greeting} {name}</div>;
+    };
+
+    const Connected = connectLean({
+        defaults: {
+            name: "esa",
+        },
+        updates: {
+            changeName() {
+                return {name: "matti"};
+            },
+        },
+    })(My);
+
+    var setState = null;
+    var Main = React.createClass({
+        getInitialState() {
+            return {greeting: "Hi"};
+        },
+        changeGreeting() {
+        },
+        render() {
+            setState = this.setState.bind(this);
+            return (
+                <Provider store={store}>
+                    <Connected scope="propScope" greeting={this.state.greeting} />
+                </Provider>
+            );
+        },
+    });
+
+    const component = renderer.create(<Main />);
+    expect(component.toJSON()).toMatchSnapshot();
+    var prevUpdate = update;
+
+    setState({greeting: "Hellou"});
+    expect(component.toJSON()).toMatchSnapshot();
+
+    expect(update).toBe(prevUpdate);
+
+});
+

@@ -33,29 +33,36 @@ export function connectLean(options=plain) {
 
             return mapState(withDefaults(scopedState));
         },
-        (dispatch, ownProps) => {
+        () => {
+            var cache = null;
 
-            const dispatchUpdate = (updateName, update) => {
-                if (update && typeof update._thunk === "function") {
-                    return update._thunk(dispatchUpdate.bind(null, updateName), options.updates);
-                }
+            return (dispatch, ownProps) => {
+                if (cache) return cache;
                 var scope = ownProps.scope || options.scope;
-                var actionSuffix = options.scope;
-                if (Array.isArray(actionSuffix)) {
-                    actionSuffix = actionSuffix.join(".");
-                }
 
-                dispatch({
-                    type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
-                    update,
-                    withDefaults,
-                    scope,
-                });
+                const dispatchUpdate = (updateName, update) => {
+
+
+                    if (update && typeof update._thunk === "function") {
+                        return update._thunk(dispatchUpdate.bind(null, updateName), options.updates);
+                    }
+                    var actionSuffix = options.scope;
+                    if (Array.isArray(actionSuffix)) {
+                        actionSuffix = actionSuffix.join(".");
+                    }
+
+                    dispatch({
+                        type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
+                        update,
+                        withDefaults,
+                        scope,
+                    });
+                };
+
+                const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args));
+
+                return cache = mapValuesWithKey(bindDispatch, options.updates);
             };
-
-            const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args));
-
-            return mapValuesWithKey(bindDispatch, options.updates);
         }
     );
 

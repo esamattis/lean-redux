@@ -24,6 +24,22 @@ exports[`test can use function to update the state 2`] = `
 </div>
 `;
 
+exports[`test do not recreate update function on parent prop changes 1`] = `
+<div>
+  Hi
+   
+  esa
+</div>
+`;
+
+exports[`test do not recreate update function on parent prop changes 2`] = `
+<div>
+  Hellou
+   
+  esa
+</div>
+`;
+
 exports[`test pass scope as a prop 1`] = `
 <div>
   Hello 
