@@ -1,5 +1,4 @@
-
-import {connect} from "react-redux";
+import {connectAdvanced} from "react-redux";
 import getOr from "lodash/fp/getOr";
 import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
@@ -14,43 +13,31 @@ const withSlash = s => s ? ("/" + s) : "";
 export function thunk(cb) {
     return {_thunk: cb};
 }
-
 export function connectLean(options=plain) {
+    return connectAdvanced(dispatch => {
+        const withDefaults = options.defaultProps ? s => ({...options.defaultProps, ...s}) : pass;
+        var handlersCache = null;
+        var propsCache = null;
+        var prevScope = {}; // Just some object with unique identity
 
-    const withDefaults = options.defaultProps ? s => ({...options.defaultProps, ...s}) : pass;
-
-    var connector = connect(
-        (fullState, ownProps) => {
+        return (fullState, ownProps) => {
             var scope = ownProps.scope || options.scope;
+            var scopedState = null;
 
             if (!scope && typeof options.mapState !== "function") {
                 console.warn("scope and mapState are undefined for connectLean. The component will render on every store update. You have killed performance.");
-                return fullState;
+                scopedState = fullState;
+            } else {
+                const mapState = typeof options.mapState === "function" ? options.mapState : pass;
+                scopedState = {...getOr(plain, scope, fullState), scope};
+                scopedState =  mapState(withDefaults(scopedState));
             }
 
-            const mapState = typeof options.mapState === "function" ? options.mapState : pass;
-            var scopedState = {...getOr(plain, scope, fullState), scope};
 
-            return mapState(withDefaults(scopedState));
-        },
-        () => {
-            var cache = null;
-            var prevScope = {}; // Just some object with unique identity
-            const propsContainer = {
-                props: plain,
-            };
-
-            return (dispatch, ownProps) => {
-                var scope = ownProps.scope || options.scope;
-                if (prevScope !== scope) {
-                    prevScope = scope;
-                    cache = null;
-                }
-
-                if (cache) return cache;
-
+            // Regenerate handlers only when the scope changes
+            if (prevScope !== scope) {
+                prevScope = scope;
                 const dispatchUpdate = (updateName, update) => {
-
 
                     if (update && typeof update._thunk === "function") {
                         return update._thunk(dispatchUpdate.bind(null, updateName), options.handlers);
@@ -68,23 +55,17 @@ export function connectLean(options=plain) {
                     });
                 };
 
-                const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args.concat(propsContainer.props)));
+                const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args.concat(propsCache)));
 
-                return cache = {_props: mapValuesWithKey(bindDispatch, options.handlers), _container: propsContainer};
-            };
-        },
-        (stateProps, dispatchProps, ownProps) => {
-            var props = {...ownProps, ...stateProps, ...dispatchProps._props};
-            dispatchProps._container.props = props;
-            return props;
-        }
-    );
+                handlersCache = mapValuesWithKey(bindDispatch, options.handlers);
+            }
 
-    if (options.scope) {
-        connector.displayName  = options.scope;
-    }
-    return connector;
+            return propsCache = {...ownProps, ...scopedState, ...handlersCache, scope};
+        };
+
+    });
 }
+
 
 const actionPattern = /^LEAN_UPDATE/;
 
