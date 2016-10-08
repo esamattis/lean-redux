@@ -18,9 +18,8 @@ import DynamicCounters from "./DynamicCounters";
 
 const store = createStore(leanReducer, applyMiddleware(createLogger()));
 
-const Example = ({name, source, children}) => (
+const Example = ({source, children}) => (
     <div className="example">
-        <h1>{name}</h1>
         <div className="demo">
             {children}
         </div>
@@ -35,13 +34,22 @@ const Example = ({name, source, children}) => (
 var Main = () => (
     <Provider store={store}>
         <div>
-            <Example source="Counter.js" name="Simple counter">
+            <h2>Simple counter</h2>
+            <Example source="Counter.js" >
                 <Counter />
             </Example>
-            <Example source="MultipleCounters.js" name="Multiple Counters">
+
+            <h2>Multiple Counters</h2>
+            <p>Instead of defining the scope in the <em>connectLean</em> HOC you can define it as a prop.</p>
+            <Example source="MultipleCounters.js" name="">
                 <MultipleCounters />
             </Example>
-            <Example source="DynamicCounters.js" name="Dynamic Counters">
+
+            <h2>Dynamic Counters</h2>
+            <p>
+                The prop can be dynamic and even go deeper into the state using the array syntax. The path creation works like in <a href="https://lodash.com/docs/4.16.4#set">Lodash</a>.
+            </p>
+            <Example source="DynamicCounters.js" >
                 <DynamicCounters />
             </Example>
         </div>
