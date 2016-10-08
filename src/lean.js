@@ -55,7 +55,7 @@ export function connectLean(options=plain) {
                     if (update && typeof update._thunk === "function") {
                         return update._thunk(dispatchUpdate.bind(null, updateName), options.updates);
                     }
-                    var actionSuffix = options.scope;
+                    var actionSuffix = scope;
                     if (Array.isArray(actionSuffix)) {
                         actionSuffix = actionSuffix.join(".");
                     }
