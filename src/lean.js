@@ -2,6 +2,8 @@ import {connectAdvanced} from "react-redux";
 import getOr from "lodash/fp/getOr";
 import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
+import isPlainObject from "lodash/fp/isPlainObject";
+import pick from "lodash/fp/pick";
 import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
 
@@ -15,7 +17,16 @@ export function thunk(cb) {
 }
 export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
-        const withDefaults = options.defaultProps ? s => ({...options.defaultProps, ...s}) : pass;
+        if (!isPlainObject(options.defaultProps)) {
+            throw new Error("options.defaultProps is required");
+        }
+
+        const withDefaults = s => ({...options.defaultProps, ...s});
+
+        const mapState = typeof options.mapState === "function"
+            ? options.mapState
+            : pick(Object.keys(options.defaultProps));
+
         var handlersCache = null;
         var propsCache = null;
         var prevScope = {}; // Just some object with unique identity
@@ -23,17 +34,13 @@ export function connectLean(options=plain) {
 
         return (fullState, ownProps) => {
             var scope = ownProps.scope || options.scope;
-            var scopedState = null;
+            var scopedState = fullState || plain;
 
-            if (!scope && typeof options.mapState !== "function") {
-                console.warn("scope and mapState are undefined for connectLean. The component will render on every store update. You have killed performance.");
-                scopedState = fullState;
-            } else {
-                const mapState = typeof options.mapState === "function" ? options.mapState : pass;
+            if (scope) {
                 scopedState = {...getOr(plain, scope, fullState), scope};
-                scopedState =  mapState(withDefaults(scopedState));
             }
 
+            scopedState =  mapState(withDefaults(scopedState));
 
             // Regenerate handlers only when the scope changes
             if (prevScope !== scope) {
