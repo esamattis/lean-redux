@@ -1,0 +1,53 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings"
+  ],
+  "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 6,
+      "ecmaFeatures": {
+        "experimentalObjectRestSpread": true,
+        "jsx": true
+      }
+  },
+  "env": {
+      "node": true,
+      "browser": true
+  },
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "globals": {
+    "Promise": true,
+    "test": true,
+    "expect": true
+  },
+  "rules": {
+    "semi": [1, "always"],
+    "comma-dangle": [1, "always-multiline"],
+    "no-restricted-globals": [2, "self", "Text"],
+    "no-console": 0,
+    "no-undef": 2,
+    "camelcase": 1,
+    "block-scoped-var": 2,
+    "no-unused-vars": 1,
+    "no-trailing-spaces": 1,
+    "keyword-spacing": 1,
+    "object-curly-spacing": [1, "never"],
+    "curly": [2, "multi-line"],
+    "quotes": [1, "double", {"avoidEscape": true}],
+    "import/no-unresolved": [2, {commonjs: true}],
+    "react/jsx-uses-react": 2,
+    "react/jsx-indent": [1, 4],
+    "react/jsx-key": 2,
+    "react/jsx-no-bind": 1,
+    "indent": [1, 4],
+    "react/jsx-no-duplicate-props": 2,
+    "react/react-in-jsx-scope": 2,
+    "react/jsx-uses-vars": 2,
+    "react/jsx-no-undef": 2
+  },
+}

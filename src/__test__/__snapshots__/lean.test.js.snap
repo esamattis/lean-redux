@@ -1,0 +1,47 @@
+exports[`test basic updating 1`] = `undefined`;
+
+exports[`test basic updating 2`] = `
+<div>
+  Hello 
+  esa
+</div>
+`;
+
+exports[`test basic updating 3`] = `
+<div>
+  Hello 
+  matti
+</div>
+`;
+
+exports[`test basic updating 4`] = `
+Object {
+  "ascope": Object {
+    "name": "matti",
+  },
+}
+`;
+
+exports[`test updating with map state 1`] = `undefined`;
+
+exports[`test updating with map state 2`] = `
+<div>
+  Hello 
+  ESA
+</div>
+`;
+
+exports[`test updating with map state 3`] = `
+<div>
+  Hello 
+  MATTI
+</div>
+`;
+
+exports[`test updating with map state 4`] = `
+Object {
+  "ascope": Object {
+    "name": "matti",
+  },
+}
+`;
