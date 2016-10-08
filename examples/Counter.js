@@ -8,7 +8,7 @@ var Counter = ({count, inc}) => (
 );
 Counter = connectLean({
     scope: "singleCounter",
-    defaults: {
+    defaultProps: {
         count: 0,
     },
     handlers: {

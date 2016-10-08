@@ -14,7 +14,7 @@ var DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (
 );
 DynamicCounters = connectLean({
     scope: "dynamicCounters",
-    defaults: {
+    defaultProps: {
         counterCount: 1,
     },
     handlers: {

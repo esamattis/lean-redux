@@ -20,7 +20,7 @@ test("basic updating", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaults: {
+        defaultProps: {
             name: "esa",
         },
         handlers: {
@@ -60,7 +60,7 @@ test("updating with map state", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaults: {
+        defaultProps: {
             name: "esa",
         },
         mapState(state) {
@@ -103,7 +103,7 @@ test("can use function to update the state", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaults: {
+        defaultProps: {
             count: 0,
         },
         handlers: {
@@ -143,7 +143,7 @@ test("pass scope as a prop", () => {
     };
 
     const Connected = connectLean({
-        defaults: {
+        defaultProps: {
             name: "esa",
         },
         handlers: {
@@ -183,7 +183,7 @@ test("do not recreate update function on parent prop changes", () => {
     };
 
     const Connected = connectLean({
-        defaults: {
+        defaultProps: {
             name: "esa",
         },
         handlers: {
@@ -231,7 +231,7 @@ test("prop scope change generates new update function", () => {
     };
 
     const Connected = connectLean({
-        defaults: {
+        defaultProps: {
             name: "esa",
         },
         handlers: {
@@ -290,7 +290,7 @@ test("all props are passed to the update functions", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaults: {
+        defaultProps: {
             name: "esa",
         },
         handlers: {

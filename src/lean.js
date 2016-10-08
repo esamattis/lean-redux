@@ -17,7 +17,7 @@ export function thunk(cb) {
 
 export function connectLean(options=plain) {
 
-    const withDefaults = options.defaults ? s => ({...options.defaults, ...s}) : pass;
+    const withDefaults = options.defaultProps ? s => ({...options.defaultProps, ...s}) : pass;
 
     var connector = connect(
         (fullState, ownProps) => {
