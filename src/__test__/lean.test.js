@@ -275,3 +275,52 @@ test("prop scope change generates new update function", () => {
     expect(update).not.toBe(prevUpdate);
 
 });
+
+test("all props are passed to the update functions", () => {
+
+    const store = createStore(leanReducer);
+    var props = null;
+    var update = null;
+
+    const My = ({name, changeName}) => {
+        update = changeName;
+        return <div>Hello {name}</div>;
+    };
+
+
+    const Connected = connectLean({
+        scope: "ascope",
+        defaults: {
+            name: "esa",
+        },
+        updates: {
+            changeName(name, _props) {
+                props = _props;
+                return {name};
+            },
+        },
+    })(My);
+
+    const Main = () => {
+        return (
+            <Provider store={store}>
+                <Connected parentProp="parent" />
+            </Provider>
+        );
+    };
+
+    expect(get(["ascope", "name"], store.getState())).toBe(undefined);
+
+    const component = renderer.create(<Main />);
+    expect(component.toJSON()).toMatchSnapshot();
+    update("suuronen");
+    expect(component.toJSON()).toMatchSnapshot();
+
+    expect(get(["ascope", "name"], store.getState())).toBe("suuronen");
+
+    expect(get(["name"], props)).toBe("esa");
+    expect(get(["parentProp"], props)).toBe("parent");
+    expect(get(["changeName"], props)).toBe(update);
+
+});
+

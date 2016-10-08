@@ -36,6 +36,9 @@ export function connectLean(options=plain) {
         () => {
             var cache = null;
             var prevScope = {}; // Just some object with unique identity
+            const propsContainer = {
+                props: plain,
+            };
 
             return (dispatch, ownProps) => {
                 var scope = ownProps.scope || options.scope;
@@ -65,10 +68,15 @@ export function connectLean(options=plain) {
                     });
                 };
 
-                const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args));
+                const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args.concat(propsContainer.props)));
 
-                return cache = mapValuesWithKey(bindDispatch, options.updates);
+                return cache = {_props: mapValuesWithKey(bindDispatch, options.updates), _container: propsContainer};
             };
+        },
+        (stateProps, dispatchProps, ownProps) => {
+            var props = {...ownProps, ...stateProps, ...dispatchProps._props};
+            dispatchProps._container.props = props;
+            return props;
         }
     );
 

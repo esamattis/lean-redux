@@ -1,3 +1,17 @@
+exports[`test all props are passed to the update functions 1`] = `
+<div>
+  Hello 
+  esa
+</div>
+`;
+
+exports[`test all props are passed to the update functions 2`] = `
+<div>
+  Hello 
+  suuronen
+</div>
+`;
+
 exports[`test basic updating 1`] = `
 <div>
   Hello 
