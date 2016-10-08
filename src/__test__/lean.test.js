@@ -221,3 +221,57 @@ test("do not recreate update function on parent prop changes", () => {
 
 });
 
+test("prop scope change generates new update function", () => {
+    const store = createStore(leanReducer);
+    var update = null;
+
+    const My = ({name, changeName}) => {
+        update = changeName;
+        return <div>Hello {name}</div>;
+    };
+
+    const Connected = connectLean({
+        defaults: {
+            name: "esa",
+        },
+        updates: {
+            changeName() {
+                return {name: "matti"};
+            },
+        },
+    })(My);
+
+    var setState = null;
+    var Main = React.createClass({
+        getInitialState() {
+            return {scope: "first"};
+        },
+        render() {
+            setState = this.setState.bind(this);
+            return (
+                <Provider store={store}>
+                    <Connected scope={this.state.scope} />
+                </Provider>
+            );
+        },
+    });
+
+    const component = renderer.create(<Main />);
+    var prevUpdate = update;
+    update();
+    expect(component.toJSON()).toMatchSnapshot();
+    expect(get(["first", "name"], store.getState())).toBe("matti");
+
+    setState({scope: "second"});
+    update();
+
+    expect(component.toJSON()).toMatchSnapshot();
+
+    // The previous state is still here
+    expect(get(["first", "name"], store.getState())).toBe("matti");
+    // And now we have the new one
+    expect(get(["second", "name"], store.getState())).toBe("matti");
+
+    expect(update).not.toBe(prevUpdate);
+
+});

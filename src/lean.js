@@ -35,10 +35,16 @@ export function connectLean(options=plain) {
         },
         () => {
             var cache = null;
+            var prevScope = {}; // Just some object with unique identity
 
             return (dispatch, ownProps) => {
-                if (cache) return cache;
                 var scope = ownProps.scope || options.scope;
+                if (prevScope !== scope) {
+                    prevScope = scope;
+                    cache = null;
+                }
+
+                if (cache) return cache;
 
                 const dispatchUpdate = (updateName, update) => {
 
