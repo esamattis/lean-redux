@@ -8,7 +8,7 @@ import {createStore, applyMiddleware} from "redux";
 import {Provider} from "react-redux";
 import createLogger from "redux-logger";
 
-import leanReducer, {connectLean} from "../src/lean";
+import leanReducer from "../src/lean";
 
 
 import Counter from "./Counter";
