@@ -1,12 +1,19 @@
 {
   "name": "lean-redux",
   "version": "1.0.0",
-  "description": "",
+  "description": "Redux without the boilerplate",
   "main": "lib/index.js",
   "scripts": {
     "test": "eslint src/ examples/*.js && jest",
     "build": "mkdir -p lib && babel src --ignore __test__ --out-dir lib",
     "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/epeli/lean-redux.git"
+  },
+  "bugs": {
+    "url": "https://github.com/epeli/lean-redux/issues"
   },
   "files": [
     "lib"
