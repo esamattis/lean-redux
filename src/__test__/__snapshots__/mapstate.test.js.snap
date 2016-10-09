@@ -11,3 +11,10 @@ exports[`test can map state 2`] = `
   UPDATED
 </div>
 `;
+
+exports[`test support reselect style constructors in mapState 1`] = `
+<div>
+  Count is 
+  3
+</div>
+`;

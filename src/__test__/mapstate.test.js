@@ -1,5 +1,6 @@
 import React from "react";
 import {createStore} from "redux";
+import {createSelector} from "reselect";
 
 import {render} from "./helpers";
 
@@ -93,5 +94,44 @@ test.skip("do not execute mapState on ownProps changes if mapState does not use 
 
     expect(renderSpy).toHaveBeenCalledTimes(3);
     expect(mapSpy).toHaveBeenCalledTimes(1);
+
+});
+
+test("support reselect style constructors in mapState", () => {
+    const store = createStore(leanReducer);
+    const mapSpy = jest.fn();
+    const renderSpy = jest.fn();
+
+    const My = ({totalCount}) => {
+        renderSpy();
+        return <div>Count is {totalCount}</div>;
+    };
+
+    const Connected = connectLean({
+        defaultProps: {
+            first: 1,
+            second: 2,
+            name: "default",
+        },
+        mapState: () => createSelector(
+            s => s.first,
+            s => s.second,
+            (first, second) => {
+                mapSpy();
+                return {totalCount: first + second};
+            }
+        ),
+    })(My);
+
+
+    const component = render(store, Connected);
+    expect(component.toJSON()).toMatchSnapshot();
+    expect(mapSpy).toHaveBeenCalledTimes(1);
+
+    store.dispatch(update({name: "changed name"}));
+    expect(mapSpy).toHaveBeenCalledTimes(1);
+
+    store.dispatch(update({first: 5}));
+    expect(mapSpy).toHaveBeenCalledTimes(2);
 
 });

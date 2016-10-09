@@ -58,7 +58,7 @@ export function connectLean(options=plain) {
         var prevScope = {}; // Just some object with unique identity
         const getProps = () => propsCache;
 
-        const mapState = typeof options.mapState === "function"
+        var mapState = typeof options.mapState === "function"
             ? options.mapState
             : pick(Object.keys(options.defaultProps || plain));
 
@@ -78,7 +78,17 @@ export function connectLean(options=plain) {
                 scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
             }
 
-            scopedState =  mapState(withDefaults(scopedState), ownProps);
+            // Implement React Redux style advanced performance pattern where
+            // the mapState can create the mapState function itself
+            let _state =  mapState(withDefaults(scopedState), ownProps);
+            if (typeof _state === "function") {
+                // map state generated a new mapState function. Save it
+                mapState = _state;
+                // and use it to map the state
+                _state =  mapState(withDefaults(scopedState), ownProps);
+            }
+            scopedState = _state;
+
 
             // Regenerate handlers only when the scope changes
             if (prevScope !== scope) {
