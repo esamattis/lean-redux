@@ -27,11 +27,16 @@ const Example = ({source, children}) => (
         <div className="demo">
             {children}
         </div>
-        <pre>
-            <code className="javascript">
-                {(SOURCE[source] || "").trim()}
-            </code>
-        </pre>
+        <div className="source">
+            <pre>
+                <code className="javascript">
+                    {(SOURCE[source] || "").trim()}
+                </code>
+            </pre>
+            <div>
+                <a href={"https://github.com/epeli/lean-redux/blob/master/examples/" + source}>github</a>
+            </div>
+        </div>
     </div>
 );
 
