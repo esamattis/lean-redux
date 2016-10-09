@@ -66,7 +66,7 @@ var Main = () => (
 
             <h2>Named Counters</h2>
             <p>
-                This the standard TODO example demonstrating advanced component scoping.
+                This is the standard TODO example demonstrating advanced component scoping.
             </p>
             <Example source="NamedCounters.js" >
                 <NamedCounters />
@@ -74,7 +74,7 @@ var Main = () => (
 
             <h2>Multiple Named Counters</h2>
             <p>
-                Just reiterate. Scoping works for complex components too.
+                Just to reiterate. Scoping works for complex components too.
             </p>
             <Example source="MultipleNamedCounters.js" >
                 <MultipleNamedCounters />
