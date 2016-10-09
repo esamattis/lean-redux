@@ -105,7 +105,7 @@ the part of the state scoped to the component. See below for details. Can be
 also a function which is executed when the component is mounted. See examples
 for details.
 
-#### `updates` values
+#### `updates`
 
 Handlers can return an `updates` value to transform the state. It can update as
 many values as wanted, as deeply as needed. It can either be an object, a
