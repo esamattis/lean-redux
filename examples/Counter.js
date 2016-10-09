@@ -2,9 +2,9 @@ import React from "react";
 import {connectLean} from "../src/lean";
 
 var Counter = ({count, inc}) => (
-    <div>
+    <span>
         {count} <button onClick={inc}>inc</button>
-    </div>
+    </span>
 );
 Counter = connectLean({
     defaultProps: {

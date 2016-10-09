@@ -9,7 +9,11 @@ var DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (
     <div>
         <button onClick={addCounter} >add counter</button>
         <button onClick={removeCounter} >remove counter</button>
-        {range(0, counterCount).map(i => <Counter key={i} scope={[scope, "counters", i]} />)}
+        {range(0, counterCount).map(i => (
+            <div key={i} >
+                <Counter scope={[scope, "counters", i]} />
+            </div>
+        ))}
     </div>
 );
 DynamicCounters = connectLean({
@@ -29,7 +33,6 @@ DynamicCounters = connectLean({
             e.preventDefault();
             return {
                 counterCount: i => Math.max(i - 1, 0),
-                counters: a => a.slice(0, -1), // Remove last from the counters array
             };
         },
     },

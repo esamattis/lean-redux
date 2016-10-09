@@ -14,6 +14,7 @@ import leanReducer from "../src/lean";
 import Counter from "./Counter";
 import MultipleCounters from "./MultipleCounters";
 import DynamicCounters from "./DynamicCounters";
+import NamedCounters from "./NamedCounters";
 import Async from "./Async";
 import AsyncAdvanced from "./AsyncAdvanced";
 
@@ -58,6 +59,14 @@ var Main = () => (
             </p>
             <Example source="DynamicCounters.js" >
                 <DynamicCounters />
+            </Example>
+
+            <h2>Named Counters</h2>
+            <p>
+                This the your standard TODO example demonstrating advanced component scoping.
+            </p>
+            <Example source="NamedCounters.js" >
+                <NamedCounters />
             </Example>
 
             <h2>Async updates</h2>

@@ -2,7 +2,6 @@ import {connectAdvanced} from "react-redux";
 import getOr from "lodash/fp/getOr";
 import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
-import isPlainObject from "lodash/fp/isPlainObject";
 import pick from "lodash/fp/pick";
 import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
@@ -17,13 +16,7 @@ export function thunk(cb) {
 }
 export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
-        if (!isPlainObject(options.defaultProps)) {
-            throw new Error("options.defaultProps is required");
-        }
-
         const withDefaults = s => ({...options.defaultProps, ...s});
-
-
 
         var boundHandlersCache = null;
         var propsCache = null;
@@ -32,7 +25,7 @@ export function connectLean(options=plain) {
 
         const mapState = typeof options.mapState === "function"
             ? options.mapState
-            : pick(Object.keys(options.defaultProps));
+            : pick(Object.keys(options.defaultProps || plain));
 
         const handlers = typeof options.handlers === "function"
             ? options.handlers(getProps)
