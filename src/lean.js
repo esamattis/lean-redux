@@ -116,7 +116,11 @@ export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
         return state;
     }
-    const {scope, update, withDefaults} = action;
+    let {scope, update, withDefaults} = action;
+
+    if (typeof scope === "string") {
+        scope = [scope];
+    }
 
     if (scope) {
         return updateIn(scope, s => updateObject(update, withDefaults(s)), state);
