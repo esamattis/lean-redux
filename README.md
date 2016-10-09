@@ -44,7 +44,7 @@ Checkout the [live examples](https://epeli.github.io/lean-redux/examples/).
     npm install --save lean-redux
 
 Just add the `leanReducer` to your store and start creating components with
-`connectLean`;
+`connectLean`.
 
 ```js
 import {createStore, applyMiddleware} from "redux";
