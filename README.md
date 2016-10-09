@@ -10,7 +10,7 @@ Redux without the boilerplate.
   create event handlers which directly manipulate the Redux state scoped to them.
 - Components should be mountable to other parts of the state easily like in Elm
 - Play well with other tools in the Redux community
-  - Time travel debuggers, Redux Form works well with Lean Redux
+  - Time travel debuggers, Redux Form etc. work well with Lean Redux
 - Make it easy to avoid [pure render anti-patterns](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f#.5idpdujva)
   - No need to create callbacks in during renders. Just use the `handlers` option.
 - Keep the awesome performance of [React Redux](https://github.com/reactjs/react-redux)
