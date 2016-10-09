@@ -127,3 +127,36 @@ Ex. `function() { return { a: 0 }; }`.
 The `updates` implementation is from
 [updeep](https://github.com/substantial/updeep).
 
+### `thunk(callback(update: function, getProps: Function))`
+
+Lean Redux comes with simple Thunk implementation for async state updates. It's
+heavily inspired by [Redux Thunk](https://github.com/gaearon/redux-thunk).
+
+Just return a thunk from a handler:
+
+```js
+MyComponent = connectLean({
+    defaultProps: {
+        status: "waiting",
+    },
+    handlers: {
+        asyncLoad() {
+            return thunk((update, getProps) => {
+                update({status: "starting"});
+                setTimeout(() => {
+                    update({status: "done"});
+                }, 1000);
+            });
+        }
+    },
+})(MyComponent);
+```
+
+The `update` function passed to the thunk callback works like `dispatch()` in
+Redux Thunk but instead of dispatching actions you send the `updates` values as
+you return from the handlers.
+
+The `getProps` returns the current props of the component. It's a function
+instead of direct prop values because the props can change over the time.
+
+
