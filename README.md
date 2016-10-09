@@ -91,7 +91,8 @@ does not modify the component but returns a new one.
 
 - `scope: string|Array` Scope the component to a part of the state.  deep
 scopes can be defined with arrays. Works like paths in
-[Lodash](https://lodash.com/docs/4.16.4#set).
+[Lodash](https://lodash.com/docs/4.16.4#set). If `scope` is passed as a prop
+from the parent component it will override the value defined here.
 - `defaultProps: Object` Default values for props that do not exist in the state
 - `mapState(state: Object, ownProps: Object): Object` Just like the `mapStateToProps` in React Redux, but the
 state is scoped according to the `scope` option. If not defined the default
