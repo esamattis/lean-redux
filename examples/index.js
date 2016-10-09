@@ -55,7 +55,9 @@ var Main = () => (
 
             <h2>Dynamic Counters</h2>
             <p>
-                The prop can be dynamic and even go deeper into the state using the array syntax. The path creation works like in <a href="https://lodash.com/docs/4.16.4#set">Lodash</a>.
+                The <em>scope</em> prop can be dynamic and even go deep into
+                the state using the array syntax. The path creation works like
+                in <a href="https://lodash.com/docs/4.16.4#set">Lodash</a>.
             </p>
             <Example source="DynamicCounters.js" >
                 <DynamicCounters />

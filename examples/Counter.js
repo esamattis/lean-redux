@@ -7,6 +7,9 @@ var Counter = ({count, inc}) => (
     </span>
 );
 Counter = connectLean({
+    // This scopes the counter under "singleCounter" key in the state. If this
+    // is omitted the component uses the full state.
+    scope: "singleCounter",
     defaultProps: {
         count: 0,
     },
