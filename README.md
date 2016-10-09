@@ -89,7 +89,7 @@ does not modify the component but returns a new one.
 
 #### `options` keys
 
-- `scope: string|Array` Scope the component to a part of the state.  deep
+- `scope: string|Array` Scope the component to a part of the state. Deep
 scopes can be defined with arrays. Works like paths in
 [Lodash](https://lodash.com/docs/4.16.4#set). If `scope` is passed as a prop
 from the parent component it will override the value defined here.
