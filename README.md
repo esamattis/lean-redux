@@ -66,5 +66,14 @@ var Main = () => (
 ReactDOM.render(<Main />, document.getElementById("app"));
 ```
 
+If you already have other reducers you can merge `leanReducer` into them with
+the `composeReducers` helper:
+
+```js
+import {leanReducer, composeReducers} from "lean-redux";
+
+const store = createStore(composeReducers(myReducer, myAnotherReduer, leanReducer));
+
+```
 
 work in progress...

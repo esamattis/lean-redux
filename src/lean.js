@@ -7,6 +7,15 @@ import flattenDeep from "lodash/fp/flattenDeep";
 import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
 
+export function composeReducers(...reducers) {
+    return (state=null, action) => {
+        return reducers.filter(r => typeof r === "function").reduce(
+            ((state, subReducer) => subReducer(state, action)),
+            state
+        );
+    };
+}
+
 
 const plain = {};
 const pass = o => o;
