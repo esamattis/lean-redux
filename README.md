@@ -98,9 +98,9 @@ for details.
 
 #### `updates` values
 
-Handlers can return `updates` values which transform the state. You can update
-as many values as you want, as deeply as you want. The updates parameter can
-either be an object, a function, or a value.
+Handlers can return an `updates` value to transform the state. It can update as
+many values as wanted, as deeply as needed. It can either be an object, a
+function, or a value.
 
 If `updates` is an object, for each key/value, it will apply the updates
 specified in the value to `state[key]`.
