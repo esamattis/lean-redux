@@ -1,7 +1,7 @@
 import {createStore} from "redux";
 import {get} from "lodash/fp";
 
-import leanReducer, {update} from "../lean";
+import {leanReducer, update} from "../lean";
 
 
 
