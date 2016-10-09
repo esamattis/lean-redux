@@ -131,7 +131,7 @@ The `updates` implementation is from
 
 ### `thunk(callback(update: Function, getProps: Function))`
 
-Lean Redux comes with simple Thunk implementation for async state updates. It's
+Lean Redux comes with simple thunk implementation for async state updates. It's
 heavily inspired by [Redux Thunk](https://github.com/gaearon/redux-thunk).
 
 Just return a thunk from a handler:
@@ -157,8 +157,8 @@ MyComponent = connectLean({
 ```
 
 The `update` function passed to the thunk callback works like `dispatch()` in
-Redux Thunk but instead of dispatching actions you send the `updates` values as
-you return from the handlers.
+Redux Thunk but instead of dispatching actions you send the `updates` like
+returned from the handlers.
 
 The `getProps` returns the current props of the component. It's a function
 instead of direct prop values because the props can change over the time.
