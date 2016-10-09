@@ -15,6 +15,7 @@ import Counter from "./Counter";
 import MultipleCounters from "./MultipleCounters";
 import DynamicCounters from "./DynamicCounters";
 import NamedCounters from "./NamedCounters";
+import MultipleNamedCounters from "./MultipleNamedCounters";
 import Async from "./Async";
 import AsyncAdvanced from "./AsyncAdvanced";
 
@@ -65,10 +66,18 @@ var Main = () => (
 
             <h2>Named Counters</h2>
             <p>
-                This the your standard TODO example demonstrating advanced component scoping.
+                This the standard TODO example demonstrating advanced component scoping.
             </p>
             <Example source="NamedCounters.js" >
                 <NamedCounters />
+            </Example>
+
+            <h2>Multiple Named Counters</h2>
+            <p>
+                Just reiterate. Scoping works for complex components too.
+            </p>
+            <Example source="MultipleNamedCounters.js" >
+                <MultipleNamedCounters />
             </Example>
 
             <h2>Async updates</h2>
