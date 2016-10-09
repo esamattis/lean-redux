@@ -1,7 +1,7 @@
 
 # Lean Redux
 
-[Redux](http://redux.js.org/) without the boilerplate.
+[Redux](http://redux.js.org/) without the boilerplate for [React](https://facebook.github.io/react/).
 
 ## Design goals
 
