@@ -53,7 +53,7 @@ var Main = () => (
                 Instead of defining the scope in the <em>connectLean</em> HOC
                 you can define it as a prop. Notice how we can reuse the
                 component from the previous example just by mounting it to a
-                antoher part of the state using the <em>scope</em> props.
+                antoher part of the state using the <em>scope</em> prop.
             </p>
             <Example source="MultipleCounters.js" name="">
                 <MultipleCounters />
