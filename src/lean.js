@@ -16,9 +16,18 @@ export function composeReducers(...reducers) {
     };
 }
 
-export function update(update) {
+export function update(...args) {
+    let scope, update;
+
+    if (args.length === 2) {
+        [scope, update] = args;
+    } else {
+        update = args[0];
+    }
+
     return {
         type: "LEAN_UPDATE",
+        scope,
         update,
         withDefaults: pass,
     };
