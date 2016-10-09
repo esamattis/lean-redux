@@ -23,14 +23,20 @@ export function connectLean(options=plain) {
 
         const withDefaults = s => ({...options.defaultProps, ...s});
 
+
+
+        var boundHandlersCache = null;
+        var propsCache = null;
+        var prevScope = {}; // Just some object with unique identity
+        const getProps = () => propsCache;
+
         const mapState = typeof options.mapState === "function"
             ? options.mapState
             : pick(Object.keys(options.defaultProps));
 
-        var handlersCache = null;
-        var propsCache = null;
-        var prevScope = {}; // Just some object with unique identity
-        const getProps = () => propsCache;
+        const handlers = typeof options.handlers === "function"
+            ? options.handlers(getProps)
+            : options.handlers;
 
         return (fullState, ownProps) => {
             var scope = ownProps.scope || options.scope;
@@ -65,10 +71,10 @@ export function connectLean(options=plain) {
 
                 const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args.concat(propsCache)));
 
-                handlersCache = mapValuesWithKey(bindDispatch, options.handlers);
+                boundHandlersCache = mapValuesWithKey(bindDispatch, handlers);
             }
 
-            return propsCache = {...ownProps, ...scopedState, ...handlersCache, scope};
+            return propsCache = {...ownProps, ...scopedState, ...boundHandlersCache, scope};
         };
 
     }, {

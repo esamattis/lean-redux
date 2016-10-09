@@ -15,6 +15,7 @@ import Counter from "./Counter";
 import MultipleCounters from "./MultipleCounters";
 import DynamicCounters from "./DynamicCounters";
 import Async from "./Async";
+import AsyncAdvanced from "./AsyncAdvanced";
 
 
 const store = createStore(leanReducer, applyMiddleware(createLogger()));
@@ -41,7 +42,12 @@ var Main = () => (
             </Example>
 
             <h2>Multiple Counters</h2>
-            <p>Instead of defining the scope in the <em>connectLean</em> HOC you can define it as a prop.</p>
+            <p>
+                Instead of defining the scope in the <em>connectLean</em> HOC
+                you can define it as a prop. Notice how we can reuse the
+                component from the previous example just by mounting it to a
+                antoher part of the state.
+            </p>
             <Example source="MultipleCounters.js" name="">
                 <MultipleCounters />
             </Example>
@@ -56,10 +62,17 @@ var Main = () => (
 
             <h2>Async updates</h2>
             <p>
-                Like bit like redux-thunk
+                Like redux-thunk.
             </p>
             <Example source="Async.js" >
                 <Async />
+            </Example>
+            <h2>Advanced Async</h2>
+            <p>
+                Use constructor pattern to handle component specific async state.
+            </p>
+            <Example source="AsyncAdvanced.js" >
+                <AsyncAdvanced />
             </Example>
         </div>
     </Provider>
