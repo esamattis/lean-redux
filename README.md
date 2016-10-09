@@ -100,25 +100,25 @@ from the parent component it will override the value defined here.
 state is scoped according to the `scope` option. If not defined the default
 implementation is to return the props matching `defaultProps`.
 - `handlers: Object|Function` Object of event handler to be passed to the
-component as props. Each handler can return an `updates` value which transforms
+component as props. Each handler can return a `LeanUpdate` which transforms
 the part of the state scoped to the component. See below for details. Can be
 also a function which is executed when the component is mounted. See examples
 for details.
 
-#### `updates`
+#### `LeanUpdate`
 
-Handlers can return an `updates` value to transform the state. It can update as
+Handlers can return an `LeanUpdate` value to transform the state. It can update as
 many values as wanted, as deeply as needed. It can either be an object, a
 function, or a value.
 
-If `updates` is an object, for each key/value, it will apply the updates
+If `LeanUpdate` is an object, for each key/value, it will apply the updates
 specified in the value to `state[key]`.
 
-If `updates` is a function, it will call the function with object and return the value.
+If `LeanUpdate` is a function, it will call the function with object and return the value.
 
-If `updates` is a value, it will return that value.
+If `LeanUpdate` is a value, it will return that value.
 
-`updates` is recursive. You can define deep nested updates. Ex. `{foo: {bar: i
+`LeanUpdate` is recursive. You can define deep nested updates. Ex. `{foo: {bar: i
 => i*2}}`.
 
 Sometimes, you may want to set an entire
@@ -126,9 +126,10 @@ object to a property, or a function. In that case, you'll need to use a
 function to return that value, otherwise it would be interpreted as an update.
 Ex. `function() { return { a: 0 }; }`.
 
-Updates are always immutable. State is never mutated in place.
+Updates made with `LeanUpdate`s are always applied in immutable manner. State is
+never mutated in place.
 
-The `updates` implementation is from
+The `LeanUpdate` implementation is from
 [updeep](https://github.com/substantial/updeep).
 
 ### `thunk(callback(update: Function, getProps: Function))`
@@ -159,7 +160,7 @@ MyComponent = connectLean({
 ```
 
 The `update` function passed to the thunk callback works like `dispatch()` in
-Redux Thunk but instead of dispatching actions you send `updates` (see above).
+Redux Thunk but instead of dispatching actions you send `LeanUpdate`s (see above).
 
 The `getProps` returns the current props of the component. It's a function
 instead of direct prop values because the props can change over the time.
