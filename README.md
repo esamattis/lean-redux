@@ -14,6 +14,7 @@ Redux without the boilerplate.
 - Make it easy to avoid [pure render anti-patterns](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f#.5idpdujva)
   - No need to create callbacks in during renders. Just use the `handlers` option.
 - Keep the awesome performance of [React Redux](https://github.com/reactjs/react-redux)
+  - Lean Redux is build on top of the new `connectAdvanced()` primitive in React Redux 5.0
 
 
 ## Example
