@@ -82,6 +82,8 @@ for complete example.
 
 ## API
 
+Functions exported by the `lean-redux` module.
+
 ### `connectLean(options: Object)`
 
 Connects a React component to a Redux store. Like `connect()` in React Redux it
@@ -127,7 +129,7 @@ Ex. `function() { return { a: 0 }; }`.
 The `updates` implementation is from
 [updeep](https://github.com/substantial/updeep).
 
-### `thunk(callback(update: function, getProps: Function))`
+### `thunk(callback(update: Function, getProps: Function))`
 
 Lean Redux comes with simple Thunk implementation for async state updates. It's
 heavily inspired by [Redux Thunk](https://github.com/gaearon/redux-thunk).
