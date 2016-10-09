@@ -76,6 +76,10 @@ const store = createStore(composeReducers(myReducer, myAnotherReducer, leanReduc
 
 ```
 
+Checkout the [index.js in
+examples](https://github.com/epeli/lean-redux/blob/master/examples/index.js)
+for complete example.
+
 ## API
 
 ### `leanConnect(options: Object)`
