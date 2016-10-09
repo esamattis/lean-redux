@@ -25,7 +25,7 @@ DynamicCounters = connectLean({
         addCounter(e) {
             e.preventDefault();
             // Instead of accessing the props from the arguments you can also
-            // return a object of functions to get the previus value in the
+            // return an object of functions to get the previus value in the
             // key.
             return {counterCount: i => i + 1};
         },
