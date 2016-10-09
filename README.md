@@ -41,7 +41,7 @@ Counter = connectLean({
 })(Counter);
 ```
 
-Checkout the [live examples](https://epeli.github.io/lean-redux/examples/).
+To learn more checkout the [live examples](https://epeli.github.io/lean-redux/examples/).
 
 ## Setup
 
