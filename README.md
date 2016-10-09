@@ -1,11 +1,24 @@
 
 # Lean Redux
 
-Lean Redux without the boilerplate.
+Redux without the boilerplate.
 
-Example:
+## Design goals
+
+- Simple things should be simple
+  - No need to manually define action types or even actions creators. Just
+  create event handlers which directly manipulate the Redux state scoped to them.
+- Components should be mountable to other parts of the state easily like in Elm
+- Play well with other tools in the Redux community
+- Make it easy to avoid [pure render anti-patterns](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f#.5idpdujva)
+- Keep the awesome performance of [React Redux](https://github.com/reactjs/react-redux)
+
+
+## Example
 
 ```js
+import {connectLean} from "lean-redux";
+
 var Counter = ({count, inc}) => (
     <div>
         {count} <button onClick={inc}>inc</button>
@@ -24,13 +37,28 @@ Counter = connectLean({
 })(Counter);
 ```
 
-Checkout more [live examples here](https://epeli.github.io/lean-redux/examples/).
+Checkout the [live examples](https://epeli.github.io/lean-redux/examples/).
 
-## Design goals
+## Setup
 
-- Simple things should be simple
-- Components should be mountable to other parts of the state easily like in Elm
-- Play well with other tools in the Redux community
-- Make it easy to avoid [pure render anti-patterns](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f#.5idpdujva)
-- Keep the awesome performance of [React Redux](https://github.com/reactjs/react-redux)
+    npm install --save lean-redux
+
+Just add the `leanReducer` to your store and start creating components with
+`connectLean`;
+
+```js
+import {createStore, applyMiddleware} from "redux";
+import {Provider} from "react-redux";
+import {leanReducer} from "lean-redux";
+
+const store = createStore(leanReducer);
+
+var Main = () => (
+    <Provider store={store}>
+        <Counter />
+    </Provider>
+);
+
+ReactDOM.render(<Main />, document.getElementById("app"));
+```
 
