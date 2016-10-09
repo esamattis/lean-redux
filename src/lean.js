@@ -3,6 +3,7 @@ import getOr from "lodash/fp/getOr";
 import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
 import pick from "lodash/fp/pick";
+import flattenDeep from "lodash/fp/flattenDeep";
 import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
 
@@ -33,6 +34,10 @@ export function connectLean(options=plain) {
 
         return (fullState, ownProps) => {
             var scope = ownProps.scope || options.scope;
+            if (Array.isArray(scope)) {
+                scope = flattenDeep(scope);
+            }
+
             var scopedState = fullState || plain;
 
             if (scope) {
