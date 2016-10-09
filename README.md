@@ -99,7 +99,7 @@ from the parent component it will override the value defined here.
 - `mapState(state: Object, ownProps: Object): Object` Just like the `mapStateToProps` in React Redux, but the
 state is scoped according to the `scope` option. If not defined the default
 implementation is to return the props matching `defaultProps`.
-- `handlers: Object|Function` Object of event handler to be passed to the
+- `handlers: Object|createHandlers(): Object` Object of event handler to be passed to the
 component as props. Each handler can return a `LeanUpdate` which transforms
 the part of the state scoped to the component. See below for details. Can be
 also a function which is executed when the component is mounted. See examples
@@ -132,7 +132,7 @@ never mutated in place.
 The `LeanUpdate` implementation is from
 [updeep](https://github.com/substantial/updeep).
 
-### `thunk(callback(update: Function, getProps: Function))`
+### `thunk(callback(update(update: LeanUpdate), getProps()))`
 
 Lean Redux comes with simple thunk implementation for async state updates. It's
 heavily inspired by [Redux Thunk](https://github.com/gaearon/redux-thunk).
