@@ -54,6 +54,28 @@ exports[`test do not recreate update function on parent prop changes 2`] = `
 </div>
 `;
 
+exports[`test lodash strings paths are not expanded in mapState 1`] = `
+<div>
+  hello 
+  underscore
+</div>
+`;
+
+exports[`test lodash strings paths are not expanded in mapState 2`] = `
+<div>
+  hello 
+  lodash
+</div>
+`;
+
+exports[`test lodash strings paths are not expanded in mapState 3`] = `
+Object {
+  "foo.bar": Object {
+    "name": "lodash",
+  },
+}
+`;
+
 exports[`test pass scope as a prop 1`] = `
 <div>
   Hello 

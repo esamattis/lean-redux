@@ -16,6 +16,14 @@ export function composeReducers(...reducers) {
     };
 }
 
+function disableLodashPath(path) {
+    if (typeof path === "string") {
+        return [path];
+    }
+
+    return path;
+}
+
 export function update(...args) {
     let scope, update;
 
@@ -67,7 +75,7 @@ export function connectLean(options=plain) {
             var scopedState = fullState || plain;
 
             if (scope) {
-                scopedState = {...getOr(plain, scope, fullState), scope};
+                scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
             }
 
             scopedState =  mapState(withDefaults(scopedState));
@@ -118,12 +126,8 @@ export function leanReducer(state, action) {
     }
     let {scope, update, withDefaults} = action;
 
-    if (typeof scope === "string") {
-        scope = [scope];
-    }
-
     if (scope) {
-        return updateIn(scope, s => updateObject(update, withDefaults(s)), state);
+        return updateIn(disableLodashPath(scope), s => updateObject(update, withDefaults(s)), state);
     }
 
     return updateObject(action.update, withDefaults(state));

@@ -4,7 +4,7 @@ import {createStore} from "redux";
 import {Provider} from "react-redux";
 import {get} from "lodash/fp";
 
-import {leanReducer, connectLean} from "../lean";
+import {leanReducer, connectLean, update} from "../lean";
 
 const render = (store, Component) => {
     const Main = () => {
@@ -295,6 +295,25 @@ test("all props are passed to the update functions", () => {
     expect(get(["name"], props)).toBe("esa");
     expect(get(["parentProp"], props)).toBe("parent");
     expect(get(["changeName"], props)).toBe(update);
+
+});
+
+test("lodash strings paths are not expanded in mapState", () => {
+    const store = createStore(leanReducer);
+    var C = ({name}) => <div>hello {name}</div>;
+    C = connectLean({
+        scope: "foo.bar",
+        defaultProps: {
+            name: "underscore",
+        },
+    })(C);
+
+    const component = render(store, C);
+    expect(component.toJSON()).toMatchSnapshot();
+    store.dispatch(update({"foo.bar": {name: "lodash"}}));
+    expect(component.toJSON()).toMatchSnapshot();
+    expect(store.getState()).toMatchSnapshot();
+
 
 });
 
