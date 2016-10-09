@@ -1,7 +1,7 @@
 
 # Lean Redux
 
-Redux without the boilerplate.
+[Redux](http://redux.js.org/) without the boilerplate.
 
 ## Design goals
 
