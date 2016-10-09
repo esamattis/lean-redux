@@ -126,6 +126,8 @@ object to a property, or a function. In that case, you'll need to use a
 function to return that value, otherwise it would be interpreted as an update.
 Ex. `function() { return { a: 0 }; }`.
 
+Updates are always immutable. State is never mutated in place.
+
 The `updates` implementation is from
 [updeep](https://github.com/substantial/updeep).
 
