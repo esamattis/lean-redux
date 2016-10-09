@@ -137,6 +137,8 @@ heavily inspired by [Redux Thunk](https://github.com/gaearon/redux-thunk).
 Just return a thunk from a handler:
 
 ```js
+import {connectLean, thunk} from "lean-redux";
+
 MyComponent = connectLean({
     defaultProps: {
         status: "waiting",
