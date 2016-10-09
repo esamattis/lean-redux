@@ -9,7 +9,7 @@
     "prepublish": "npm run build"
   },
   "files": ["lib"],
-  "author": "Esa-Matti Suurone",
+  "author": "Esa-Matti Suuronen",
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.16.0",
