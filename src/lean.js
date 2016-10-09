@@ -18,7 +18,6 @@ export function composeReducers(...reducers) {
 
 
 const plain = {};
-const pass = o => o;
 const withSlash = s => s ? ("/" + s) : "";
 
 export function thunk(cb) {
