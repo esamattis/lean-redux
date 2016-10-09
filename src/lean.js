@@ -85,7 +85,7 @@ export function connectLean(options=plain) {
 
 const actionPattern = /^LEAN_UPDATE/;
 
-export default function leanReducer(state, action) {
+export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
         return state;
     }
@@ -97,3 +97,5 @@ export default function leanReducer(state, action) {
 
     return updateObject(action.update, withDefaults(state));
 }
+
+export default leanReducer;
