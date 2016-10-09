@@ -157,8 +157,7 @@ MyComponent = connectLean({
 ```
 
 The `update` function passed to the thunk callback works like `dispatch()` in
-Redux Thunk but instead of dispatching actions you send the `updates` like
-returned from the handlers.
+Redux Thunk but instead of dispatching actions you send `updates` (see above).
 
 The `getProps` returns the current props of the component. It's a function
 instead of direct prop values because the props can change over the time.
