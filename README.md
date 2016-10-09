@@ -109,7 +109,7 @@ If `updates` is a function, it will call the function with object and return the
 
 If `updates` is a value, it will return that value.
 
-`updates` is recusive. You can define deep nested updates. Ex. `{foo: {bar: i
+`updates` is recursive. You can define deep nested updates. Ex. `{foo: {bar: i
 => i*2}}`.
 
 Sometimes, you may want to set an entire
