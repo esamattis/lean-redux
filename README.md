@@ -84,7 +84,7 @@ for complete example.
 
 Functions exported by the `lean-redux` module.
 
-### `connectLean(options: Object)`
+### `connectLean(options: Object): (component: ReactComponent) => ReactComponent`
 
 Connects a React component to a Redux store. Like `connect()` in React Redux it
 does not modify the component but returns a new one.
