@@ -88,6 +88,34 @@ does not modify the component but returns a new one.
 - `scope: string|Array` Scope the component to a part of the state.
 - `defaultProps: Object` Default values for props that do not exist in the state
 - `mapState: Function` Just like the `mapStateToProps` in React Redux. If not defined the
-default implementation is to return on the props matching `defaultProps`.
-- `handlers: Object|Function` 
+default implementation is to return the props matching `defaultProps`.
+- `handlers: Object|Function` Object of event handler to be passed to the
+component as props. Each handler can return an `updates` value which transforms
+the part of the state scoped to the component. See below for details. Can be
+also a function which is executed when the component is mounted. See examples
+for details.
+
+#### `updates` values
+
+Handlers can return `updates` values which transform the state. You can update
+as many values as you want, as deeply as you want. The updates parameter can
+either be an object, a function, or a value.
+
+If `updates` is an object, for each key/value, it will apply the updates
+specified in the value to `state[key]`.
+
+If `updates` is a function, it will call the function with object and return the value.
+
+If `updates` is a value, it will return that value.
+
+`updates` is recusive. You can define deep nested updates. Ex. `{foo: {bar: i
+=> i*2}}`.
+
+Sometimes, you may want to set an entire
+object to a property, or a function. In that case, you'll need to use a
+function to return that value, otherwise it would be interpreted as an update.
+Ex. `function() { return { a: 0 }; }`.
+
+The `updates` implementation is from
+[updeep](https://github.com/substantial/updeep).
 
