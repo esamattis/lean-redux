@@ -166,3 +166,10 @@ The `getProps` returns the current props of the component. It's a function
 instead of direct prop values because the props can change over the time.
 
 
+### `update([scope: string|Array], update: LeanUpdate)`
+
+Normal Redux action creator for dispatching LeanUpdates manually. Use it if you
+want to use the `LeanUpdates` outside of the components. Ex. from store
+directly `store.dispatch(update({foo: "bar"}))` or from Redux Thunk callback or
+whatever situation you have.
+
