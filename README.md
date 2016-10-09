@@ -132,7 +132,7 @@ never mutated in place.
 The `LeanUpdate` implementation is from
 [updeep](https://github.com/substantial/updeep).
 
-### `thunk(callback(update(update: LeanUpdate), getProps()))`
+### `thunk(callback(update(update: LeanUpdate), getProps(): Object))`
 
 Lean Redux comes with simple thunk implementation for async state updates. It's
 heavily inspired by [Redux Thunk](https://github.com/gaearon/redux-thunk).
