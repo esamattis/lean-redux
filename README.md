@@ -6,8 +6,9 @@ Redux without the boilerplate.
 ## Design goals
 
 - Simple things should be simple
-  - No need to manually define action types or even actions creators. Just
-  create event handlers which directly manipulate the Redux state scoped to them.
+  - No need to manually define action types, reducers or even actions creators.
+  Just create event handlers which directly manipulate the Redux state scoped
+  to them.
 - Components should be mountable to other parts of the state easily like in Elm
 - Play well with other tools in the Redux community
   - Time travel debuggers, Redux Form etc. work well with Lean Redux
