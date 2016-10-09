@@ -5,9 +5,9 @@ exports[`test can map state 1`] = `
 </div>
 `;
 
-exports[`test can map state defaultProps 1`] = `
+exports[`test can map state 2`] = `
 <div>
   Hello 
-  DEFAULT
+  UPDATED
 </div>
 `;
