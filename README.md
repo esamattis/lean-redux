@@ -99,11 +99,11 @@ from the parent component it will override the value defined here.
 - `mapState(state: Object, ownProps: Object): Object` Just like the `mapStateToProps` in React Redux, but the
 state is scoped according to the `scope` option. If not defined the default
 implementation is to return the props matching `defaultProps`.
-- `handlers: Object|createHandlers(): Object` Object of event handler to be passed to the
-component as props. Each handler can return a `LeanUpdate` which transforms
-the part of the state scoped to the component. See below for details. Can be
-also a function which is executed when the component is mounted. See examples
-for details.
+- `handlers: Object|createHandlers(): Object` Object of event handler to be
+passed to the component as props. Each handler can return a `LeanUpdate` which
+transforms the part of the state scoped to the component. See below for
+details. Can be also a function which is used to generated the handlers when
+the component is mounted. See examples for details.
 
 #### `LeanUpdate`
 
