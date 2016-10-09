@@ -51,3 +51,47 @@ test("map state can access ownProps", () => {
     expect(spy).toHaveBeenCalledWith("parentValue");
 
 });
+
+// XXX
+test.skip("do not execute mapState on ownProps changes if mapState does not use it", () => {
+    const store = createStore(leanReducer);
+    const mapSpy = jest.fn();
+    const renderSpy = jest.fn();
+
+    const My = ({name}) => {
+        renderSpy();
+        return <div>Hello {name}</div>;
+    };
+
+    const Connected = connectLean({
+        defaultProps: {
+            name: "default",
+        },
+        mapState(state) {
+            mapSpy();
+            return {name: state.name.toUpperCase()};
+        },
+    })(My);
+
+    var setState = null;
+    var Parent = React.createClass({
+        getInitialState() {
+            return {parentProp: "parentValue1"};
+        },
+        render() {
+            // eslint-disable-next-line react/jsx-no-bind
+            setState = this.setState.bind(this);
+
+            return <Connected parentProp={this.state.parentProp} />;
+        },
+    });
+
+
+    const component = render(store, Parent);
+
+    setState({parentProp: "parentValue2"});
+
+    expect(renderSpy).toHaveBeenCalledTimes(3);
+    expect(mapSpy).toHaveBeenCalledTimes(1);
+
+});
