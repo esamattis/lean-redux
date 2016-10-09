@@ -4,8 +4,19 @@ import {createStore} from "redux";
 import {Provider} from "react-redux";
 import {get} from "lodash/fp";
 
-import leanReducer, {connectLean} from "../lean";
+import {leanReducer, connectLean} from "../lean";
 
+const render = (store, Component) => {
+    const Main = () => {
+        return (
+            <Provider store={store}>
+                <Component />
+            </Provider>
+        );
+    };
+
+    return renderer.create(<Main />);
+};
 
 
 test("basic updating", () => {
@@ -29,17 +40,9 @@ test("basic updating", () => {
         },
     })(My);
 
-    const Main = () => {
-        return (
-            <Provider store={store}>
-                <Connected />
-            </Provider>
-        );
-    };
-
     expect(get(["ascope", "name"], store.getState())).toBe(undefined);
 
-    const component = renderer.create(<Main />);
+    const component = render(store, Connected);
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
@@ -72,17 +75,9 @@ test("updating with map state", () => {
         },
     })(My);
 
-    const Main = () => {
-        return (
-            <Provider store={store}>
-                <Connected />
-            </Provider>
-        );
-    };
-
     expect(get(["ascope", "name"], store.getState())).toBe(undefined);
 
-    const component = renderer.create(<Main />);
+    const component = render(store, Connected);
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
@@ -112,17 +107,10 @@ test("can use function to update the state", () => {
         },
     })(Counter);
 
-    const Main = () => {
-        return (
-            <Provider store={store}>
-                <Connected />
-            </Provider>
-        );
-    };
-
     expect(get(["ascope", "count"], store.getState())).toBe(undefined);
 
-    const component = renderer.create(<Main />);
+    const component = render(store, Connected);
+
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
@@ -152,17 +140,10 @@ test("pass scope as a prop", () => {
         },
     })(My);
 
-    const Main = () => {
-        return (
-            <Provider store={store}>
-                <Connected scope="propScope" />
-            </Provider>
-        );
-    };
 
     expect(get(["propScope", "name"], store.getState())).toBe(undefined);
 
-    const component = renderer.create(<Main />);
+    const component = render(store, () => <Connected scope="propScope" />);
     expect(component.toJSON()).toMatchSnapshot();
     update();
     expect(component.toJSON()).toMatchSnapshot();
@@ -193,23 +174,20 @@ test("do not recreate update function on parent prop changes", () => {
     })(My);
 
     var setState = null;
-    var Main = React.createClass({
+    var Wrap = React.createClass({
         getInitialState() {
             return {greeting: "Hi"};
         },
-        changeGreeting() {
-        },
         render() {
+            // eslint-disable-next-line react/jsx-no-bind
             setState = this.setState.bind(this);
             return (
-                <Provider store={store}>
-                    <Connected scope="propScope" greeting={this.state.greeting} />
-                </Provider>
+                <Connected scope="propScope" greeting={this.state.greeting} />
             );
         },
     });
 
-    const component = renderer.create(<Main />);
+    const component = render(store, Wrap);
     expect(component.toJSON()).toMatchSnapshot();
     var prevUpdate = update;
 
@@ -241,21 +219,20 @@ test("prop scope change generates new update function", () => {
     })(My);
 
     var setState = null;
-    var Main = React.createClass({
+    var Wrap = React.createClass({
         getInitialState() {
             return {scope: "first"};
         },
         render() {
+            // eslint-disable-next-line react/jsx-no-bind
             setState = this.setState.bind(this);
             return (
-                <Provider store={store}>
-                    <Connected scope={this.state.scope} />
-                </Provider>
+                <Connected scope={this.state.scope} />
             );
         },
     });
 
-    const component = renderer.create(<Main />);
+    const component = render(store, Wrap);
     var prevUpdate = update;
     update();
     expect(component.toJSON()).toMatchSnapshot();
@@ -300,17 +277,15 @@ test("all props are passed to the update functions", () => {
         },
     })(My);
 
-    const Main = () => {
+    const Wrap = () => {
         return (
-            <Provider store={store}>
-                <Connected parentProp="parent" />
-            </Provider>
+            <Connected parentProp="parent" />
         );
     };
 
     expect(get(["ascope", "name"], store.getState())).toBe(undefined);
 
-    const component = renderer.create(<Main />);
+    const component = render(store, Wrap);
     expect(component.toJSON()).toMatchSnapshot();
     update("suuronen");
     expect(component.toJSON()).toMatchSnapshot();
