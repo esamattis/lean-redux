@@ -107,7 +107,7 @@ for details.
 
 #### `LeanUpdate`
 
-Handlers can return an `LeanUpdate` value to transform the state. It can update as
+Handlers can return a `LeanUpdate` to transform the state. It can update as
 many values as wanted, as deeply as needed. It can either be an object, a
 function, or a value.
 
