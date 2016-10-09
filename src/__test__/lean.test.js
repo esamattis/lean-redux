@@ -1,22 +1,10 @@
 import React from "react";
-import renderer from "react-test-renderer";
 import {createStore} from "redux";
-import {Provider} from "react-redux";
 import {get} from "lodash/fp";
 
 import {leanReducer, connectLean, update} from "../lean";
 
-const render = (store, Component) => {
-    const Main = () => {
-        return (
-            <Provider store={store}>
-                <Component />
-            </Provider>
-        );
-    };
-
-    return renderer.create(<Main />);
-};
+import {render} from "./helpers";
 
 
 test("basic updating", () => {

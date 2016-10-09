@@ -1,0 +1,13 @@
+exports[`test can map state 1`] = `
+<div>
+  Hello 
+  DEFAULT
+</div>
+`;
+
+exports[`test can map state defaultProps 1`] = `
+<div>
+  Hello 
+  DEFAULT
+</div>
+`;
