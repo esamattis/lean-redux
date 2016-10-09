@@ -27,7 +27,10 @@ DynamicCounters = connectLean({
         },
         removeCounter(e) {
             e.preventDefault();
-            return {counterCount: i => Math.max(i - 1, 0)};
+            return {
+                counterCount: i => Math.max(i - 1, 0),
+                counters: a => a.slice(0, -1), // Remove last from the counters array
+            };
         },
     },
 
