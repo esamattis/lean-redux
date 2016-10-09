@@ -4,7 +4,7 @@ import {Provider} from "react-redux";
 import {get} from "lodash/fp";
 import renderer from "react-test-renderer";
 
-import {leanReducer, connectLean, update, thunk} from "../lean";
+import {leanReducer, connectLean, thunk} from "../lean";
 
 test("update using thunk", () => {
     const store = createStore(leanReducer);
