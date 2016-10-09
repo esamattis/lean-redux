@@ -82,7 +82,7 @@ for complete example.
 
 ## API
 
-### `leanConnect(options: Object)`
+### `connectLean(options: Object)`
 
 Connects a React component to a Redux store. Like `connect()` in React Redux it
 does not modify the component but returns a new one.
