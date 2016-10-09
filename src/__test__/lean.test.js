@@ -2,7 +2,6 @@ import React from "react";
 import renderer from "react-test-renderer";
 import {createStore} from "redux";
 import {Provider} from "react-redux";
-
 import {get} from "lodash/fp";
 
 import leanReducer, {connectLean} from "../lean";

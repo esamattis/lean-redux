@@ -16,7 +16,16 @@ export function composeReducers(...reducers) {
     };
 }
 
+export function update(update) {
+    return {
+        type: "LEAN_UPDATE",
+        update,
+        withDefaults: pass,
+    };
+}
 
+
+const pass = o => o;
 const plain = {};
 const withSlash = s => s ? ("/" + s) : "";
 
