@@ -69,30 +69,38 @@
 	
 	var _lean2 = _interopRequireDefault(_lean);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 429);
+	var _Counter = __webpack_require__(/*! ./Counter */ 430);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
-	var _MultipleCounters = __webpack_require__(/*! ./MultipleCounters */ 430);
+	var _MultipleCounters = __webpack_require__(/*! ./MultipleCounters */ 431);
 	
 	var _MultipleCounters2 = _interopRequireDefault(_MultipleCounters);
 	
-	var _DynamicCounters = __webpack_require__(/*! ./DynamicCounters */ 431);
+	var _DynamicCounters = __webpack_require__(/*! ./DynamicCounters */ 432);
 	
 	var _DynamicCounters2 = _interopRequireDefault(_DynamicCounters);
 	
-	var _Async = __webpack_require__(/*! ./Async */ 434);
+	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 435);
+	
+	var _NamedCounters2 = _interopRequireDefault(_NamedCounters);
+	
+	var _MultipleNamedCounters = __webpack_require__(/*! ./MultipleNamedCounters */ 436);
+	
+	var _MultipleNamedCounters2 = _interopRequireDefault(_MultipleNamedCounters);
+	
+	var _Async = __webpack_require__(/*! ./Async */ 437);
 	
 	var _Async2 = _interopRequireDefault(_Async);
 	
-	var _AsyncAdvanced = __webpack_require__(/*! ./AsyncAdvanced */ 435);
+	var _AsyncAdvanced = __webpack_require__(/*! ./AsyncAdvanced */ 438);
 	
 	var _AsyncAdvanced2 = _interopRequireDefault(_AsyncAdvanced);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	// eslint-disable-next-line
-	window.SOURCE = ({"Async.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nvar Async = ({fetchAsync, data, status}) => (\n    <div>\n        <p>status: {status}</p>\n        <p>data: {data}</p>\n        <button onClick={fetchAsync}>fetch</button>\n    </div>\n);\nAsync = connectLean({\n    scope: \"async\",\n    defaultProps: {\n        status: \"waiting\",\n        data: \"nodata\",\n    },\n    handlers: {\n        setData(data) {\n            return {data};\n        },\n        fetchAsync(e) {\n            e.preventDefault();\n\n            // Like redux-thunk. You can send multiple updates over time using\n            // the update function. If you need to get the updated version of\n            // the component props you can use the getProps function\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n                setTimeout(() => {\n                    update({status: \"done\"});\n                    getProps().setData(\"async fetched data!\");\n                }, 2000);\n            });\n        },\n    },\n\n})(Async);\n\n\nexport default Async;\n","AsyncAdvanced.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass AsyncAdvanced extends React.Component {\n    componentWillUnmount() {\n        // Cancel request on unmount\n        this.props.cancel();\n    }\n    render() {\n        const {fetchAsync, data, status, cancel} = this.props;\n        return (\n            <div>\n                <p>status: {status}</p>\n                <p>data: {data}</p>\n                <button onClick={fetchAsync}>fetch</button>\n                <button onClick={cancel}>cancel</button>\n            </div>\n        );\n    }\n}\n\nAsyncAdvanced = connectLean({\n    scope: \"asyncAdvanced\",\n    defaultProps: {\n        status: \"waiting\",\n        data: \"nodata\",\n    },\n    handlers() {\n        // If handlers is a function it will excuted once for each component\n        // instance. You may keep some component specific data here which is\n        // not ok for redux state. Such as xhr-objects, promises etc.\n        var timer = null;\n\n        return {\n            setData(data) {\n                return {data};\n            },\n            cancel(e) {\n                e.preventDefault();\n                clearTimeout(timer);\n                return {status: \"canceled\"};\n            },\n            fetchAsync(e) {\n                e.preventDefault();\n                return thunk((update, getProps) => {\n                    update({status: \"fetching\"});\n                    timer = setTimeout(() => {\n                        update({status: \"done\"});\n                        getProps().setData(\"async fetched data!\");\n                    }, 3000);\n                });\n            },\n        };\n    },\n\n})(AsyncAdvanced);\n\n\nexport default AsyncAdvanced;\n","Counter.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nvar Counter = ({count, inc}) => (\n    <div>\n        {count} <button onClick={inc}>inc</button>\n    </div>\n);\nCounter = connectLean({\n    defaultProps: {\n        count: 0,\n    },\n    handlers: {\n        // The props object is passed to the handlers as the last argument.\n        inc(e, _skip1, _skip2, props) {\n            e.preventDefault();\n            return {count: props.count + 1};\n        },\n    },\n})(Counter);\n\n\nexport default Counter;\n","DynamicCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {range} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (\n    <div>\n        <button onClick={addCounter} >add counter</button>\n        <button onClick={removeCounter} >remove counter</button>\n        {range(0, counterCount).map(i => <Counter key={i} scope={[scope, \"counters\", i]} />)}\n    </div>\n);\nDynamicCounters = connectLean({\n    scope: \"dynamicCounters\",\n    defaultProps: {\n        counterCount: 1,\n    },\n    handlers: {\n        addCounter(e) {\n            e.preventDefault();\n            // Instead of accessing the props from the arguments you can also\n            // return a object of functions to get the previus value in the\n            // key.\n            return {counterCount: i => i + 1};\n        },\n        removeCounter(e) {\n            e.preventDefault();\n            return {\n                counterCount: i => Math.max(i - 1, 0),\n                counters: a => a.slice(0, -1), // Remove last from the counters array\n            };\n        },\n    },\n\n})(DynamicCounters);\n\n\nexport default DynamicCounters;\n","MultipleCounters.js":"import React from \"react\";\n\nimport Counter from \"./Counter\";\n\nvar MultipleCounters = () => (\n    <div>\n        <Counter scope=\"multicounter1\" />\n        <Counter scope=\"multicounter2\" />\n    </div>\n);\n\nexport default MultipleCounters;\n","index.js":"// eslint-disable-next-line\nwindow.SOURCE = SOURCE;\nvar SOURCE = window.SOURCE;\n\nimport React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport {createStore, applyMiddleware} from \"redux\";\nimport {Provider} from \"react-redux\";\nimport createLogger from \"redux-logger\";\n\nimport leanReducer from \"../src/lean\";\n\n\nimport Counter from \"./Counter\";\nimport MultipleCounters from \"./MultipleCounters\";\nimport DynamicCounters from \"./DynamicCounters\";\nimport Async from \"./Async\";\nimport AsyncAdvanced from \"./AsyncAdvanced\";\n\n\nconst store = createStore(leanReducer, applyMiddleware(createLogger()));\n\nconst Example = ({source, children}) => (\n    <div className=\"example\">\n        <div className=\"demo\">\n            {children}\n        </div>\n        <pre>\n            <code className=\"javascript\">\n                {(SOURCE[source] || \"\").trim()}\n            </code>\n        </pre>\n    </div>\n);\n\nvar Main = () => (\n    <Provider store={store}>\n        <div>\n            <h2>Simple counter</h2>\n            <Example source=\"Counter.js\" >\n                <Counter />\n            </Example>\n\n            <h2>Multiple Counters</h2>\n            <p>\n                Instead of defining the scope in the <em>connectLean</em> HOC\n                you can define it as a prop. Notice how we can reuse the\n                component from the previous example just by mounting it to a\n                antoher part of the state.\n            </p>\n            <Example source=\"MultipleCounters.js\" name=\"\">\n                <MultipleCounters />\n            </Example>\n\n            <h2>Dynamic Counters</h2>\n            <p>\n                The prop can be dynamic and even go deeper into the state using the array syntax. The path creation works like in <a href=\"https://lodash.com/docs/4.16.4#set\">Lodash</a>.\n            </p>\n            <Example source=\"DynamicCounters.js\" >\n                <DynamicCounters />\n            </Example>\n\n            <h2>Async updates</h2>\n            <p>\n                Like redux-thunk.\n            </p>\n            <Example source=\"Async.js\" >\n                <Async />\n            </Example>\n            <h2>Advanced Async</h2>\n            <p>\n                Use constructor pattern to handle component specific async state.\n            </p>\n            <Example source=\"AsyncAdvanced.js\" >\n                <AsyncAdvanced />\n            </Example>\n        </div>\n    </Provider>\n);\n\n\nReactDOM.render(<Main />, document.getElementById(\"app\"));\nwindow.hljs.initHighlightingOnLoad();\n","webpack.config.js":"var webpack = require(\"webpack\");\nvar fs = require(\"fs\");\n\nvar jsFiles = fs.readdirSync(__dirname).filter(n => n.endsWith(\".js\"));\nvar sourceFiles = {};\njsFiles.forEach(filename => {\n    sourceFiles[filename] = fs.readFileSync(filename).toString();\n});\n\n\n\n\nvar config = {\n    entry: \"./index.js\",\n    output: {\n        path: \"dist\",\n        filename: \"bundle.js\",\n        publicPath: \"/dist\",\n    },\n    // devtool: \"cheap-module-eval-source-map\", // faster\n    devtool: \"sourceMap\",\n    module: {\n        loaders: [\n            {\n                test: /\\.jsx?$/,\n                loader: \"babel\",\n                exclude: /node_modules/,\n            },\n\n        ],\n    },\n    plugins: [\n        new webpack.DefinePlugin({\n            \"SOURCE\": JSON.stringify(sourceFiles),\n            \"process.env.NODE_ENV\": JSON.stringify(\"development\"),\n        }),\n    ],\n};\n\n\nmodule.exports = config;\n"});
+	window.SOURCE = ({"Async.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nvar Async = ({fetchAsync, data, status}) => (\n    <div>\n        <p>status: {status}</p>\n        <p>data: {data}</p>\n        <button onClick={fetchAsync}>fetch</button>\n    </div>\n);\nAsync = connectLean({\n    scope: \"async\",\n    defaultProps: {\n        status: \"waiting\",\n        data: \"nodata\",\n    },\n    handlers: {\n        setData(data) {\n            return {data};\n        },\n        fetchAsync(e) {\n            e.preventDefault();\n\n            // Like redux-thunk. You can send multiple updates over time using\n            // the update function. If you need to get the updated version of\n            // the component props you can use the getProps function\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n                setTimeout(() => {\n                    update({status: \"done\"});\n                    getProps().setData(\"async fetched data!\");\n                }, 2000);\n            });\n        },\n    },\n\n})(Async);\n\n\nexport default Async;\n","AsyncAdvanced.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass AsyncAdvanced extends React.Component {\n    componentWillUnmount() {\n        // Cancel request on unmount\n        this.props.cancel();\n    }\n    render() {\n        const {fetchAsync, data, status, cancel} = this.props;\n        return (\n            <div>\n                <p>status: {status}</p>\n                <p>data: {data}</p>\n                <button onClick={fetchAsync}>fetch</button>\n                <button onClick={cancel}>cancel</button>\n            </div>\n        );\n    }\n}\n\nAsyncAdvanced = connectLean({\n    scope: \"asyncAdvanced\",\n    defaultProps: {\n        status: \"waiting\",\n        data: \"nodata\",\n    },\n    handlers() {\n        // If handlers is a function it will excuted once for each component\n        // instance. You may keep some component specific data here which is\n        // not ok for redux state. Such as xhr-objects, promises etc.\n        var timer = null;\n\n        return {\n            setData(data) {\n                return {data};\n            },\n            cancel(e) {\n                e.preventDefault();\n                clearTimeout(timer);\n                return {status: \"canceled\"};\n            },\n            fetchAsync(e) {\n                e.preventDefault();\n                return thunk((update, getProps) => {\n                    update({status: \"fetching\"});\n                    timer = setTimeout(() => {\n                        update({status: \"done\"});\n                        getProps().setData(\"async fetched data!\");\n                    }, 3000);\n                });\n            },\n        };\n    },\n\n})(AsyncAdvanced);\n\n\nexport default AsyncAdvanced;\n","Counter.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nvar Counter = ({count, inc}) => (\n    <span>\n        {count} <button onClick={inc}>inc</button>\n    </span>\n);\nCounter = connectLean({\n    // This scopes the counter under \"singleCounter\" key in the state. If this\n    // is omitted the component uses the full state.\n    scope: \"singleCounter\",\n\n    // By default only props defined in defaultProps are passed to the wrapped\n    // component. If you want to add some other props from the state you can\n    // define a mapState key with a function returning the desired state.\n    defaultProps: {\n        count: 0,\n    },\n\n    // Handlers are passed as props to the component. The return values update\n    // the state. The updates respect the scope defined above.\n    handlers: {\n        // The props object is passed to the handlers as the last argument.\n        inc(e, _skip1, _skip2, props) {\n            e.preventDefault();\n            return {count: props.count + 1};\n        },\n    },\n})(Counter);\n\n\nexport default Counter;\n","DynamicCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {range} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (\n    <div>\n        <button onClick={addCounter} >add counter</button>\n        <button onClick={removeCounter} >remove counter</button>\n        {range(0, counterCount).map(i => (\n            <div key={i} >\n                <Counter scope={[scope, \"counters\", i]} />\n            </div>\n        ))}\n    </div>\n);\nDynamicCounters = connectLean({\n    scope: \"dynamicCounters\",\n    defaultProps: {\n        counterCount: 1,\n    },\n    handlers: {\n        addCounter(e) {\n            e.preventDefault();\n            // Instead of accessing the props from the arguments you can also\n            // return a object of functions to get the previus value in the\n            // key.\n            return {counterCount: i => i + 1};\n        },\n        removeCounter(e) {\n            e.preventDefault();\n            return {\n                counterCount: i => Math.max(i - 1, 0),\n            };\n        },\n    },\n\n})(DynamicCounters);\n\n\nexport default DynamicCounters;\n","MultipleCounters.js":"import React from \"react\";\n\nimport Counter from \"./Counter\";\n\nvar MultipleCounters = () => (\n    <div>\n        <div>\n            <Counter scope=\"multicounter1\" />\n        </div>\n        <div>\n            <Counter scope=\"multicounter2\" />\n        </div>\n    </div>\n);\n\nexport default MultipleCounters;\n","MultipleNamedCounters.js":"import React from \"react\";\n\nimport NamedCounters from \"./NamedCounters\";\n\nvar MultipleNamedCounters = () => (\n    <div>\n        <h3>First</h3>\n        <div>\n            <NamedCounters scope=\"multipleNamedCounters\" />\n        </div>\n        <h3>Second</h3>\n        <p>\n          We can deeply scope this too.\n        </p>\n        <div>\n            <NamedCounters scope={[\"multi\", \"deep\", \"example\"]} />\n        </div>\n    </div>\n);\n\nexport default MultipleNamedCounters;\n","NamedCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {omit, pick} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\n\nvar NamedCounter = ({scope, name, handleXClick}) => (\n    <div>\n        {name} <Counter scope={scope} /> <button onClick={handleXClick}>x</button>\n    </div>\n);\nNamedCounter = connectLean({\n    // name and id are the scoped part of the state. Pick those up.\n    mapState: pick([\"name\", \"id\"]),\n    handlers: {\n        handleXClick(e, _1, _2, props) {\n            e.preventDefault();\n            props.onRemove(props.id);\n        },\n    },\n})(NamedCounter);\n\nvar NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCounter, scope}) => (\n    <div>\n        <input onChange={handleNameChange} value={newName} />\n        <button onClick={addCounter} disabled={!newName}>add</button>\n        {Object.keys(counters).sort().map(counterId => (\n            <NamedCounter key={counterId} scope={[scope, \"counters\", counterId]} onRemove={removeCounter} />\n        ))}\n    </div>\n);\nNamedCounters = connectLean({\n    scope: \"namedCounters\",\n    defaultProps: {\n        nextCounterId: 1,\n        newName: \"\",\n        counters: {},\n    },\n    handlers: {\n        handleNameChange(e) {\n            e.preventDefault();\n            return {newName: e.target.value};\n        },\n        addCounter(e, _1, _2, props) {\n            e.preventDefault();\n\n            return {\n                newName: \"\",\n                nextCounterId: i => i + 1,\n                counters: {\n                    [props.nextCounterId]: {\n                        id:  props.nextCounterId,\n                        name: props.newName,\n                    },\n                },\n            };\n        },\n        removeCounter(counterId) {\n            // Lean Redux works beautifully with curried functions. Such as\n            // lodash/fp or Ramda. Without currying this would look like this:\n            //     {counters: counters => omit(counterId, counters)}\n            return {counters: omit(counterId)};\n        },\n    },\n\n})(NamedCounters);\n\n\nexport default NamedCounters;\n","index.js":"// eslint-disable-next-line\nwindow.SOURCE = SOURCE;\nvar SOURCE = window.SOURCE;\n\nimport React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport {createStore, applyMiddleware} from \"redux\";\nimport {Provider} from \"react-redux\";\nimport createLogger from \"redux-logger\";\n\nimport leanReducer from \"../src/lean\";\n\n\nimport Counter from \"./Counter\";\nimport MultipleCounters from \"./MultipleCounters\";\nimport DynamicCounters from \"./DynamicCounters\";\nimport NamedCounters from \"./NamedCounters\";\nimport MultipleNamedCounters from \"./MultipleNamedCounters\";\nimport Async from \"./Async\";\nimport AsyncAdvanced from \"./AsyncAdvanced\";\n\n\nconst store = createStore(leanReducer, applyMiddleware(createLogger()));\n\nconst Example = ({source, children}) => (\n    <div className=\"example\">\n        <div className=\"demo\">\n            {children}\n        </div>\n        <pre>\n            <code className=\"javascript\">\n                {(SOURCE[source] || \"\").trim()}\n            </code>\n        </pre>\n    </div>\n);\n\nvar Main = () => (\n    <Provider store={store}>\n        <div>\n            <h2>Simple counter</h2>\n            <Example source=\"Counter.js\" >\n                <Counter />\n            </Example>\n\n            <h2>Multiple Counters</h2>\n            <p>\n                Instead of defining the scope in the <em>connectLean</em> HOC\n                you can define it as a prop. Notice how we can reuse the\n                component from the previous example just by mounting it to a\n                antoher part of the state.\n            </p>\n            <Example source=\"MultipleCounters.js\" name=\"\">\n                <MultipleCounters />\n            </Example>\n\n            <h2>Dynamic Counters</h2>\n            <p>\n                The <em>scope</em> prop can be dynamic and even go deep into\n                the state using the array syntax. The path creation works like\n                in <a href=\"https://lodash.com/docs/4.16.4#set\">Lodash</a>.\n            </p>\n            <Example source=\"DynamicCounters.js\" >\n                <DynamicCounters />\n            </Example>\n\n            <h2>Named Counters</h2>\n            <p>\n                This is the standard TODO example (but with added counters!)\n                demonstrating advanced component scoping.\n            </p>\n            <Example source=\"NamedCounters.js\" >\n                <NamedCounters />\n            </Example>\n\n            <h2>Multiple Named Counters</h2>\n            <p>\n                Just to reiterate. Scoping works for complex components too.\n            </p>\n            <Example source=\"MultipleNamedCounters.js\" >\n                <MultipleNamedCounters />\n            </Example>\n\n            <h2>Async updates</h2>\n            <p>\n                Like redux-thunk.\n            </p>\n            <Example source=\"Async.js\" >\n                <Async />\n            </Example>\n            <h2>Advanced Async</h2>\n            <p>\n                Use constructor pattern to handle component specific async state.\n            </p>\n            <Example source=\"AsyncAdvanced.js\" >\n                <AsyncAdvanced />\n            </Example>\n        </div>\n    </Provider>\n);\n\n\nReactDOM.render(<Main />, document.getElementById(\"app\"));\nwindow.hljs.initHighlightingOnLoad();\n","webpack.config.js":"var webpack = require(\"webpack\");\nvar fs = require(\"fs\");\n\nvar jsFiles = fs.readdirSync(__dirname).filter(n => n.endsWith(\".js\"));\nvar sourceFiles = {};\njsFiles.forEach(filename => {\n    sourceFiles[filename] = fs.readFileSync(filename).toString();\n});\n\n\n\n\nvar config = {\n    entry: \"./index.js\",\n    output: {\n        path: \"dist\",\n        filename: \"bundle.js\",\n        publicPath: \"/dist\",\n    },\n    // devtool: \"cheap-module-eval-source-map\", // faster\n    devtool: \"sourceMap\",\n    module: {\n        loaders: [\n            {\n                test: /\\.jsx?$/,\n                loader: \"babel\",\n                exclude: /node_modules/,\n            },\n\n        ],\n    },\n    plugins: [\n        new webpack.DefinePlugin({\n            \"SOURCE\": JSON.stringify(sourceFiles),\n            \"process.env.NODE_ENV\": JSON.stringify(\"development\"),\n        }),\n    ],\n};\n\n\nmodule.exports = config;\n"});
 	var SOURCE = window.SOURCE;
 	
 	var store = (0, _redux.createStore)(_lean2.default, (0, _redux.applyMiddleware)((0, _reduxLogger2.default)()));
@@ -166,7 +174,13 @@
 	            _react2.default.createElement(
 	                "p",
 	                null,
-	                "The prop can be dynamic and even go deeper into the state using the array syntax. The path creation works like in ",
+	                "The ",
+	                _react2.default.createElement(
+	                    "em",
+	                    null,
+	                    "scope"
+	                ),
+	                " prop can be dynamic and even go deep into the state using the array syntax. The path creation works like in ",
 	                _react2.default.createElement(
 	                    "a",
 	                    { href: "https://lodash.com/docs/4.16.4#set" },
@@ -178,6 +192,36 @@
 	                Example,
 	                { source: "DynamicCounters.js" },
 	                _react2.default.createElement(_DynamicCounters2.default, null)
+	            ),
+	            _react2.default.createElement(
+	                "h2",
+	                null,
+	                "Named Counters"
+	            ),
+	            _react2.default.createElement(
+	                "p",
+	                null,
+	                "This is the standard TODO example (but with added counters!) demonstrating advanced component scoping."
+	            ),
+	            _react2.default.createElement(
+	                Example,
+	                { source: "NamedCounters.js" },
+	                _react2.default.createElement(_NamedCounters2.default, null)
+	            ),
+	            _react2.default.createElement(
+	                "h2",
+	                null,
+	                "Multiple Named Counters"
+	            ),
+	            _react2.default.createElement(
+	                "p",
+	                null,
+	                "Just to reiterate. Scoping works for complex components too."
+	            ),
+	            _react2.default.createElement(
+	                Example,
+	                { source: "MultipleNamedCounters.js" },
+	                _react2.default.createElement(_MultipleNamedCounters2.default, null)
 	            ),
 	            _react2.default.createElement(
 	                "h2",
@@ -25060,15 +25104,15 @@
 	
 	var _mapValues2 = _interopRequireDefault(_mapValues);
 	
-	var _isPlainObject = __webpack_require__(/*! lodash/fp/isPlainObject */ 419);
-	
-	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
-	
-	var _pick = __webpack_require__(/*! lodash/fp/pick */ 421);
+	var _pick = __webpack_require__(/*! lodash/fp/pick */ 419);
 	
 	var _pick2 = _interopRequireDefault(_pick);
 	
-	var _update3 = __webpack_require__(/*! updeep/dist/update */ 425);
+	var _flattenDeep = __webpack_require__(/*! lodash/fp/flattenDeep */ 423);
+	
+	var _flattenDeep2 = _interopRequireDefault(_flattenDeep);
+	
+	var _update3 = __webpack_require__(/*! updeep/dist/update */ 426);
 	
 	var _update4 = _interopRequireDefault(_update3);
 	
@@ -25093,10 +25137,6 @@
 	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : plain;
 	
 	    return (0, _reactRedux.connectAdvanced)(function (dispatch) {
-	        if (!(0, _isPlainObject2.default)(options.defaultProps)) {
-	            throw new Error("options.defaultProps is required");
-	        }
-	
 	        var withDefaults = function withDefaults(s) {
 	            return _extends({}, options.defaultProps, s);
 	        };
@@ -25108,12 +25148,16 @@
 	            return propsCache;
 	        };
 	
-	        var mapState = typeof options.mapState === "function" ? options.mapState : (0, _pick2.default)(Object.keys(options.defaultProps));
+	        var mapState = typeof options.mapState === "function" ? options.mapState : (0, _pick2.default)(Object.keys(options.defaultProps || plain));
 	
 	        var handlers = typeof options.handlers === "function" ? options.handlers(getProps) : options.handlers;
 	
 	        return function (fullState, ownProps) {
 	            var scope = ownProps.scope || options.scope;
+	            if (Array.isArray(scope)) {
+	                scope = (0, _flattenDeep2.default)(scope);
+	            }
+	
 	            var scopedState = fullState || plain;
 	
 	            if (scope) {
@@ -25127,6 +25171,9 @@
 	                (function () {
 	                    prevScope = scope;
 	                    var dispatchUpdate = function dispatchUpdate(updateName, update) {
+	                        if (!update) {
+	                            return;
+	                        }
 	
 	                        if (update && typeof update._thunk === "function") {
 	                            return update._thunk(dispatchUpdate.bind(null, updateName), getProps);
@@ -33827,13 +33874,13 @@
 
 /***/ },
 /* 419 */
-/*!***************************************!*\
-  !*** ../~/lodash/fp/isPlainObject.js ***!
-  \***************************************/
+/*!******************************!*\
+  !*** ../~/lodash/fp/pick.js ***!
+  \******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var convert = __webpack_require__(/*! ./convert */ 211),
-	    func = convert('isPlainObject', __webpack_require__(/*! ../isPlainObject */ 174), __webpack_require__(/*! ./_falseOptions */ 420));
+	    func = convert('pick', __webpack_require__(/*! ../pick */ 420));
 	
 	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
 	module.exports = func;
@@ -33841,43 +33888,13 @@
 
 /***/ },
 /* 420 */
-/*!***************************************!*\
-  !*** ../~/lodash/fp/_falseOptions.js ***!
-  \***************************************/
-/***/ function(module, exports) {
-
-	module.exports = {
-	  'cap': false,
-	  'curry': false,
-	  'fixed': false,
-	  'immutable': false,
-	  'rearg': false
-	};
-
-
-/***/ },
-/* 421 */
-/*!******************************!*\
-  !*** ../~/lodash/fp/pick.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var convert = __webpack_require__(/*! ./convert */ 211),
-	    func = convert('pick', __webpack_require__(/*! ../pick */ 422));
-	
-	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
-	module.exports = func;
-
-
-/***/ },
-/* 422 */
 /*!***************************!*\
   !*** ../~/lodash/pick.js ***!
   \***************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var arrayMap = __webpack_require__(/*! ./_arrayMap */ 389),
-	    basePick = __webpack_require__(/*! ./_basePick */ 423),
+	    basePick = __webpack_require__(/*! ./_basePick */ 421),
 	    flatRest = __webpack_require__(/*! ./_flatRest */ 399),
 	    toKey = __webpack_require__(/*! ./_toKey */ 391);
 	
@@ -33906,13 +33923,13 @@
 
 
 /***/ },
-/* 423 */
+/* 421 */
 /*!********************************!*\
   !*** ../~/lodash/_basePick.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var basePickBy = __webpack_require__(/*! ./_basePickBy */ 424);
+	var basePickBy = __webpack_require__(/*! ./_basePickBy */ 422);
 	
 	/**
 	 * The base implementation of `_.pick` without support for individual
@@ -33934,7 +33951,7 @@
 
 
 /***/ },
-/* 424 */
+/* 422 */
 /*!**********************************!*\
   !*** ../~/lodash/_basePickBy.js ***!
   \**********************************/
@@ -33971,7 +33988,71 @@
 
 
 /***/ },
+/* 423 */
+/*!*************************************!*\
+  !*** ../~/lodash/fp/flattenDeep.js ***!
+  \*************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var convert = __webpack_require__(/*! ./convert */ 211),
+	    func = convert('flattenDeep', __webpack_require__(/*! ../flattenDeep */ 424), __webpack_require__(/*! ./_falseOptions */ 425));
+	
+	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
+	module.exports = func;
+
+
+/***/ },
+/* 424 */
+/*!**********************************!*\
+  !*** ../~/lodash/flattenDeep.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseFlatten = __webpack_require__(/*! ./_baseFlatten */ 401);
+	
+	/** Used as references for various `Number` constants. */
+	var INFINITY = 1 / 0;
+	
+	/**
+	 * Recursively flattens `array`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 3.0.0
+	 * @category Array
+	 * @param {Array} array The array to flatten.
+	 * @returns {Array} Returns the new flattened array.
+	 * @example
+	 *
+	 * _.flattenDeep([1, [2, [3, [4]], 5]]);
+	 * // => [1, 2, 3, 4, 5]
+	 */
+	function flattenDeep(array) {
+	  var length = array ? array.length : 0;
+	  return length ? baseFlatten(array, INFINITY) : [];
+	}
+	
+	module.exports = flattenDeep;
+
+
+/***/ },
 /* 425 */
+/*!***************************************!*\
+  !*** ../~/lodash/fp/_falseOptions.js ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	module.exports = {
+	  'cap': false,
+	  'curry': false,
+	  'fixed': false,
+	  'immutable': false,
+	  'rearg': false
+	};
+
+
+/***/ },
+/* 426 */
 /*!**********************************!*\
   !*** ../~/updeep/dist/update.js ***!
   \**********************************/
@@ -33987,7 +34068,7 @@
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var _wrap = __webpack_require__(/*! ./wrap */ 426);
+	var _wrap = __webpack_require__(/*! ./wrap */ 427);
 	
 	var _wrap2 = _interopRequireDefault(_wrap);
 	
@@ -34085,7 +34166,7 @@
 	exports.default = (0, _wrap2.default)(update, 2);
 
 /***/ },
-/* 426 */
+/* 427 */
 /*!********************************!*\
   !*** ../~/updeep/dist/wrap.js ***!
   \********************************/
@@ -34098,11 +34179,11 @@
 	});
 	exports.default = wrap;
 	
-	var _curry = __webpack_require__(/*! ./util/curry */ 427);
+	var _curry = __webpack_require__(/*! ./util/curry */ 428);
 	
 	var _curry2 = _interopRequireDefault(_curry);
 	
-	var _freeze = __webpack_require__(/*! ./freeze */ 428);
+	var _freeze = __webpack_require__(/*! ./freeze */ 429);
 	
 	var _freeze2 = _interopRequireDefault(_freeze);
 	
@@ -34117,7 +34198,7 @@
 	}
 
 /***/ },
-/* 427 */
+/* 428 */
 /*!**************************************!*\
   !*** ../~/updeep/dist/util/curry.js ***!
   \**************************************/
@@ -34325,7 +34406,7 @@
 	}
 
 /***/ },
-/* 428 */
+/* 429 */
 /*!**********************************!*\
   !*** ../~/updeep/dist/freeze.js ***!
   \**********************************/
@@ -34397,7 +34478,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ../~/process/browser.js */ 29)))
 
 /***/ },
-/* 429 */
+/* 430 */
 /*!********************!*\
   !*** ./Counter.js ***!
   \********************/
@@ -34421,7 +34502,7 @@
 	    var count = _ref.count;
 	    var inc = _ref.inc;
 	    return _react2.default.createElement(
-	        "div",
+	        "span",
 	        null,
 	        count,
 	        " ",
@@ -34433,9 +34514,19 @@
 	    );
 	};
 	Counter = (0, _lean.connectLean)({
+	    // This scopes the counter under "singleCounter" key in the state. If this
+	    // is omitted the component uses the full state.
+	    scope: "singleCounter",
+	
+	    // By default only props defined in defaultProps are passed to the wrapped
+	    // component. If you want to add some other props from the state you can
+	    // define a mapState key with a function returning the desired state.
 	    defaultProps: {
 	        count: 0
 	    },
+	
+	    // Handlers are passed as props to the component. The return values update
+	    // the state. The updates respect the scope defined above.
 	    handlers: {
 	        // The props object is passed to the handlers as the last argument.
 	        inc: function inc(e, _skip1, _skip2, props) {
@@ -34448,7 +34539,7 @@
 	exports.default = Counter;
 
 /***/ },
-/* 430 */
+/* 431 */
 /*!*****************************!*\
   !*** ./MultipleCounters.js ***!
   \*****************************/
@@ -34464,7 +34555,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 429);
+	var _Counter = __webpack_require__(/*! ./Counter */ 430);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
@@ -34474,15 +34565,23 @@
 	    return _react2.default.createElement(
 	        "div",
 	        null,
-	        _react2.default.createElement(_Counter2.default, { scope: "multicounter1" }),
-	        _react2.default.createElement(_Counter2.default, { scope: "multicounter2" })
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_Counter2.default, { scope: "multicounter1" })
+	        ),
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_Counter2.default, { scope: "multicounter2" })
+	        )
 	    );
 	};
 	
 	exports.default = MultipleCounters;
 
 /***/ },
-/* 431 */
+/* 432 */
 /*!****************************!*\
   !*** ./DynamicCounters.js ***!
   \****************************/
@@ -34500,9 +34599,9 @@
 	
 	var _lean = __webpack_require__(/*! ../src/lean */ 209);
 	
-	var _fp = __webpack_require__(/*! lodash/fp */ 432);
+	var _fp = __webpack_require__(/*! lodash/fp */ 433);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 429);
+	var _Counter = __webpack_require__(/*! ./Counter */ 430);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
@@ -34527,7 +34626,11 @@
 	            "remove counter"
 	        ),
 	        (0, _fp.range)(0, counterCount).map(function (i) {
-	            return _react2.default.createElement(_Counter2.default, { key: i, scope: [scope, "counters", i] });
+	            return _react2.default.createElement(
+	                "div",
+	                { key: i },
+	                _react2.default.createElement(_Counter2.default, { scope: [scope, "counters", i] })
+	            );
 	        })
 	    );
 	};
@@ -34551,10 +34654,8 @@
 	            return {
 	                counterCount: function counterCount(i) {
 	                    return Math.max(i - 1, 0);
-	                },
-	                counters: function counters(a) {
-	                    return a.slice(0, -1);
-	                } };
+	                }
+	            };
 	        }
 	    }
 	
@@ -34563,18 +34664,18 @@
 	exports.default = DynamicCounters;
 
 /***/ },
-/* 432 */
+/* 433 */
 /*!*************************!*\
   !*** ../~/lodash/fp.js ***!
   \*************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(/*! ./lodash.min */ 433).runInContext();
+	var _ = __webpack_require__(/*! ./lodash.min */ 434).runInContext();
 	module.exports = __webpack_require__(/*! ./fp/_baseConvert */ 212)(_, _);
 
 
 /***/ },
-/* 433 */
+/* 434 */
 /*!*********************************!*\
   !*** ../~/lodash/lodash.min.js ***!
   \*********************************/
@@ -34717,7 +34818,181 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(/*! ./../webpack/buildin/module.js */ 291)(module)))
 
 /***/ },
-/* 434 */
+/* 435 */
+/*!**************************!*\
+  !*** ./NamedCounters.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	var _fp = __webpack_require__(/*! lodash/fp */ 433);
+	
+	var _Counter = __webpack_require__(/*! ./Counter */ 430);
+	
+	var _Counter2 = _interopRequireDefault(_Counter);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var NamedCounter = function NamedCounter(_ref) {
+	    var scope = _ref.scope;
+	    var name = _ref.name;
+	    var handleXClick = _ref.handleXClick;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        name,
+	        " ",
+	        _react2.default.createElement(_Counter2.default, { scope: scope }),
+	        " ",
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: handleXClick },
+	            "x"
+	        )
+	    );
+	};
+	NamedCounter = (0, _lean.connectLean)({
+	    // name and id are the scoped part of the state. Pick those up.
+	    mapState: (0, _fp.pick)(["name", "id"]),
+	    handlers: {
+	        handleXClick: function handleXClick(e, _1, _2, props) {
+	            e.preventDefault();
+	            props.onRemove(props.id);
+	        }
+	    }
+	})(NamedCounter);
+	
+	var NamedCounters = function NamedCounters(_ref2) {
+	    var counters = _ref2.counters;
+	    var handleNameChange = _ref2.handleNameChange;
+	    var newName = _ref2.newName;
+	    var addCounter = _ref2.addCounter;
+	    var removeCounter = _ref2.removeCounter;
+	    var scope = _ref2.scope;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement("input", { onChange: handleNameChange, value: newName }),
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: addCounter, disabled: !newName },
+	            "add"
+	        ),
+	        Object.keys(counters).sort().map(function (counterId) {
+	            return _react2.default.createElement(NamedCounter, { key: counterId, scope: [scope, "counters", counterId], onRemove: removeCounter });
+	        })
+	    );
+	};
+	NamedCounters = (0, _lean.connectLean)({
+	    scope: "namedCounters",
+	    defaultProps: {
+	        nextCounterId: 1,
+	        newName: "",
+	        counters: {}
+	    },
+	    handlers: {
+	        handleNameChange: function handleNameChange(e) {
+	            e.preventDefault();
+	            return { newName: e.target.value };
+	        },
+	        addCounter: function addCounter(e, _1, _2, props) {
+	            e.preventDefault();
+	
+	            return {
+	                newName: "",
+	                nextCounterId: function nextCounterId(i) {
+	                    return i + 1;
+	                },
+	                counters: _defineProperty({}, props.nextCounterId, {
+	                    id: props.nextCounterId,
+	                    name: props.newName
+	                })
+	            };
+	        },
+	        removeCounter: function removeCounter(counterId) {
+	            // Lean Redux works beautifully with curried functions. Such as
+	            // lodash/fp or Ramda. Without currying this would look like this:
+	            //     {counters: counters => omit(counterId, counters)}
+	            return { counters: (0, _fp.omit)(counterId) };
+	        }
+	    }
+	
+	})(NamedCounters);
+	
+	exports.default = NamedCounters;
+
+/***/ },
+/* 436 */
+/*!**********************************!*\
+  !*** ./MultipleNamedCounters.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 435);
+	
+	var _NamedCounters2 = _interopRequireDefault(_NamedCounters);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var MultipleNamedCounters = function MultipleNamedCounters() {
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(
+	            "h3",
+	            null,
+	            "First"
+	        ),
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_NamedCounters2.default, { scope: "multipleNamedCounters" })
+	        ),
+	        _react2.default.createElement(
+	            "h3",
+	            null,
+	            "Second"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "We can deeply scope this too."
+	        ),
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_NamedCounters2.default, { scope: ["multi", "deep", "example"] })
+	        )
+	    );
+	};
+	
+	exports.default = MultipleNamedCounters;
+
+/***/ },
+/* 437 */
 /*!******************!*\
   !*** ./Async.js ***!
   \******************/
@@ -34794,7 +35069,7 @@
 	exports.default = Async;
 
 /***/ },
-/* 435 */
+/* 438 */
 /*!**************************!*\
   !*** ./AsyncAdvanced.js ***!
   \**************************/
