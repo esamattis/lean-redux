@@ -87,7 +87,7 @@ test.skip("do not execute mapState on ownProps changes if mapState does not use 
     });
 
 
-    const component = render(store, Parent);
+    render(store, Parent);
 
     setState({parentProp: "parentValue2"});
 
