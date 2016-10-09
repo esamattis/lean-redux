@@ -72,7 +72,7 @@ the `composeReducers` helper:
 ```js
 import {leanReducer, composeReducers} from "lean-redux";
 
-const store = createStore(composeReducers(myReducer, myAnotherReduer, leanReducer));
+const store = createStore(composeReducers(myReducer, myAnotherReducer, leanReducer));
 
 ```
 
