@@ -1,14 +1,18 @@
 {
   "name": "lean-redux",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "mkdir -p lib && babel src --ignore __test__ --out-dir lib",
+    "prepublish": "npm run build"
   },
+  "files": ["lib"],
   "author": "Esa-Matti Suurone",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.16.0",
     "babel-jest": "^16.0.0",
     "babel-loader": "^6.2.5",
     "babel-plugin-syntax-object-rest-spread": "^6.13.0",
