@@ -52,6 +52,9 @@ export function connectLean(options=plain) {
             if (prevScope !== scope) {
                 prevScope = scope;
                 const dispatchUpdate = (updateName, update) => {
+                    if (!update) {
+                        return;
+                    }
 
                     if (update && typeof update._thunk === "function") {
                         return update._thunk(dispatchUpdate.bind(null, updateName), getProps);
