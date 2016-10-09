@@ -26,6 +26,28 @@ test("can map state", () => {
     expect(component.toJSON()).toMatchSnapshot();
     store.dispatch(update({name: "updated"}));
     expect(component.toJSON()).toMatchSnapshot();
+});
 
+test("map state can access ownProps", () => {
+    const store = createStore(leanReducer);
+
+    const My = ({name}) => {
+        return <div>Hello {name}</div>;
+    };
+
+    const spy = jest.fn();
+
+    const Connected = connectLean({
+        defaultProps: {
+            name: "default",
+        },
+        mapState(state, ownProps) {
+            spy(ownProps.parentProp);
+            return {name: state.name.toUpperCase()};
+        },
+    })(My);
+
+    render(store, () => <Connected parentProp="parentValue" />);
+    expect(spy).toHaveBeenCalledWith("parentValue");
 
 });

@@ -78,7 +78,7 @@ export function connectLean(options=plain) {
                 scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
             }
 
-            scopedState =  mapState(withDefaults(scopedState));
+            scopedState =  mapState(withDefaults(scopedState), ownProps);
 
             // Regenerate handlers only when the scope changes
             if (prevScope !== scope) {
