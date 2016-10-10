@@ -1,0 +1,17 @@
+exports[`test parent prop does not override state values 1`] = `
+<div>
+  <div>
+    Hello 
+    mapValue
+  </div>
+</div>
+`;
+
+exports[`test parent prop does not override state values 2`] = `
+<div>
+  <div>
+    Hello 
+    mapValue
+  </div>
+</div>
+`;
