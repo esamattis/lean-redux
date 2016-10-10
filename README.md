@@ -6,10 +6,10 @@
 ## Design goals
 
 - Simple things should be simple
-  - No need to manually define action types, reducers or even actions creators.
-  Just create event handlers which directly manipulate the Redux state scoped
-  to them.
-- Components should be mountable to other parts of the state easily like in Elm
+  - Basic Redux state access and updating should be simple as it is with component local state
+  - No need to manually define action types, reducers or even actions creators
+- Redux state can be scoped to the components
+  - Component cannot interfere with parts of the state that do not belong to it
 - Play well with other tools in the Redux community
   - Time travel debuggers, Redux Form etc. work well with Lean Redux
   - You should be able to drop this into your existing project and start using it only for parts of the app
