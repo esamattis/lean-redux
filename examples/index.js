@@ -122,11 +122,11 @@ var Main = ({gifsVisible, showGifs}) => (
         </p>
         <p>
             The gif examples will fire some actions on mount so they are not
-            mounted initially to make things simpler for newcomers
+            mounted initially make things cleaner.
 
         </p>
         <p>
-            <a href="#" onClick={showGifs}>Click here the load them</a>.
+            <a href="#" onClick={showGifs}>Click here the mount them</a>.
         </p>
         <p>
             These gif examples do not use cover any new concepts anymore.
