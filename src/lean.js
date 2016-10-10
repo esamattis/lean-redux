@@ -4,6 +4,8 @@ import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
 import pick from "lodash/fp/pick";
 import flattenDeep from "lodash/fp/flattenDeep";
+import isEqual from "lodash/fp/isEqual";
+import isEmpty from "lodash/fp/isEmpty";
 import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
 
@@ -60,7 +62,7 @@ export function connectLean(options=plain) {
 
         var boundHandlersCache = null;
         var propsCache = null;
-        var prevScope = {}; // Just some object with unique identity
+        var prevScope = {}; // Just something which is never equal with real scopes
         const getProps = () => propsCache;
 
         var mapState = typeof options.mapState === "function"
@@ -79,7 +81,7 @@ export function connectLean(options=plain) {
 
             var scopedState = fullState || plain;
 
-            if (scope) {
+            if (!isEmpty(scope)) {
                 scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
             }
 
@@ -98,7 +100,7 @@ export function connectLean(options=plain) {
 
 
             // Regenerate handlers only when the scope changes
-            if (prevScope !== scope) {
+            if (!isEqual(prevScope, scope)) {
                 prevScope = scope;
                 const dispatchUpdate = (updateName, update) => {
                     if (!update) {
@@ -143,7 +145,7 @@ export function leanReducer(state, action) {
     }
     let {scope, update, initialState} = action;
 
-    if (scope) {
+    if (!isEmpty(scope)) {
         return updateIn(
             disableLodashPath(scope),
             s => updateObject(update, {...initialState, ...s}),
