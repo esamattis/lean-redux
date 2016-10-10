@@ -31,6 +31,7 @@ var Counter = ({count, inc}) => (
     </div>
 );
 Counter = connectLean({
+    scope: "counter", // key in the redux state
     getInitialState() {
         return {count: 0};
     },
