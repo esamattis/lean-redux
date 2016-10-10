@@ -4,7 +4,7 @@ var SOURCE = window.SOURCE;
 
 import React from "react";
 import ReactDOM from "react-dom";
-import {createStore, applyMiddleware} from "redux";
+import {createStore, applyMiddleware, compose} from "redux";
 import {Provider} from "react-redux";
 import createLogger from "redux-logger";
 
@@ -20,7 +20,12 @@ import Async from "./Async";
 import AsyncAdvanced from "./AsyncAdvanced";
 
 
-const store = createStore(leanReducer, applyMiddleware(createLogger()));
+var enhancers = [
+    applyMiddleware(createLogger()),
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+].filter(Boolean);
+
+const store = createStore(leanReducer, compose(...enhancers));
 
 const Example = ({source, children}) => (
     <div className="example">
