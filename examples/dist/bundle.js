@@ -67,45 +67,65 @@
 	
 	var _lean = __webpack_require__(/*! ../src/lean */ 209);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 430);
+	var _Counter = __webpack_require__(/*! ./Counter */ 434);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
-	var _MultipleCounters = __webpack_require__(/*! ./MultipleCounters */ 431);
+	var _MultipleCounters = __webpack_require__(/*! ./MultipleCounters */ 435);
 	
 	var _MultipleCounters2 = _interopRequireDefault(_MultipleCounters);
 	
-	var _DynamicCounters = __webpack_require__(/*! ./DynamicCounters */ 432);
+	var _DynamicCounters = __webpack_require__(/*! ./DynamicCounters */ 436);
 	
 	var _DynamicCounters2 = _interopRequireDefault(_DynamicCounters);
 	
-	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 435);
+	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 439);
 	
 	var _NamedCounters2 = _interopRequireDefault(_NamedCounters);
 	
-	var _MultipleNamedCounters = __webpack_require__(/*! ./MultipleNamedCounters */ 436);
+	var _MultipleNamedCounters = __webpack_require__(/*! ./MultipleNamedCounters */ 440);
 	
 	var _MultipleNamedCounters2 = _interopRequireDefault(_MultipleNamedCounters);
 	
-	var _Async = __webpack_require__(/*! ./Async */ 437);
+	var _Async = __webpack_require__(/*! ./Async */ 441);
 	
 	var _Async2 = _interopRequireDefault(_Async);
 	
-	var _AsyncAdvanced = __webpack_require__(/*! ./AsyncAdvanced */ 438);
+	var _AsyncAdvanced = __webpack_require__(/*! ./AsyncAdvanced */ 442);
 	
 	var _AsyncAdvanced2 = _interopRequireDefault(_AsyncAdvanced);
+	
+	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	
+	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	
+	var _RandomGifPair = __webpack_require__(/*! ./RandomGifPair */ 444);
+	
+	var _RandomGifPair2 = _interopRequireDefault(_RandomGifPair);
+	
+	var _RandomGifList = __webpack_require__(/*! ./RandomGifList */ 445);
+	
+	var _RandomGifList2 = _interopRequireDefault(_RandomGifList);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	// eslint-disable-next-line
-	window.SOURCE = ({"Async.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nvar Async = ({fetchAsync, data, status}) => (\n    <div>\n        <p>status: {status}</p>\n        <p>data: {data}</p>\n        <button onClick={fetchAsync}>fetch</button>\n    </div>\n);\nAsync = connectLean({\n    scope: \"async\",\n    defaultProps: {\n        status: \"waiting\",\n        data: \"nodata\",\n    },\n    handlers: {\n        setData(data) {\n            return {data};\n        },\n        fetchAsync(e) {\n            e.preventDefault();\n\n            // Like redux-thunk. You can send multiple updates over time using\n            // the update function. If you need to get the updated version of\n            // the component props you can use the getProps function\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n                setTimeout(() => {\n                    update({status: \"done\"});\n                    getProps().setData(\"async fetched data!\");\n                }, 2000);\n            });\n        },\n    },\n\n})(Async);\n\n\nexport default Async;\n","AsyncAdvanced.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass AsyncAdvanced extends React.Component {\n    componentWillUnmount() {\n        // Cancel request on unmount\n        this.props.cancel();\n    }\n    render() {\n        const {fetchAsync, data, status, cancel} = this.props;\n        return (\n            <div>\n                <p>status: {status}</p>\n                <p>data: {data}</p>\n                <button onClick={fetchAsync}>fetch</button>\n                <button onClick={cancel}>cancel</button>\n            </div>\n        );\n    }\n}\n\nAsyncAdvanced = connectLean({\n    scope: \"asyncAdvanced\",\n    defaultProps: {\n        status: \"waiting\",\n        data: \"nodata\",\n    },\n    handlers() {\n        // If handlers is a function it will excuted once for each component\n        // instance. You may keep some component specific data here which is\n        // not ok for redux state. Such as xhr-objects, promises etc.\n        var timer = null;\n\n        return {\n            setData(data) {\n                return {data};\n            },\n            cancel(e) {\n                e.preventDefault();\n                clearTimeout(timer);\n                return {status: \"canceled\"};\n            },\n            fetchAsync(e) {\n                e.preventDefault();\n                return thunk((update, getProps) => {\n                    update({status: \"fetching\"});\n                    timer = setTimeout(() => {\n                        update({status: \"done\"});\n                        getProps().setData(\"async fetched data!\");\n                    }, 3000);\n                });\n            },\n        };\n    },\n\n})(AsyncAdvanced);\n\n\nexport default AsyncAdvanced;\n","Counter.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nvar Counter = ({count, inc}) => (\n    <span>\n        {count} <button onClick={inc}>inc</button>\n    </span>\n);\nCounter = connectLean({\n    // This scopes the counter under \"singleCounter\" key in the state. If this\n    // is omitted the component uses the full state.\n    scope: \"singleCounter\",\n\n    // By default only props defined in defaultProps are passed to the wrapped\n    // component. If you want to add some other props from the state you can\n    // define a mapState key with a function returning the desired state.\n    defaultProps: {\n        count: 0,\n    },\n\n    // Handlers are passed as props to the component. The return values update\n    // the state. The updates respect the scope defined above.\n    handlers: {\n        // The props object is passed to the handlers as the last argument.\n        inc(e, _skip1, _skip2, props) {\n            e.preventDefault();\n            return {count: props.count + 1};\n        },\n    },\n})(Counter);\n\n\nexport default Counter;\n","DynamicCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {range} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (\n    <div>\n        <button onClick={addCounter} >add counter</button>\n        <button onClick={removeCounter} >remove counter</button>\n        {range(0, counterCount).map(i => (\n            <div key={i} >\n                <Counter scope={[scope, \"counters\", i]} />\n            </div>\n        ))}\n    </div>\n);\nDynamicCounters = connectLean({\n    scope: \"dynamicCounters\",\n    defaultProps: {\n        counterCount: 1,\n    },\n    handlers: {\n        addCounter(e) {\n            e.preventDefault();\n            // Instead of accessing the props from the arguments you can also\n            // return an object of functions to get the previus value in the\n            // key.\n            return {counterCount: i => i + 1};\n        },\n        removeCounter(e) {\n            e.preventDefault();\n            return {\n                counterCount: i => Math.max(i - 1, 0),\n            };\n        },\n    },\n\n})(DynamicCounters);\n\n\nexport default DynamicCounters;\n","MultipleCounters.js":"import React from \"react\";\n\nimport Counter from \"./Counter\";\n\nvar MultipleCounters = () => (\n    <div>\n        <div>\n            <Counter scope=\"multicounter1\" />\n        </div>\n        <div>\n            <Counter scope=\"multicounter2\" />\n        </div>\n    </div>\n);\n\nexport default MultipleCounters;\n","MultipleNamedCounters.js":"import React from \"react\";\n\nimport NamedCounters from \"./NamedCounters\";\n\nvar MultipleNamedCounters = () => (\n    <div>\n        <h3>First</h3>\n        <div>\n            <NamedCounters scope=\"multipleNamedCounters\" />\n        </div>\n        <h3>Second</h3>\n        <p>\n          We can deeply scope this too.\n        </p>\n        <div>\n            <NamedCounters scope={[\"multi\", \"deep\", \"example\"]} />\n        </div>\n    </div>\n);\n\nexport default MultipleNamedCounters;\n","NamedCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {omit, pick} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\n\nvar NamedCounter = ({scope, name, handleXClick}) => (\n    <div>\n        {name} <Counter scope={scope} /> <button onClick={handleXClick}>x</button>\n    </div>\n);\nNamedCounter = connectLean({\n    // name and id are the scoped part of the state. Pick those up.\n    mapState: pick([\"name\", \"id\"]),\n    handlers: {\n        handleXClick(e, _1, _2, props) {\n            e.preventDefault();\n            props.onRemove(props.id);\n        },\n    },\n})(NamedCounter);\n\nvar NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCounter, scope}) => (\n    <div>\n        <input onChange={handleNameChange} value={newName} />\n        <button onClick={addCounter} disabled={!newName}>add</button>\n        {Object.keys(counters).sort().map(counterId => (\n            <NamedCounter key={counterId} scope={[scope, \"counters\", counterId]} onRemove={removeCounter} />\n        ))}\n    </div>\n);\nNamedCounters = connectLean({\n    scope: \"namedCounters\",\n    defaultProps: {\n        nextCounterId: 1,\n        newName: \"\",\n        counters: {},\n    },\n    handlers: {\n        handleNameChange(e) {\n            e.preventDefault();\n            return {newName: e.target.value};\n        },\n        addCounter(e, _1, _2, props) {\n            e.preventDefault();\n\n            return {\n                newName: \"\",\n                nextCounterId: i => i + 1,\n                counters: {\n                    [props.nextCounterId]: {\n                        id:  props.nextCounterId,\n                        name: props.newName,\n                    },\n                },\n            };\n        },\n        removeCounter(counterId) {\n            // Lean Redux works beautifully with curried functions. Such as\n            // lodash/fp or Ramda. Without currying this would look like this:\n            //     {counters: counters => omit(counterId, counters)}\n            return {counters: omit(counterId)};\n        },\n    },\n\n})(NamedCounters);\n\n\nexport default NamedCounters;\n","index.js":"// eslint-disable-next-line\nwindow.SOURCE = SOURCE;\nvar SOURCE = window.SOURCE;\n\nimport React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport {createStore, applyMiddleware, compose} from \"redux\";\nimport {Provider} from \"react-redux\";\nimport createLogger from \"redux-logger\";\n\nimport {leanReducer} from \"../src/lean\";\n\n\nimport Counter from \"./Counter\";\nimport MultipleCounters from \"./MultipleCounters\";\nimport DynamicCounters from \"./DynamicCounters\";\nimport NamedCounters from \"./NamedCounters\";\nimport MultipleNamedCounters from \"./MultipleNamedCounters\";\nimport Async from \"./Async\";\nimport AsyncAdvanced from \"./AsyncAdvanced\";\n\n\nvar enhancers = [\n    applyMiddleware(createLogger()),\n    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),\n].filter(Boolean);\n\nconst store = createStore(leanReducer, compose(...enhancers));\n\nconst Example = ({source, children}) => (\n    <div className=\"example\">\n        <div className=\"demo\">\n            {children}\n        </div>\n        <div className=\"source\">\n            <pre>\n                <code className=\"javascript\">\n                    {(SOURCE[source] || \"\").trim()}\n                </code>\n            </pre>\n            <div>\n                <a href={\"https://github.com/epeli/lean-redux/blob/master/examples/\" + source}>github</a>\n            </div>\n        </div>\n    </div>\n);\n\nvar Main = () => (\n    <Provider store={store}>\n        <div>\n            <h2>Simple counter</h2>\n            <Example source=\"Counter.js\" >\n                <Counter />\n            </Example>\n\n            <h2>Multiple Counters</h2>\n            <p>\n                Instead of defining the scope in the <em>connectLean</em> HOC\n                you can define it as a prop. Notice how we can reuse the\n                component from the previous example just by mounting it to a\n                antoher part of the state using the <em>scope</em> prop.\n            </p>\n            <Example source=\"MultipleCounters.js\" name=\"\">\n                <MultipleCounters />\n            </Example>\n\n            <h2>Dynamic Counters</h2>\n            <p>\n                The <em>scope</em> prop can be dynamic and even go deep into\n                the state using the array syntax. The path creation works like\n                in <a href=\"https://lodash.com/docs/4.16.4#set\">Lodash</a>.\n            </p>\n            <Example source=\"DynamicCounters.js\" >\n                <DynamicCounters />\n            </Example>\n\n            <h2>Named Counters</h2>\n            <p>\n                This is the standard TODO example (but with added counters!)\n                demonstrating advanced component scoping.\n            </p>\n            <Example source=\"NamedCounters.js\" >\n                <NamedCounters />\n            </Example>\n\n            <h2>Multiple Named Counters</h2>\n            <p>\n                Just to reiterate. Scoping works for complex components too.\n            </p>\n            <Example source=\"MultipleNamedCounters.js\" >\n                <MultipleNamedCounters />\n            </Example>\n\n            <h2>Async updates</h2>\n            <p>\n                Like redux-thunk.\n            </p>\n            <Example source=\"Async.js\" >\n                <Async />\n            </Example>\n            <h2>Advanced Async</h2>\n            <p>\n                Use constructor pattern to handle component specific async state.\n            </p>\n            <Example source=\"AsyncAdvanced.js\" >\n                <AsyncAdvanced />\n            </Example>\n        </div>\n    </Provider>\n);\n\n\nReactDOM.render(<Main />, document.getElementById(\"app\"));\nwindow.hljs.initHighlightingOnLoad();\n","webpack.config.js":"var webpack = require(\"webpack\");\nvar fs = require(\"fs\");\n\nvar jsFiles = fs.readdirSync(__dirname).filter(n => n.endsWith(\".js\"));\nvar sourceFiles = {};\njsFiles.forEach(filename => {\n    sourceFiles[filename] = fs.readFileSync(filename).toString();\n});\n\n\n\n\nvar config = {\n    entry: \"./index.js\",\n    output: {\n        path: \"dist\",\n        filename: \"bundle.js\",\n        publicPath: \"/dist\",\n    },\n    // devtool: \"cheap-module-eval-source-map\", // faster\n    devtool: \"sourceMap\",\n    module: {\n        loaders: [\n            {\n                test: /\\.jsx?$/,\n                loader: \"babel\",\n                exclude: /node_modules/,\n            },\n\n        ],\n    },\n    plugins: [\n        new webpack.DefinePlugin({\n            \"SOURCE\": JSON.stringify(sourceFiles),\n            \"process.env.NODE_ENV\": JSON.stringify(\"development\"),\n        }),\n    ],\n};\n\n\nmodule.exports = config;\n"});
+	window.SOURCE = ({"Async.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nvar Async = ({fetchAsync, data, status}) => (\n    <div>\n        <p>status: {status}</p>\n        <p>data: {data}</p>\n        <button onClick={fetchAsync}>fetch</button>\n    </div>\n);\nAsync = connectLean({\n    scope: \"async\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            data: \"nodata\",\n        };\n    },\n    handlers: {\n        setData(data) {\n            return {data};\n        },\n        fetchAsync(e) {\n            e.preventDefault();\n\n            // Like redux-thunk. You can send multiple updates over time using\n            // the update function. If you need to get the updated version of\n            // the component props you can use the getProps function\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n                setTimeout(() => {\n                    update({status: \"done\"});\n                    getProps().setData(\"async fetched data!\");\n                }, 2000);\n            });\n        },\n    },\n\n})(Async);\n\n\nexport default Async;\n","AsyncAdvanced.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass AsyncAdvanced extends React.Component {\n    componentWillUnmount() {\n        // Cancel request on unmount\n        this.props.cancel();\n    }\n    render() {\n        const {fetchAsync, data, status, cancel} = this.props;\n        return (\n            <div>\n                <p>status: {status}</p>\n                <p>data: {data}</p>\n                <button onClick={fetchAsync}>fetch</button>\n                <button onClick={cancel}>cancel</button>\n            </div>\n        );\n    }\n}\n\nAsyncAdvanced = connectLean({\n    scope: \"asyncAdvanced\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            data: \"nodata\",\n        };\n    },\n    handlers() {\n        // If handlers is a function it will excuted once for each component\n        // instance. You may keep some component specific data here which is\n        // not ok for redux state. Such as xhr-objects, promises etc.\n        var timer = null;\n\n        return {\n            setData(data) {\n                return {data};\n            },\n            cancel(e) {\n                e.preventDefault();\n                clearTimeout(timer);\n                return {status: \"canceled\"};\n            },\n            fetchAsync(e) {\n                e.preventDefault();\n                return thunk((update, getProps) => {\n                    update({status: \"fetching\"});\n                    timer = setTimeout(() => {\n                        update({status: \"done\"});\n                        getProps().setData(\"async fetched data!\");\n                    }, 3000);\n                });\n            },\n        };\n    },\n\n})(AsyncAdvanced);\n\n\nexport default AsyncAdvanced;\n","Counter.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nvar Counter = ({count, inc}) => (\n    <span>\n        {count} <button onClick={inc}>inc</button>\n    </span>\n);\nCounter = connectLean({\n    // This scopes the counter under \"singleCounter\" key in the state. If this\n    // is omitted the component uses the full state.\n    scope: \"singleCounter\",\n\n    // By default only props defined in getInitialState() are passed to the\n    // wrapped component. If you want to add some other props from the state\n    // you can define a mapState key with a function returning the desired\n    // state.\n    getInitialState() {\n        return {count: 0};\n    },\n\n    // Handlers are passed as props to the component. The return values update\n    // the state. The updates respect the scope defined above.\n    handlers: {\n        // The props object is passed to the handlers as the last argument.\n        inc(e, _skip1, _skip2, props) {\n            e.preventDefault();\n            return {count: props.count + 1};\n        },\n    },\n})(Counter);\n\n\nexport default Counter;\n","DynamicCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {range} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (\n    <div>\n        <button onClick={addCounter} >add counter</button>\n        <button onClick={removeCounter} >remove counter</button>\n        {range(0, counterCount).map(i => (\n            <div key={i} >\n                <Counter scope={[scope, \"counters\", i]} />\n            </div>\n        ))}\n    </div>\n);\nDynamicCounters = connectLean({\n    scope: \"dynamicCounters\",\n    getInitialState() {\n        return {counterCount: 1};\n    },\n    handlers: {\n        addCounter(e) {\n            e.preventDefault();\n            // Instead of accessing the props from the arguments you can also\n            // return an object of functions to get the previus value in the\n            // key.\n            return {counterCount: i => i + 1};\n        },\n        removeCounter(e) {\n            e.preventDefault();\n            return {\n                counterCount: i => Math.max(i - 1, 0),\n            };\n        },\n    },\n\n})(DynamicCounters);\n\n\nexport default DynamicCounters;\n","MultipleCounters.js":"import React from \"react\";\n\nimport Counter from \"./Counter\";\n\nvar MultipleCounters = () => (\n    <div>\n        <div>\n            <Counter scope=\"multicounter1\" />\n        </div>\n        <div>\n            <Counter scope=\"multicounter2\" />\n        </div>\n    </div>\n);\n\nexport default MultipleCounters;\n","MultipleNamedCounters.js":"import React from \"react\";\n\nimport NamedCounters from \"./NamedCounters\";\n\nvar MultipleNamedCounters = () => (\n    <div>\n        <h3>First</h3>\n        <div>\n            <NamedCounters scope=\"multipleNamedCounters\" />\n        </div>\n        <h3>Second</h3>\n        <p>\n          We can deeply scope this too.\n        </p>\n        <div>\n            <NamedCounters scope={[\"multi\", \"deep\", \"example\"]} />\n        </div>\n    </div>\n);\n\nexport default MultipleNamedCounters;\n","NamedCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {omit, pick} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\n\nvar NamedCounter = ({scope, name, handleXClick}) => (\n    <div>\n        {name} <Counter scope={scope} /> <button onClick={handleXClick}>x</button>\n    </div>\n);\nNamedCounter = connectLean({\n    // name and id are the scoped part of the state. Pick those up.\n    mapState: pick([\"name\", \"id\"]),\n    handlers: {\n        handleXClick(e, _1, _2, props) {\n            e.preventDefault();\n            props.onRemove(props.id);\n        },\n    },\n})(NamedCounter);\n\nvar NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCounter, scope}) => (\n    <div>\n        <input onChange={handleNameChange} value={newName} />\n        <button onClick={addCounter} disabled={!newName}>add</button>\n        {Object.keys(counters).sort().map(counterId => (\n            <NamedCounter key={counterId} scope={[scope, \"counters\", counterId]} onRemove={removeCounter} />\n        ))}\n    </div>\n);\nNamedCounters = connectLean({\n    scope: \"namedCounters\",\n    getInitialState() {\n        return {\n            nextCounterId: 1,\n            newName: \"\",\n            counters: {},\n        };\n    },\n    handlers: {\n        handleNameChange(e) {\n            e.preventDefault();\n            return {newName: e.target.value};\n        },\n        addCounter(e, _1, _2, props) {\n            e.preventDefault();\n\n            return {\n                newName: \"\",\n                nextCounterId: i => i + 1,\n                counters: {\n                    [props.nextCounterId]: {\n                        id:  props.nextCounterId,\n                        name: props.newName,\n                    },\n                },\n            };\n        },\n        removeCounter(counterId) {\n            // Lean Redux works beautifully with curried functions. Such as\n            // lodash/fp or Ramda. Without currying this would look like this:\n            //     {counters: counters => omit(counterId, counters)}\n            return {counters: omit(counterId)};\n        },\n    },\n\n})(NamedCounters);\n\n\nexport default NamedCounters;\n","RandomGif.js":"import React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass RandomGif extends React.PureComponent {\n    componentDidMount() {\n        this.props.fetchGif();\n    }\n    render() {\n        const {tag, status, url, fetchGif} = this.props;\n        return (\n            <div>\n                <h4>{tag}</h4>\n                {(url && status !== \"fetching\") && <img src={url} />}\n                <br />\n                <button onClick={fetchGif} disabled={status === \"fetching\"}>\n                    {status === \"fetching\" ? \"loading...\" : \"Next!\"}\n                </button>\n            </div>\n        );\n    }\n}\nRandomGif = connectLean({\n    scope: \"singleRandomGif\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            url: null,\n        };\n    },\n    handlers: {\n        setUrl(url) {\n            return {url};\n        },\n        fetchGif() {\n\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n\n                fetch(\"https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=\" + getProps().tag)\n                .then(res => res.json())\n                .then(json => {\n                    update({\n                        status: \"ok\",\n                        url: json.data.fixed_height_small_url,\n                    });\n                });\n            });\n        },\n    },\n\n})(RandomGif);\n\n\nexport default RandomGif;\n","RandomGifList.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nimport RandomGif from \"./RandomGif\";\n\nconst RandomGifWithTag = connectLean({\n    mapState(state) {\n        return {tag: state.tag};\n    },\n})(RandomGif);\n\nvar RandomGifList = ({gifs, handleTagChange, newTag, addGif, scope}) => (\n    <div>\n        <input onChange={handleTagChange} value={newTag} />\n        <button onClick={addGif} disabled={!newTag}>add</button>\n        {Object.keys(gifs).sort().map(id => (\n            <RandomGifWithTag key={id} scope={[scope, \"gifs\", id]} />\n        ))}\n    </div>\n);\nRandomGifList = connectLean({\n    getInitialState() {\n        return {\n            nextId: 1,\n            newTag: \"ghost\",\n            gifs: {},\n        };\n    },\n    handlers: {\n        handleTagChange(e) {\n            e.preventDefault();\n            return {newTag: e.target.value};\n        },\n        addGif(e, _1, _2, props) {\n            e.preventDefault();\n\n            return {\n                newTag: \"\",\n                nextId: i => i + 1,\n                gifs: {\n                    [props.nextId]: {\n                        id:  props.nextId,\n                        tag: props.newTag,\n                    },\n                },\n            };\n        },\n    },\n\n})(RandomGifList);\n\n\nexport default RandomGifList;\n","RandomGifPair.js":"import React from \"react\";\n\nimport RandomGif from \"./RandomGif\";\n\nvar RandomGifPair = ({scope}) => (\n    <div>\n        <div>\n            <RandomGif scope={[scope, \"first\"]} tag=\"cats\" />\n        </div>\n        <div>\n            <RandomGif scope={[scope, \"second\"]} tag=\"cars\" />\n        </div>\n    </div>\n);\n\nexport default RandomGifPair;\n","index.js":"// eslint-disable-next-line\nwindow.SOURCE = SOURCE;\nvar SOURCE = window.SOURCE;\n\nimport React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport {createStore, applyMiddleware, compose} from \"redux\";\nimport {Provider} from \"react-redux\";\nimport createLogger from \"redux-logger\";\n\nimport {leanReducer, connectLean} from \"../src/lean\";\n\n\nimport Counter from \"./Counter\";\nimport MultipleCounters from \"./MultipleCounters\";\nimport DynamicCounters from \"./DynamicCounters\";\nimport NamedCounters from \"./NamedCounters\";\nimport MultipleNamedCounters from \"./MultipleNamedCounters\";\nimport Async from \"./Async\";\nimport AsyncAdvanced from \"./AsyncAdvanced\";\nimport RandomGif from \"./RandomGif\";\nimport RandomGifPair from \"./RandomGifPair\";\nimport RandomGifList from \"./RandomGifList\";\n\n\nvar enhancers = [\n    applyMiddleware(createLogger()),\n    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),\n].filter(Boolean);\n\nconst store = createStore(leanReducer, compose(...enhancers));\n\nconst GIF_SCOPE = \"gifStuff\";\n\nfunction highlight(sel) {\n    document.querySelectorAll(sel).forEach(function(block) {\n        window.hljs.highlightBlock(block);\n    });\n}\n\nconst Example = ({source, children}) => (\n    <div className=\"example\">\n        <div className=\"demo\">\n            {children}\n        </div>\n        <div className=\"source\">\n            <div>\n                <a href={\"https://github.com/epeli/lean-redux/blob/master/examples/\" + source}>{source}</a>\n            </div>\n            <pre>\n                <code className=\"javascript\">\n                    {(SOURCE[source] || \"\").trim()}\n                </code>\n            </pre>\n        </div>\n    </div>\n);\n\nvar Main = ({gifsVisible, showGifs}) => (\n    <div>\n        <h2>Simple counter</h2>\n        <Example source=\"Counter.js\" >\n            <Counter />\n        </Example>\n\n        <h2>Multiple Counters</h2>\n        <p>\n            Instead of defining the scope in the <em>connectLean</em> HOC\n            you can define it as a prop. Notice how we can reuse the\n            component from the previous example just by mounting it to a\n            antoher part of the state using the <em>scope</em> prop.\n        </p>\n        <Example source=\"MultipleCounters.js\" name=\"\">\n            <MultipleCounters />\n        </Example>\n\n        <h2>Dynamic Counters</h2>\n        <p>\n            The <em>scope</em> prop can be dynamic and even go deep into\n            the state using the array syntax. The path creation works like\n            in <a href=\"https://lodash.com/docs/4.16.4#set\">Lodash</a>.\n        </p>\n        <Example source=\"DynamicCounters.js\" >\n            <DynamicCounters />\n        </Example>\n\n        <h2>Named Counters</h2>\n        <p>\n            This is the standard TODO example (but with added counters!)\n            demonstrating advanced component scoping.\n        </p>\n        <Example source=\"NamedCounters.js\" >\n            <NamedCounters />\n        </Example>\n\n        <h2>Multiple Named Counters</h2>\n        <p>\n            Just to reiterate. Scoping works for complex components too.\n        </p>\n        <Example source=\"MultipleNamedCounters.js\" >\n            <MultipleNamedCounters />\n        </Example>\n\n        <h2>Async updates</h2>\n        <p>\n            Like redux-thunk.\n        </p>\n        <Example source=\"Async.js\" >\n            <Async />\n        </Example>\n        <h2>Advanced Async</h2>\n        <p>\n            Use constructor pattern to handle component specific async state.\n        </p>\n        <Example source=\"AsyncAdvanced.js\" >\n            <AsyncAdvanced />\n        </Example>\n\n        <h2>Random Gif</h2>\n        <p>\n            At last we'll solve the problem presented at <a href=\"https://github.com/slorber/scalable-frontend-with-elm-or-redux\">slorber/scalable-frontend-with-elm-or-redux</a>.\n        </p>\n        <p>\n            The gif examples will fire some actions on mount so they are not\n            mounted initially make things cleaner.\n\n        </p>\n        <p>\n            <a href=\"#\" onClick={showGifs}>Click here the mount them</a>.\n        </p>\n        <p>\n            These gif examples do not use cover any new concepts anymore.\n            They are just some more real worldish examples combining async\n            loading with scopes.\n        </p>\n        <p>\n            For fun we'll scope all of them under <em>gifStuff</em> key in the\n            Redux state. Checkout\n            the <a href=\"https://github.com/epeli/lean-redux/blob/master/examples/index.js\">examples/index.js</a> on\n            github to see how the scope is initialized for them.\n        </p>\n\n        {gifsVisible && <div className=\"gifs\">\n            <Example source=\"RandomGif.js\" >\n                <RandomGif tag=\"robots\" scope={[GIF_SCOPE, \"single\"]} />\n            </Example>\n\n            <h2>Random Gif Pair</h2>\n            <p>\n                This should look very familiar. See how the scope is passed\n                along from the parent component.\n            </p>\n            <Example source=\"RandomGifPair.js\" >\n                <RandomGifPair scope={[GIF_SCOPE, \"pair\"]} />\n            </Example>\n\n            <h2>Random Gif List</h2>\n            <p>\n                This is just a simpler version the Named Counters example. The\n                fact that the nested components are async doesn't show up here\n                in anyway.\n            </p>\n            <Example source=\"RandomGifList.js\" >\n                <RandomGifList scope={[GIF_SCOPE, \"list\"]} />\n            </Example>\n        </div>}\n    </div>\n);\nMain = connectLean({\n    getInitialState() {\n        return {gifsVisible: false};\n    },\n    handlers: {\n        showGifs(e) {\n            e.preventDefault();\n            setTimeout(() => highlight(\".gifs pre code\"), 0);\n            return {gifsVisible: true};\n        },\n    },\n})(Main);\n\n\nReactDOM.render(<Provider store={store}><Main /></Provider>, document.getElementById(\"app\"));\nhighlight(\"pre code\");\n\n","webpack.config.js":"var webpack = require(\"webpack\");\nvar fs = require(\"fs\");\n\nvar jsFiles = fs.readdirSync(__dirname).filter(n => n.endsWith(\".js\"));\nvar sourceFiles = {};\njsFiles.forEach(filename => {\n    sourceFiles[filename] = fs.readFileSync(filename).toString();\n});\n\n\n\n\nvar config = {\n    entry: \"./index.js\",\n    output: {\n        path: \"dist\",\n        filename: \"bundle.js\",\n        publicPath: \"/dist\",\n    },\n    // devtool: \"cheap-module-eval-source-map\", // faster\n    devtool: \"sourceMap\",\n    module: {\n        loaders: [\n            {\n                test: /\\.jsx?$/,\n                loader: \"babel\",\n                exclude: /node_modules/,\n            },\n\n        ],\n    },\n    plugins: [\n        new webpack.DefinePlugin({\n            \"SOURCE\": JSON.stringify(sourceFiles),\n            \"process.env.NODE_ENV\": JSON.stringify(\"development\"),\n        }),\n    ],\n};\n\n\nmodule.exports = config;\n"});
 	var SOURCE = window.SOURCE;
 	
 	var enhancers = [(0, _redux.applyMiddleware)((0, _reduxLogger2.default)()), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()].filter(Boolean);
 	
 	var store = (0, _redux.createStore)(_lean.leanReducer, _redux.compose.apply(undefined, _toConsumableArray(enhancers)));
+	
+	var GIF_SCOPE = "gifStuff";
+	
+	function highlight(sel) {
+	    document.querySelectorAll(sel).forEach(function (block) {
+	        window.hljs.highlightBlock(block);
+	    });
+	}
 	
 	var Example = function Example(_ref) {
 	    var source = _ref.source;
@@ -122,6 +142,15 @@
 	            "div",
 	            { className: "source" },
 	            _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "a",
+	                    { href: "https://github.com/epeli/lean-redux/blob/master/examples/" + source },
+	                    source
+	                )
+	            ),
+	            _react2.default.createElement(
 	                "pre",
 	                null,
 	                _react2.default.createElement(
@@ -129,157 +158,257 @@
 	                    { className: "javascript" },
 	                    (SOURCE[source] || "").trim()
 	                )
-	            ),
-	            _react2.default.createElement(
-	                "div",
-	                null,
-	                _react2.default.createElement(
-	                    "a",
-	                    { href: "https://github.com/epeli/lean-redux/blob/master/examples/" + source },
-	                    "github"
-	                )
 	            )
 	        )
 	    );
 	};
 	
-	var Main = function Main() {
+	var Main = function Main(_ref2) {
+	    var gifsVisible = _ref2.gifsVisible;
+	    var showGifs = _ref2.showGifs;
 	    return _react2.default.createElement(
-	        _reactRedux.Provider,
-	        { store: store },
+	        "div",
+	        null,
 	        _react2.default.createElement(
-	            "div",
+	            "h2",
+	            null,
+	            "Simple counter"
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "Counter.js" },
+	            _react2.default.createElement(_Counter2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Multiple Counters"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "Instead of defining the scope in the ",
+	            _react2.default.createElement(
+	                "em",
+	                null,
+	                "connectLean"
+	            ),
+	            " HOC you can define it as a prop. Notice how we can reuse the component from the previous example just by mounting it to a antoher part of the state using the ",
+	            _react2.default.createElement(
+	                "em",
+	                null,
+	                "scope"
+	            ),
+	            " prop."
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "MultipleCounters.js", name: "" },
+	            _react2.default.createElement(_MultipleCounters2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Dynamic Counters"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "The ",
+	            _react2.default.createElement(
+	                "em",
+	                null,
+	                "scope"
+	            ),
+	            " prop can be dynamic and even go deep into the state using the array syntax. The path creation works like in ",
+	            _react2.default.createElement(
+	                "a",
+	                { href: "https://lodash.com/docs/4.16.4#set" },
+	                "Lodash"
+	            ),
+	            "."
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "DynamicCounters.js" },
+	            _react2.default.createElement(_DynamicCounters2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Named Counters"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "This is the standard TODO example (but with added counters!) demonstrating advanced component scoping."
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "NamedCounters.js" },
+	            _react2.default.createElement(_NamedCounters2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Multiple Named Counters"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "Just to reiterate. Scoping works for complex components too."
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "MultipleNamedCounters.js" },
+	            _react2.default.createElement(_MultipleNamedCounters2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Async updates"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "Like redux-thunk."
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "Async.js" },
+	            _react2.default.createElement(_Async2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Advanced Async"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "Use constructor pattern to handle component specific async state."
+	        ),
+	        _react2.default.createElement(
+	            Example,
+	            { source: "AsyncAdvanced.js" },
+	            _react2.default.createElement(_AsyncAdvanced2.default, null)
+	        ),
+	        _react2.default.createElement(
+	            "h2",
+	            null,
+	            "Random Gif"
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "At last we'll solve the problem presented at ",
+	            _react2.default.createElement(
+	                "a",
+	                { href: "https://github.com/slorber/scalable-frontend-with-elm-or-redux" },
+	                "slorber/scalable-frontend-with-elm-or-redux"
+	            ),
+	            "."
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "The gif examples will fire some actions on mount so they are not mounted initially make things cleaner."
+	        ),
+	        _react2.default.createElement(
+	            "p",
 	            null,
 	            _react2.default.createElement(
-	                "h2",
-	                null,
-	                "Simple counter"
+	                "a",
+	                { href: "#", onClick: showGifs },
+	                "Click here the mount them"
 	            ),
+	            "."
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "These gif examples do not use cover any new concepts anymore. They are just some more real worldish examples combining async loading with scopes."
+	        ),
+	        _react2.default.createElement(
+	            "p",
+	            null,
+	            "For fun we'll scope all of them under ",
+	            _react2.default.createElement(
+	                "em",
+	                null,
+	                "gifStuff"
+	            ),
+	            " key in the Redux state. Checkout the ",
+	            _react2.default.createElement(
+	                "a",
+	                { href: "https://github.com/epeli/lean-redux/blob/master/examples/index.js" },
+	                "examples/index.js"
+	            ),
+	            " on github to see how the scope is initialized for them."
+	        ),
+	        gifsVisible && _react2.default.createElement(
+	            "div",
+	            { className: "gifs" },
 	            _react2.default.createElement(
 	                Example,
-	                { source: "Counter.js" },
-	                _react2.default.createElement(_Counter2.default, null)
+	                { source: "RandomGif.js" },
+	                _react2.default.createElement(_RandomGif2.default, { tag: "robots", scope: [GIF_SCOPE, "single"] })
 	            ),
 	            _react2.default.createElement(
 	                "h2",
 	                null,
-	                "Multiple Counters"
+	                "Random Gif Pair"
 	            ),
 	            _react2.default.createElement(
 	                "p",
 	                null,
-	                "Instead of defining the scope in the ",
-	                _react2.default.createElement(
-	                    "em",
-	                    null,
-	                    "connectLean"
-	                ),
-	                " HOC you can define it as a prop. Notice how we can reuse the component from the previous example just by mounting it to a antoher part of the state using the ",
-	                _react2.default.createElement(
-	                    "em",
-	                    null,
-	                    "scope"
-	                ),
-	                " prop."
+	                "This should look very familiar. See how the scope is passed along from the parent component."
 	            ),
 	            _react2.default.createElement(
 	                Example,
-	                { source: "MultipleCounters.js", name: "" },
-	                _react2.default.createElement(_MultipleCounters2.default, null)
+	                { source: "RandomGifPair.js" },
+	                _react2.default.createElement(_RandomGifPair2.default, { scope: [GIF_SCOPE, "pair"] })
 	            ),
 	            _react2.default.createElement(
 	                "h2",
 	                null,
-	                "Dynamic Counters"
+	                "Random Gif List"
 	            ),
 	            _react2.default.createElement(
 	                "p",
 	                null,
-	                "The ",
-	                _react2.default.createElement(
-	                    "em",
-	                    null,
-	                    "scope"
-	                ),
-	                " prop can be dynamic and even go deep into the state using the array syntax. The path creation works like in ",
-	                _react2.default.createElement(
-	                    "a",
-	                    { href: "https://lodash.com/docs/4.16.4#set" },
-	                    "Lodash"
-	                ),
-	                "."
+	                "This is just a simpler version the Named Counters example. The fact that the nested components are async doesn't show up here in anyway."
 	            ),
 	            _react2.default.createElement(
 	                Example,
-	                { source: "DynamicCounters.js" },
-	                _react2.default.createElement(_DynamicCounters2.default, null)
-	            ),
-	            _react2.default.createElement(
-	                "h2",
-	                null,
-	                "Named Counters"
-	            ),
-	            _react2.default.createElement(
-	                "p",
-	                null,
-	                "This is the standard TODO example (but with added counters!) demonstrating advanced component scoping."
-	            ),
-	            _react2.default.createElement(
-	                Example,
-	                { source: "NamedCounters.js" },
-	                _react2.default.createElement(_NamedCounters2.default, null)
-	            ),
-	            _react2.default.createElement(
-	                "h2",
-	                null,
-	                "Multiple Named Counters"
-	            ),
-	            _react2.default.createElement(
-	                "p",
-	                null,
-	                "Just to reiterate. Scoping works for complex components too."
-	            ),
-	            _react2.default.createElement(
-	                Example,
-	                { source: "MultipleNamedCounters.js" },
-	                _react2.default.createElement(_MultipleNamedCounters2.default, null)
-	            ),
-	            _react2.default.createElement(
-	                "h2",
-	                null,
-	                "Async updates"
-	            ),
-	            _react2.default.createElement(
-	                "p",
-	                null,
-	                "Like redux-thunk."
-	            ),
-	            _react2.default.createElement(
-	                Example,
-	                { source: "Async.js" },
-	                _react2.default.createElement(_Async2.default, null)
-	            ),
-	            _react2.default.createElement(
-	                "h2",
-	                null,
-	                "Advanced Async"
-	            ),
-	            _react2.default.createElement(
-	                "p",
-	                null,
-	                "Use constructor pattern to handle component specific async state."
-	            ),
-	            _react2.default.createElement(
-	                Example,
-	                { source: "AsyncAdvanced.js" },
-	                _react2.default.createElement(_AsyncAdvanced2.default, null)
+	                { source: "RandomGifList.js" },
+	                _react2.default.createElement(_RandomGifList2.default, { scope: [GIF_SCOPE, "list"] })
 	            )
 	        )
 	    );
 	};
+	Main = (0, _lean.connectLean)({
+	    getInitialState: function getInitialState() {
+	        return { gifsVisible: false };
+	    },
 	
-	_reactDom2.default.render(_react2.default.createElement(Main, null), document.getElementById("app"));
-	window.hljs.initHighlightingOnLoad();
+	    handlers: {
+	        showGifs: function showGifs(e) {
+	            e.preventDefault();
+	            setTimeout(function () {
+	                return highlight(".gifs pre code");
+	            }, 0);
+	            return { gifsVisible: true };
+	        }
+	    }
+	})(Main);
+	
+	_reactDom2.default.render(_react2.default.createElement(
+	    _reactRedux.Provider,
+	    { store: store },
+	    _react2.default.createElement(Main, null)
+	), document.getElementById("app"));
+	highlight("pre code");
 
 /***/ },
 /* 1 */
@@ -25135,7 +25264,15 @@
 	
 	var _flattenDeep2 = _interopRequireDefault(_flattenDeep);
 	
-	var _update3 = __webpack_require__(/*! updeep/dist/update */ 426);
+	var _isEqual = __webpack_require__(/*! lodash/fp/isEqual */ 426);
+	
+	var _isEqual2 = _interopRequireDefault(_isEqual);
+	
+	var _isEmpty = __webpack_require__(/*! lodash/fp/isEmpty */ 428);
+	
+	var _isEmpty2 = _interopRequireDefault(_isEmpty);
+	
+	var _update3 = __webpack_require__(/*! updeep/dist/update */ 430);
 	
 	var _update4 = _interopRequireDefault(_update3);
 	
@@ -25188,14 +25325,10 @@
 	    return {
 	        type: "LEAN_UPDATE",
 	        scope: scope,
-	        update: update,
-	        withDefaults: pass
+	        update: update
 	    };
 	}
 	
-	var pass = function pass(o) {
-	    return o;
-	};
 	var plain = {};
 	var withSlash = function withSlash(s) {
 	    return s ? "/" + s : "";
@@ -25208,18 +25341,23 @@
 	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : plain;
 	
 	    return (0, _reactRedux.connectAdvanced)(function (dispatch) {
-	        var withDefaults = function withDefaults(s) {
-	            return _extends({}, options.defaultProps, s);
-	        };
+	        var initialState = plain;
+	
+	        if (typeof options.getInitialState === "function") {
+	            initialState = options.getInitialState();
+	        } else if (options.defaultProps) {
+	            console.warn("You are using deprecated defaultProps. Update to getInitialState");
+	            initialState = options.defaultProps;
+	        }
 	
 	        var boundHandlersCache = null;
 	        var propsCache = null;
-	        var prevScope = {}; // Just some object with unique identity
+	        var prevScope = {}; // Just something which is never equal with real scopes
 	        var getProps = function getProps() {
 	            return propsCache;
 	        };
 	
-	        var mapState = typeof options.mapState === "function" ? options.mapState : (0, _pick2.default)(Object.keys(options.defaultProps || plain));
+	        var mapState = typeof options.mapState === "function" ? options.mapState : (0, _pick2.default)(Object.keys(initialState));
 	
 	        var handlers = typeof options.handlers === "function" ? options.handlers(getProps) : options.handlers;
 	
@@ -25231,23 +25369,25 @@
 	
 	            var scopedState = fullState || plain;
 	
-	            if (scope) {
+	            if (!(0, _isEmpty2.default)(scope)) {
 	                scopedState = _extends({}, (0, _getOr2.default)(plain, disableLodashPath(scope), fullState), { scope: scope });
 	            }
 	
+	            scopedState = _extends({}, initialState, scopedState);
+	
 	            // Implement React Redux style advanced performance pattern where
 	            // the mapState can create the mapState function itself
-	            var _state = mapState(withDefaults(scopedState), ownProps);
+	            var _state = mapState(scopedState, ownProps);
 	            if (typeof _state === "function") {
 	                // map state generated a new mapState function. Save it
 	                mapState = _state;
 	                // and use it to map the state
-	                _state = mapState(withDefaults(scopedState), ownProps);
+	                _state = mapState(scopedState, ownProps);
 	            }
 	            scopedState = _state;
 	
 	            // Regenerate handlers only when the scope changes
-	            if (prevScope !== scope) {
+	            if (!(0, _isEqual2.default)(prevScope, scope)) {
 	                (function () {
 	                    prevScope = scope;
 	                    var dispatchUpdate = function dispatchUpdate(updateName, update) {
@@ -25266,7 +25406,7 @@
 	                        dispatch({
 	                            type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
 	                            update: update,
-	                            withDefaults: withDefaults,
+	                            initialState: initialState,
 	                            scope: scope
 	                        });
 	                    };
@@ -25302,16 +25442,16 @@
 	    }
 	    var scope = action.scope;
 	    var update = action.update;
-	    var withDefaults = action.withDefaults;
+	    var initialState = action.initialState;
 	
 	
-	    if (scope) {
+	    if (!(0, _isEmpty2.default)(scope)) {
 	        return (0, _update2.default)(disableLodashPath(scope), function (s) {
-	            return (0, _update4.default)(update, withDefaults(s));
+	            return (0, _update4.default)(update, _extends({}, initialState, s));
 	        }, state);
 	    }
 	
-	    return (0, _update4.default)(action.update, withDefaults(state));
+	    return (0, _update4.default)(action.update, _extends({}, initialState, state));
 	}
 	
 	exports.default = leanReducer;
@@ -34133,6 +34273,161 @@
 
 /***/ },
 /* 426 */
+/*!*********************************!*\
+  !*** ../~/lodash/fp/isEqual.js ***!
+  \*********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var convert = __webpack_require__(/*! ./convert */ 211),
+	    func = convert('isEqual', __webpack_require__(/*! ../isEqual */ 427));
+	
+	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
+	module.exports = func;
+
+
+/***/ },
+/* 427 */
+/*!******************************!*\
+  !*** ../~/lodash/isEqual.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIsEqual = __webpack_require__(/*! ./_baseIsEqual */ 367);
+	
+	/**
+	 * Performs a deep comparison between two values to determine if they are
+	 * equivalent.
+	 *
+	 * **Note:** This method supports comparing arrays, array buffers, booleans,
+	 * date objects, error objects, maps, numbers, `Object` objects, regexes,
+	 * sets, strings, symbols, and typed arrays. `Object` objects are compared
+	 * by their own, not inherited, enumerable properties. Functions and DOM
+	 * nodes are **not** supported.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Lang
+	 * @param {*} value The value to compare.
+	 * @param {*} other The other value to compare.
+	 * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+	 * @example
+	 *
+	 * var object = { 'a': 1 };
+	 * var other = { 'a': 1 };
+	 *
+	 * _.isEqual(object, other);
+	 * // => true
+	 *
+	 * object === other;
+	 * // => false
+	 */
+	function isEqual(value, other) {
+	  return baseIsEqual(value, other);
+	}
+	
+	module.exports = isEqual;
+
+
+/***/ },
+/* 428 */
+/*!*********************************!*\
+  !*** ../~/lodash/fp/isEmpty.js ***!
+  \*********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var convert = __webpack_require__(/*! ./convert */ 211),
+	    func = convert('isEmpty', __webpack_require__(/*! ../isEmpty */ 429), __webpack_require__(/*! ./_falseOptions */ 425));
+	
+	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
+	module.exports = func;
+
+
+/***/ },
+/* 429 */
+/*!******************************!*\
+  !*** ../~/lodash/isEmpty.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseKeys = __webpack_require__(/*! ./_baseKeys */ 298),
+	    getTag = __webpack_require__(/*! ./_getTag */ 340),
+	    isArguments = __webpack_require__(/*! ./isArguments */ 288),
+	    isArray = __webpack_require__(/*! ./isArray */ 251),
+	    isArrayLike = __webpack_require__(/*! ./isArrayLike */ 301),
+	    isBuffer = __webpack_require__(/*! ./isBuffer */ 290),
+	    isPrototype = __webpack_require__(/*! ./_isPrototype */ 299),
+	    isTypedArray = __webpack_require__(/*! ./isTypedArray */ 293);
+	
+	/** `Object#toString` result references. */
+	var mapTag = '[object Map]',
+	    setTag = '[object Set]';
+	
+	/** Used for built-in method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * Checks if `value` is an empty object, collection, map, or set.
+	 *
+	 * Objects are considered empty if they have no own enumerable string keyed
+	 * properties.
+	 *
+	 * Array-like values such as `arguments` objects, arrays, buffers, strings, or
+	 * jQuery-like collections are considered empty if they have a `length` of `0`.
+	 * Similarly, maps and sets are considered empty if they have a `size` of `0`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is empty, else `false`.
+	 * @example
+	 *
+	 * _.isEmpty(null);
+	 * // => true
+	 *
+	 * _.isEmpty(true);
+	 * // => true
+	 *
+	 * _.isEmpty(1);
+	 * // => true
+	 *
+	 * _.isEmpty([1, 2, 3]);
+	 * // => false
+	 *
+	 * _.isEmpty({ 'a': 1 });
+	 * // => false
+	 */
+	function isEmpty(value) {
+	  if (isArrayLike(value) &&
+	      (isArray(value) || typeof value == 'string' || typeof value.splice == 'function' ||
+	        isBuffer(value) || isTypedArray(value) || isArguments(value))) {
+	    return !value.length;
+	  }
+	  var tag = getTag(value);
+	  if (tag == mapTag || tag == setTag) {
+	    return !value.size;
+	  }
+	  if (isPrototype(value)) {
+	    return !baseKeys(value).length;
+	  }
+	  for (var key in value) {
+	    if (hasOwnProperty.call(value, key)) {
+	      return false;
+	    }
+	  }
+	  return true;
+	}
+	
+	module.exports = isEmpty;
+
+
+/***/ },
+/* 430 */
 /*!**********************************!*\
   !*** ../~/updeep/dist/update.js ***!
   \**********************************/
@@ -34148,7 +34443,7 @@
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var _wrap = __webpack_require__(/*! ./wrap */ 427);
+	var _wrap = __webpack_require__(/*! ./wrap */ 431);
 	
 	var _wrap2 = _interopRequireDefault(_wrap);
 	
@@ -34246,7 +34541,7 @@
 	exports.default = (0, _wrap2.default)(update, 2);
 
 /***/ },
-/* 427 */
+/* 431 */
 /*!********************************!*\
   !*** ../~/updeep/dist/wrap.js ***!
   \********************************/
@@ -34259,11 +34554,11 @@
 	});
 	exports.default = wrap;
 	
-	var _curry = __webpack_require__(/*! ./util/curry */ 428);
+	var _curry = __webpack_require__(/*! ./util/curry */ 432);
 	
 	var _curry2 = _interopRequireDefault(_curry);
 	
-	var _freeze = __webpack_require__(/*! ./freeze */ 429);
+	var _freeze = __webpack_require__(/*! ./freeze */ 433);
 	
 	var _freeze2 = _interopRequireDefault(_freeze);
 	
@@ -34278,7 +34573,7 @@
 	}
 
 /***/ },
-/* 428 */
+/* 432 */
 /*!**************************************!*\
   !*** ../~/updeep/dist/util/curry.js ***!
   \**************************************/
@@ -34486,7 +34781,7 @@
 	}
 
 /***/ },
-/* 429 */
+/* 433 */
 /*!**********************************!*\
   !*** ../~/updeep/dist/freeze.js ***!
   \**********************************/
@@ -34558,7 +34853,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ../~/process/browser.js */ 29)))
 
 /***/ },
-/* 430 */
+/* 434 */
 /*!********************!*\
   !*** ./Counter.js ***!
   \********************/
@@ -34598,12 +34893,14 @@
 	    // is omitted the component uses the full state.
 	    scope: "singleCounter",
 	
-	    // By default only props defined in defaultProps are passed to the wrapped
-	    // component. If you want to add some other props from the state you can
-	    // define a mapState key with a function returning the desired state.
-	    defaultProps: {
-	        count: 0
+	    // By default only props defined in getInitialState() are passed to the
+	    // wrapped component. If you want to add some other props from the state
+	    // you can define a mapState key with a function returning the desired
+	    // state.
+	    getInitialState: function getInitialState() {
+	        return { count: 0 };
 	    },
+	
 	
 	    // Handlers are passed as props to the component. The return values update
 	    // the state. The updates respect the scope defined above.
@@ -34619,7 +34916,7 @@
 	exports.default = Counter;
 
 /***/ },
-/* 431 */
+/* 435 */
 /*!*****************************!*\
   !*** ./MultipleCounters.js ***!
   \*****************************/
@@ -34635,7 +34932,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 430);
+	var _Counter = __webpack_require__(/*! ./Counter */ 434);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
@@ -34661,7 +34958,7 @@
 	exports.default = MultipleCounters;
 
 /***/ },
-/* 432 */
+/* 436 */
 /*!****************************!*\
   !*** ./DynamicCounters.js ***!
   \****************************/
@@ -34679,9 +34976,9 @@
 	
 	var _lean = __webpack_require__(/*! ../src/lean */ 209);
 	
-	var _fp = __webpack_require__(/*! lodash/fp */ 433);
+	var _fp = __webpack_require__(/*! lodash/fp */ 437);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 430);
+	var _Counter = __webpack_require__(/*! ./Counter */ 434);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
@@ -34716,9 +35013,10 @@
 	};
 	DynamicCounters = (0, _lean.connectLean)({
 	    scope: "dynamicCounters",
-	    defaultProps: {
-	        counterCount: 1
+	    getInitialState: function getInitialState() {
+	        return { counterCount: 1 };
 	    },
+	
 	    handlers: {
 	        addCounter: function addCounter(e) {
 	            e.preventDefault();
@@ -34744,18 +35042,18 @@
 	exports.default = DynamicCounters;
 
 /***/ },
-/* 433 */
+/* 437 */
 /*!*************************!*\
   !*** ../~/lodash/fp.js ***!
   \*************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(/*! ./lodash.min */ 434).runInContext();
+	var _ = __webpack_require__(/*! ./lodash.min */ 438).runInContext();
 	module.exports = __webpack_require__(/*! ./fp/_baseConvert */ 212)(_, _);
 
 
 /***/ },
-/* 434 */
+/* 438 */
 /*!*********************************!*\
   !*** ../~/lodash/lodash.min.js ***!
   \*********************************/
@@ -34898,7 +35196,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(/*! ./../webpack/buildin/module.js */ 291)(module)))
 
 /***/ },
-/* 435 */
+/* 439 */
 /*!**************************!*\
   !*** ./NamedCounters.js ***!
   \**************************/
@@ -34916,9 +35214,9 @@
 	
 	var _lean = __webpack_require__(/*! ../src/lean */ 209);
 	
-	var _fp = __webpack_require__(/*! lodash/fp */ 433);
+	var _fp = __webpack_require__(/*! lodash/fp */ 437);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 430);
+	var _Counter = __webpack_require__(/*! ./Counter */ 434);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
@@ -34978,11 +35276,14 @@
 	};
 	NamedCounters = (0, _lean.connectLean)({
 	    scope: "namedCounters",
-	    defaultProps: {
-	        nextCounterId: 1,
-	        newName: "",
-	        counters: {}
+	    getInitialState: function getInitialState() {
+	        return {
+	            nextCounterId: 1,
+	            newName: "",
+	            counters: {}
+	        };
 	    },
+	
 	    handlers: {
 	        handleNameChange: function handleNameChange(e) {
 	            e.preventDefault();
@@ -35015,7 +35316,7 @@
 	exports.default = NamedCounters;
 
 /***/ },
-/* 436 */
+/* 440 */
 /*!**********************************!*\
   !*** ./MultipleNamedCounters.js ***!
   \**********************************/
@@ -35031,7 +35332,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 435);
+	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 439);
 	
 	var _NamedCounters2 = _interopRequireDefault(_NamedCounters);
 	
@@ -35072,7 +35373,7 @@
 	exports.default = MultipleNamedCounters;
 
 /***/ },
-/* 437 */
+/* 441 */
 /*!******************!*\
   !*** ./Async.js ***!
   \******************/
@@ -35120,10 +35421,13 @@
 	};
 	Async = (0, _lean.connectLean)({
 	    scope: "async",
-	    defaultProps: {
-	        status: "waiting",
-	        data: "nodata"
+	    getInitialState: function getInitialState() {
+	        return {
+	            status: "waiting",
+	            data: "nodata"
+	        };
 	    },
+	
 	    handlers: {
 	        setData: function setData(data) {
 	            return { data: data };
@@ -35149,7 +35453,7 @@
 	exports.default = Async;
 
 /***/ },
-/* 438 */
+/* 442 */
 /*!**************************!*\
   !*** ./AsyncAdvanced.js ***!
   \**************************/
@@ -35235,9 +35539,11 @@
 	
 	AsyncAdvanced = (0, _lean.connectLean)({
 	    scope: "asyncAdvanced",
-	    defaultProps: {
-	        status: "waiting",
-	        data: "nodata"
+	    getInitialState: function getInitialState() {
+	        return {
+	            status: "waiting",
+	            data: "nodata"
+	        };
 	    },
 	    handlers: function handlers() {
 	        // If handlers is a function it will excuted once for each component
@@ -35269,6 +35575,244 @@
 	})(AsyncAdvanced);
 	
 	exports.default = AsyncAdvanced;
+
+/***/ },
+/* 443 */
+/*!**********************!*\
+  !*** ./RandomGif.js ***!
+  \**********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var RandomGif = function (_React$PureComponent) {
+	    _inherits(RandomGif, _React$PureComponent);
+	
+	    function RandomGif() {
+	        _classCallCheck(this, RandomGif);
+	
+	        return _possibleConstructorReturn(this, (RandomGif.__proto__ || Object.getPrototypeOf(RandomGif)).apply(this, arguments));
+	    }
+	
+	    _createClass(RandomGif, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            this.props.fetchGif();
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _props = this.props;
+	            var tag = _props.tag;
+	            var status = _props.status;
+	            var url = _props.url;
+	            var fetchGif = _props.fetchGif;
+	
+	            return _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "h4",
+	                    null,
+	                    tag
+	                ),
+	                url && status !== "fetching" && _react2.default.createElement("img", { src: url }),
+	                _react2.default.createElement("br", null),
+	                _react2.default.createElement(
+	                    "button",
+	                    { onClick: fetchGif, disabled: status === "fetching" },
+	                    status === "fetching" ? "loading..." : "Next!"
+	                )
+	            );
+	        }
+	    }]);
+	
+	    return RandomGif;
+	}(_react2.default.PureComponent);
+	
+	RandomGif = (0, _lean.connectLean)({
+	    scope: "singleRandomGif",
+	    getInitialState: function getInitialState() {
+	        return {
+	            status: "waiting",
+	            url: null
+	        };
+	    },
+	
+	    handlers: {
+	        setUrl: function setUrl(url) {
+	            return { url: url };
+	        },
+	        fetchGif: function fetchGif() {
+	
+	            return (0, _lean.thunk)(function (update, getProps) {
+	                update({ status: "fetching" });
+	
+	                fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + getProps().tag).then(function (res) {
+	                    return res.json();
+	                }).then(function (json) {
+	                    update({
+	                        status: "ok",
+	                        url: json.data.fixed_height_small_url
+	                    });
+	                });
+	            });
+	        }
+	    }
+	
+	})(RandomGif);
+	
+	exports.default = RandomGif;
+
+/***/ },
+/* 444 */
+/*!**************************!*\
+  !*** ./RandomGifPair.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	
+	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var RandomGifPair = function RandomGifPair(_ref) {
+	    var scope = _ref.scope;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_RandomGif2.default, { scope: [scope, "first"], tag: "cats" })
+	        ),
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_RandomGif2.default, { scope: [scope, "second"], tag: "cars" })
+	        )
+	    );
+	};
+	
+	exports.default = RandomGifPair;
+
+/***/ },
+/* 445 */
+/*!**************************!*\
+  !*** ./RandomGifList.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	
+	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var RandomGifWithTag = (0, _lean.connectLean)({
+	    mapState: function mapState(state) {
+	        return { tag: state.tag };
+	    }
+	})(_RandomGif2.default);
+	
+	var RandomGifList = function RandomGifList(_ref) {
+	    var gifs = _ref.gifs;
+	    var handleTagChange = _ref.handleTagChange;
+	    var newTag = _ref.newTag;
+	    var addGif = _ref.addGif;
+	    var scope = _ref.scope;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement("input", { onChange: handleTagChange, value: newTag }),
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: addGif, disabled: !newTag },
+	            "add"
+	        ),
+	        Object.keys(gifs).sort().map(function (id) {
+	            return _react2.default.createElement(RandomGifWithTag, { key: id, scope: [scope, "gifs", id] });
+	        })
+	    );
+	};
+	RandomGifList = (0, _lean.connectLean)({
+	    getInitialState: function getInitialState() {
+	        return {
+	            nextId: 1,
+	            newTag: "ghost",
+	            gifs: {}
+	        };
+	    },
+	
+	    handlers: {
+	        handleTagChange: function handleTagChange(e) {
+	            e.preventDefault();
+	            return { newTag: e.target.value };
+	        },
+	        addGif: function addGif(e, _1, _2, props) {
+	            e.preventDefault();
+	
+	            return {
+	                newTag: "",
+	                nextId: function nextId(i) {
+	                    return i + 1;
+	                },
+	                gifs: _defineProperty({}, props.nextId, {
+	                    id: props.nextId,
+	                    tag: props.newTag
+	                })
+	            };
+	        }
+	    }
+	
+	})(RandomGifList);
+	
+	exports.default = RandomGifList;
 
 /***/ }
 /******/ ]);
