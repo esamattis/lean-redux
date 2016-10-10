@@ -44,14 +44,14 @@ const Example = ({source, children}) => (
             {children}
         </div>
         <div className="source">
+            <div>
+                <a href={"https://github.com/epeli/lean-redux/blob/master/examples/" + source}>{source}</a>
+            </div>
             <pre>
                 <code className="javascript">
                     {(SOURCE[source] || "").trim()}
                 </code>
             </pre>
-            <div>
-                <a href={"https://github.com/epeli/lean-redux/blob/master/examples/" + source}>github</a>
-            </div>
         </div>
     </div>
 );
@@ -121,8 +121,23 @@ var Main = ({gifsVisible, showGifs}) => (
             At last we'll solve the problem presented at <a href="https://github.com/slorber/scalable-frontend-with-elm-or-redux">slorber/scalable-frontend-with-elm-or-redux</a>.
         </p>
         <p>
-            This will load some Gifs! To not anoy people <a href="#" onClick={showGifs}>click here the load them</a>.
-            For fun we'll scope them under <em>gifStuff</em>
+            The gif examples will fire some actions on mount so they are not
+            mounted initially to make things simpler for newcomers
+
+        </p>
+        <p>
+            <a href="#" onClick={showGifs}>Click here the load them</a>.
+        </p>
+        <p>
+            These gif examples do not use cover any new concepts anymore.
+            They are just some more real worldish examples combining async
+            loading with scopes.
+        </p>
+        <p>
+            For fun we'll scope all of them under <em>gifStuff</em> key in the
+            Redux state. Checkout
+            the <a href="https://github.com/epeli/lean-redux/blob/master/examples/index.js">examples/index.js</a> on
+            github to see how the scope is initialized for them.
         </p>
 
         {gifsVisible && <div className="gifs">
@@ -132,6 +147,8 @@ var Main = ({gifsVisible, showGifs}) => (
 
             <h2>Random Gif Pair</h2>
             <p>
+                This should look very familiar. See how the scope is passed
+                along from the parent component.
             </p>
             <Example source="RandomGifPair.js" >
                 <RandomGifPair scope={[GIF_SCOPE, "pair"]} />
