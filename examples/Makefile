@@ -32,5 +32,5 @@ release: assert-clean-git lint js
 	$(MAKE) dist-changes-show
 	git add $(distfile)
 	git status . --porcelain
-	git commit -m "Commit production js distribution"
+	git commit -m "Commit examples bundle"
 
