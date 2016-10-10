@@ -35,8 +35,7 @@ Counter = connectLean({
         return {count: 0};
     },
     handlers: {
-        inc(e) {
-            e.preventDefault();
+        inc() {
             return {count: i => i + 1};
         },
     },
