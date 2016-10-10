@@ -11,9 +11,11 @@ var Async = ({fetchAsync, data, status}) => (
 );
 Async = connectLean({
     scope: "async",
-    defaultProps: {
-        status: "waiting",
-        data: "nodata",
+    getInitialState() {
+        return {
+            status: "waiting",
+            data: "nodata",
+        };
     },
     handlers: {
         setData(data) {

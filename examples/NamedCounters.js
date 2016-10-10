@@ -33,10 +33,12 @@ var NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCou
 );
 NamedCounters = connectLean({
     scope: "namedCounters",
-    defaultProps: {
-        nextCounterId: 1,
-        newName: "",
-        counters: {},
+    getInitialState() {
+        return {
+            nextCounterId: 1,
+            newName: "",
+            counters: {},
+        };
     },
     handlers: {
         handleNameChange(e) {

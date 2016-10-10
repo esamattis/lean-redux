@@ -18,8 +18,8 @@ test("basic updating", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName() {
@@ -50,8 +50,8 @@ test("updating with map state", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         mapState(state) {
             return {name: state.name.toUpperCase()};
@@ -85,8 +85,8 @@ test("can use function to update the state", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaultProps: {
-            count: 0,
+        getInitialState() {
+            return {count: 0};
         },
         handlers: {
             inc() {
@@ -118,8 +118,8 @@ test("pass scope as a prop", () => {
     };
 
     const Connected = connectLean({
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName() {
@@ -151,8 +151,8 @@ test("do not recreate update function on parent prop changes", () => {
     };
 
     const Connected = connectLean({
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName() {
@@ -196,8 +196,8 @@ test("prop scope change generates new update function", () => {
     };
 
     const Connected = connectLean({
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName() {
@@ -254,8 +254,8 @@ test("all props are passed to the update functions", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName(name, _props) {
@@ -291,8 +291,8 @@ test("lodash strings paths are not expanded in mapState", () => {
     var C = ({name}) => <div>hello {name}</div>;
     C = connectLean({
         scope: "foo.bar",
-        defaultProps: {
-            name: "underscore",
+        getInitialState() {
+            return {name: "underscore"};
         },
     })(C);
 

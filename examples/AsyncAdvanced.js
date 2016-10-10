@@ -22,9 +22,11 @@ class AsyncAdvanced extends React.Component {
 
 AsyncAdvanced = connectLean({
     scope: "asyncAdvanced",
-    defaultProps: {
-        status: "waiting",
-        data: "nodata",
+    getInitialState() {
+        return {
+            status: "waiting",
+            data: "nodata",
+        };
     },
     handlers() {
         // If handlers is a function it will excuted once for each component
