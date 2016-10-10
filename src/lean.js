@@ -49,9 +49,13 @@ export function thunk(cb) {
 }
 export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
-        const initialState = typeof options.getInitialState === "function"
-            ? options.getInitialState()
-            : plain;
+        let initialState = plain;
+
+        if (options.getInitialState === "function") {
+            initialState = options.getInitialState();
+        } else if (options.defaultProps) {
+            initialState = options.defaultProps;
+        }
 
         var boundHandlersCache = null;
         var propsCache = null;
