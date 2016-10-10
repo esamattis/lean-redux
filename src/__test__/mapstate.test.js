@@ -14,8 +14,8 @@ test("can map state", () => {
     };
 
     const Connected = connectLean({
-        defaultProps: {
-            name: "default",
+        getInitialState() {
+            return {name: "default"};
         },
         mapState(state) {
             return {name: state.name.toUpperCase()};
@@ -39,8 +39,8 @@ test("map state can access ownProps", () => {
     const spy = jest.fn();
 
     const Connected = connectLean({
-        defaultProps: {
-            name: "default",
+        getInitialState() {
+            return {name: "default"};
         },
         mapState(state, ownProps) {
             spy(ownProps.parentProp);
@@ -65,8 +65,8 @@ test.skip("do not execute mapState on ownProps changes if mapState does not use 
     };
 
     const Connected = connectLean({
-        defaultProps: {
-            name: "default",
+        getInitialState() {
+            return {name: "default"};
         },
         mapState(state) {
             mapSpy();
@@ -108,10 +108,12 @@ test("support reselect style constructors in mapState", () => {
     };
 
     const Connected = connectLean({
-        defaultProps: {
-            first: 1,
-            second: 2,
-            name: "default",
+        getInitialState() {
+            return {
+                first: 1,
+                second: 2,
+                name: "default",
+            };
         },
         mapState: () => createSelector(
             s => s.first,

@@ -17,8 +17,8 @@ test("update using thunk", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName() {
@@ -61,8 +61,8 @@ test("thunks can access props with getProps()", () => {
 
     const Connected = connectLean({
         scope: "ascope",
-        defaultProps: {
-            name: "esa",
+        getInitialState() {
+            return {name: "esa"};
         },
         handlers: {
             changeName() {

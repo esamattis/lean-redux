@@ -49,7 +49,9 @@ export function thunk(cb) {
 }
 export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
-        const initialState = options.defaultProps || plain;
+        const initialState = typeof options.getInitialState === "function"
+            ? options.getInitialState()
+            : plain;
 
         var boundHandlersCache = null;
         var propsCache = null;
@@ -58,7 +60,7 @@ export function connectLean(options=plain) {
 
         var mapState = typeof options.mapState === "function"
             ? options.mapState
-            : pick(Object.keys(options.defaultProps || plain));
+            : pick(Object.keys(initialState));
 
         const handlers = typeof options.handlers === "function"
             ? options.handlers(getProps)
