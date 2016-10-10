@@ -157,7 +157,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <h2>Random Gif List</h2>
             <p>
                 This is just a simpler version the Named Counters example. The
-                fact that the nested components are async doesnt' show up here
+                fact that the nested components are async doesn't show up here
                 in anyway.
             </p>
             <Example source="RandomGifList.js" >
