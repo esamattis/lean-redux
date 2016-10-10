@@ -1,5 +1,3 @@
-
-
 import React from "react";
 import {connectLean, thunk} from "../src/lean";
 
