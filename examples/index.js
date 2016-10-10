@@ -18,6 +18,7 @@ import NamedCounters from "./NamedCounters";
 import MultipleNamedCounters from "./MultipleNamedCounters";
 import Async from "./Async";
 import AsyncAdvanced from "./AsyncAdvanced";
+import RandomGif from "./RandomGif";
 
 
 var enhancers = [
@@ -104,6 +105,13 @@ var Main = () => (
             </p>
             <Example source="AsyncAdvanced.js" >
                 <AsyncAdvanced />
+            </Example>
+
+            <h2>Random Gif</h2>
+            <p>
+            </p>
+            <Example source="RandomGif.js" >
+                <RandomGif tag="robots" />
             </Example>
         </div>
     </Provider>
