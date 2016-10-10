@@ -1,6 +1,6 @@
 {
   "name": "lean-redux",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Redux without the boilerplate",
   "main": "lib/index.js",
   "scripts": {
@@ -33,6 +33,7 @@
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-react": "^6.3.0",
     "jest": "^16.0.1",
+    "npm-mkrelease": "^0.2.7",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-test-renderer": "^15.3.2",
