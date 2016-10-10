@@ -1,12 +1,12 @@
 
 # Lean Redux [![Build Status](https://secure.travis-ci.org/epeli/lean-redux.png?branch=master)](http://travis-ci.org/epeli/lean-redux)
 
-[Redux](http://redux.js.org/) without the boilerplate for [React](https://facebook.github.io/react/).
+[Redux](http://redux.js.org/) state like local state.
 
 ## Design goals
 
 - Simple things should be simple
-  - Basic Redux state access and updating should be simple as it is with component local state
+  - Basic Redux state access and updating should be simple as it is with the component local state
   - No need to manually define action types, reducers or even actions creators
 - Redux state can be scoped to the components
   - Component cannot interfere with parts of the state that do not belong to it
