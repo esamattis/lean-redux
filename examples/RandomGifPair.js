@@ -2,13 +2,13 @@ import React from "react";
 
 import RandomGif from "./RandomGif";
 
-var RandomGifPair = () => (
+var RandomGifPair = ({scope}) => (
     <div>
         <div>
-            <RandomGif scope={["randomGifPair", "first"]} tag="cats" />
+            <RandomGif scope={[scope, "first"]} tag="cats" />
         </div>
         <div>
-            <RandomGif scope={["randomGifPair", "second"]} tag="cars" />
+            <RandomGif scope={[scope, "second"]} tag="cars" />
         </div>
     </div>
 );

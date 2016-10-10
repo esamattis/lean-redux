@@ -19,7 +19,6 @@ var RandomGifList = ({gifs, handleTagChange, newTag, addGif, scope}) => (
     </div>
 );
 RandomGifList = connectLean({
-    scope: "randomGifList",
     getInitialState() {
         return {
             nextId: 1,
