@@ -13,6 +13,7 @@ class RandomGif extends React.PureComponent {
             <div>
                 <h4>{tag}</h4>
                 {url && <img src={url} />}
+                <br />
                 <button onClick={fetchGif} disabled={status === "fetching"}>
                     {status === "fetching" ? "loading..." : "Next!"}
                 </button>
@@ -42,7 +43,7 @@ RandomGif = connectLean({
                 .then(json => {
                     update({
                         status: "ok",
-                        url: json.data.fixed_width_downsampled_url,
+                        url: json.data.fixed_height_small_url,
                     });
                 });
             });
