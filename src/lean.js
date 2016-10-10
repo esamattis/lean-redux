@@ -37,12 +37,10 @@ export function update(...args) {
         type: "LEAN_UPDATE",
         scope,
         update,
-        withDefaults: pass,
     };
 }
 
 
-const pass = o => o;
 const plain = {};
 const withSlash = s => s ? ("/" + s) : "";
 
@@ -51,7 +49,7 @@ export function thunk(cb) {
 }
 export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
-        const withDefaults = s => ({...options.defaultProps, ...s});
+        const initialState = options.defaultProps || plain;
 
         var boundHandlersCache = null;
         var propsCache = null;
@@ -78,14 +76,16 @@ export function connectLean(options=plain) {
                 scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
             }
 
+            scopedState = {...initialState, ...scopedState};
+
             // Implement React Redux style advanced performance pattern where
             // the mapState can create the mapState function itself
-            let _state =  mapState(withDefaults(scopedState), ownProps);
+            let _state =  mapState(scopedState, ownProps);
             if (typeof _state === "function") {
                 // map state generated a new mapState function. Save it
                 mapState = _state;
                 // and use it to map the state
-                _state =  mapState(withDefaults(scopedState), ownProps);
+                _state =  mapState(scopedState, ownProps);
             }
             scopedState = _state;
 
@@ -109,7 +109,7 @@ export function connectLean(options=plain) {
                     dispatch({
                         type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
                         update,
-                        withDefaults,
+                        initialState,
                         scope,
                     });
                 };
@@ -134,13 +134,17 @@ export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
         return state;
     }
-    let {scope, update, withDefaults} = action;
+    let {scope, update, initialState} = action;
 
     if (scope) {
-        return updateIn(disableLodashPath(scope), s => updateObject(update, withDefaults(s)), state);
+        return updateIn(
+            disableLodashPath(scope),
+            s => updateObject(update, {...initialState, ...s}),
+            state
+        );
     }
 
-    return updateObject(action.update, withDefaults(state));
+    return updateObject(action.update, {...initialState, ...state});
 }
 
 export default leanReducer;
