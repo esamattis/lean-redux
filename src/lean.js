@@ -54,6 +54,7 @@ export function connectLean(options=plain) {
         if (options.getInitialState === "function") {
             initialState = options.getInitialState();
         } else if (options.defaultProps) {
+            console.warn("You are using deprecated defaultProps. Update to getInitialState");
             initialState = options.defaultProps;
         }
 
