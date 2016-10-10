@@ -118,12 +118,14 @@ var Main = ({gifsVisible, showGifs}) => (
 
         <h2>Random Gif</h2>
         <p>
-            At last we'll solve the problem presented at <a href="https://github.com/slorber/scalable-frontend-with-elm-or-redux">slorber/scalable-frontend-with-elm-or-redux</a>.
+            At last we'll partly solve the problem presented at <a href="https://github.com/slorber/scalable-frontend-with-elm-or-redux">slorber/scalable-frontend-with-elm-or-redux</a>.
+            Partly because with this library you don't write the reducers or
+            actions yourself (unless you really want to you can of course). So
+            that part of the "Specification" is ignored.
         </p>
         <p>
             The gif examples will fire some actions on mount so they are not
             mounted initially make things cleaner.
-
         </p>
         <p>
             <a href="#" onClick={showGifs}>Click here the mount them</a>.
