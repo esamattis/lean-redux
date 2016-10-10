@@ -20,6 +20,7 @@ import Async from "./Async";
 import AsyncAdvanced from "./AsyncAdvanced";
 import RandomGif from "./RandomGif";
 import RandomGifPair from "./RandomGifPair";
+import RandomGifList from "./RandomGifList";
 
 
 var enhancers = [
@@ -120,6 +121,13 @@ var Main = () => (
             </p>
             <Example source="RandomGifPair.js" >
                 <RandomGifPair />
+            </Example>
+
+            <h2>Random Gif Listg</h2>
+            <p>
+            </p>
+            <Example source="RandomGifList.js" >
+                <RandomGifList />
             </Example>
         </div>
     </Provider>

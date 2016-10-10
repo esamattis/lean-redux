@@ -12,7 +12,7 @@ class RandomGif extends React.PureComponent {
         return (
             <div>
                 <h4>{tag}</h4>
-                {url && <img src={url} />}
+                {(url && status !== "fetching") && <img src={url} />}
                 <br />
                 <button onClick={fetchGif} disabled={status === "fetching"}>
                     {status === "fetching" ? "loading..." : "Next!"}
