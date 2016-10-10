@@ -36,7 +36,7 @@ Counter = connectLean({
     },
     handlers: {
         inc() {
-            return {count: i => i + 1};
+            this.setState({count: i + this.props.count});
         },
     },
 })(Counter);
