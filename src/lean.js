@@ -120,6 +120,7 @@ export function connectLean(options=plain) {
                             dispatch({
                                 type,
                                 initialState,
+                                props: ownProps,
                                 update,
                                 scope: scopeCache,
                             });
@@ -157,14 +158,14 @@ export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
         return state;
     }
-    let {scope, initialState, update} = action;
+    let {scope, initialState, update, props} = action;
 
 
     const doUpdate = state => {
         let s =  {...initialState, ...state};
 
         if (typeof update === "function") {
-            update = update(s);
+            update = update(s, props);
         }
 
         return {...initialState, ...state, ...update};
