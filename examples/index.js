@@ -16,7 +16,6 @@ import MultipleCounters from "./MultipleCounters";
 import ConfiguredCounter from "./ConfiguredCounter";
 import DynamicCounters from "./DynamicCounters";
 import NamedCounters from "./NamedCounters";
-import MultipleNamedCounters from "./MultipleNamedCounters";
 import Async from "./Async";
 import AsyncAdvanced from "./AsyncAdvanced";
 import RandomGif from "./RandomGif";
@@ -92,15 +91,6 @@ var Main = ({gifsVisible, showGifs}) => (
         </p>
         <Example source="NamedCounters.js" >
             <NamedCounters />
-        </Example>
-
-
-        <h2>Multiple Named Counters</h2>
-        <p>
-            Just to reiterate. Scoping works for complex components too.
-        </p>
-        <Example source="MultipleNamedCounters.js" >
-            <MultipleNamedCounters />
         </Example>
 
         <h2>Configured Counter</h2>
