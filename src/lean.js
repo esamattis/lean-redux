@@ -59,7 +59,10 @@ export function connectLean(options=plain) {
             ? options.mapState
             : pick(Object.keys(initialState));
 
-        const handlers = options.handlers || plain;
+        var handlers = options.handlers || plain;
+        if (typeof handlers === "function") {
+            handlers = handlers();
+        }
 
         const handlerContext = {};
 
