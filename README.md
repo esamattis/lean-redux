@@ -21,16 +21,16 @@
 ```js
 import {connectLean} from "lean-redux";
 
-var Counter = ({count, inc}) => (
+var Counter = ({count, handleClick}) => (
     <div>
-        {count} <button onClick={inc}>inc</button>
+        {count} <button onClick={handleClick}>+1</button>
     </div>
 );
 Counter = connectLean({
     getInitialState() {
         return {count: 0};
     },
-    inc(e) {
+    handleClick(e) {
         e.preventDefault();
         this.setState({count: this.state.count + 1});
     },
