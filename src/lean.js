@@ -118,15 +118,13 @@ export function connectLean(options=plain) {
 
                     return (...args) => {
                         var localContext = {...handlerContext, ...{
-                            setState(updatedState) {
+                            setState(update) {
 
-                                if (typeof updatedState === "function") {
-                                    updatedState = updatedState(scopedState);
-                                }
 
                                 dispatch({
                                     type,
-                                    updatedState: {...scopedState, ...updatedState},
+                                    initialState,
+                                    update,
                                     scope: scopeCache,
                                 });
                             },
@@ -154,17 +152,25 @@ export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
         return state;
     }
-    let {scope, updatedState} = action;
+    let {scope, initialState, update} = action;
+
+
+    const doUpdate = state => {
+        let s =  {...initialState, ...state};
+
+        if (typeof update === "function") {
+            update = update(s);
+        }
+
+        return {...initialState, ...state, ...update};
+    };
+
 
     if (!isEmpty(scope)) {
-        return updateIn(
-            disableLodashPath(scope),
-            () => updatedState,
-            state
-        );
+        return updateIn(disableLodashPath(scope), doUpdate,state);
     }
 
-    return updatedState;
+    return doUpdate(state);
 }
 
 export default leanReducer;
