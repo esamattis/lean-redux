@@ -123,7 +123,9 @@ export function connectLean(_options=plain) {
 
                     const methods = {
                         setState(update, cb) {
-                            setStateCallbacks.push(cb);
+                            if (typeof cb === "function") {
+                                setStateCallbacks.push(cb);
+                            }
                             dispatch({
                                 type,
                                 initialState,
