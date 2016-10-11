@@ -35,6 +35,9 @@ Counter = connectLean({
         this.setState({count: this.state.count + 1});
     },
 })(Counter);
+
+// Scope it to a myCounter key in the Redux state
+// <Counter scope="myCounter" />
 ```
 
 To learn more checkout the [live examples](https://epeli.github.io/lean-redux/examples/).
