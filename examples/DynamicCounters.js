@@ -24,16 +24,11 @@ DynamicCounters = connectLean({
     handlers: {
         addCounter(e) {
             e.preventDefault();
-            // Instead of accessing the props from the arguments you can also
-            // return an object of functions to get the previus value in the
-            // key.
-            return {counterCount: i => i + 1};
+            this.setState({counterCount: this.state.counterCount + 1});
         },
         removeCounter(e) {
             e.preventDefault();
-            return {
-                counterCount: i => Math.max(i - 1, 0),
-            };
+            this.setState({counterCount: Math.max(this.state.counterCount - 1, 0)});
         },
     },
 

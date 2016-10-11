@@ -1,5 +1,6 @@
 import React from "react";
 import {connectLean} from "../src/lean";
+import u from "updeep";
 
 import RandomGif from "./RandomGif";
 
@@ -31,19 +32,19 @@ RandomGifList = connectLean({
             e.preventDefault();
             return {newTag: e.target.value};
         },
-        addGif(e, _1, _2, props) {
+        addGif(e) {
             e.preventDefault();
 
-            return {
+            this.setState(u({
                 newTag: "",
                 nextId: i => i + 1,
                 gifs: {
-                    [props.nextId]: {
-                        id:  props.nextId,
-                        tag: props.newTag,
+                    [this.props.nextId]: {
+                        id:  this.props.nextId,
+                        tag: this.props.newTag,
                     },
                 },
-            };
+            }));
         },
     },
 

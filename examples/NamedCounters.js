@@ -1,7 +1,7 @@
 
 import React from "react";
 import {connectLean} from "../src/lean";
-import {omit, pick} from "lodash/fp";
+import {omit, pick, update} from "lodash/fp";
 
 import Counter from "./Counter";
 
@@ -15,9 +15,9 @@ NamedCounter = connectLean({
     // name and id are the scoped part of the state. Pick those up.
     mapState: pick(["name", "id"]),
     handlers: {
-        handleXClick(e, _1, _2, props) {
+        handleXClick(e) {
             e.preventDefault();
-            props.onRemove(props.id);
+            this.props.onRemove(this.props.id);
         },
     },
 })(NamedCounter);
@@ -27,7 +27,7 @@ var NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCou
         <input onChange={handleNameChange} value={newName} />
         <button onClick={addCounter} disabled={!newName}>add</button>
         {Object.keys(counters).sort().map(counterId => (
-            <NamedCounter key={counterId} scope={[scope, "counters", counterId]} onRemove={removeCounter} />
+            <NamedCounter key={counterId} scope={[scope, "counters", counterId]} onRemove={removeCounter} id={counterId} />
         ))}
     </div>
 );
@@ -43,27 +43,25 @@ NamedCounters = connectLean({
     handlers: {
         handleNameChange(e) {
             e.preventDefault();
-            return {newName: e.target.value};
+            this.setState({newName: e.target.value});
         },
-        addCounter(e, _1, _2, props) {
+        addCounter(e) {
             e.preventDefault();
 
-            return {
+            console.log("state", this.state);
+            this.setState(update(["counters", String(this.state.nextCounterId)], () => ({
+                id:  this.state.nextCounterId,
+                name: this.state.newName,
+            })));
+
+            this.setState({
                 newName: "",
-                nextCounterId: i => i + 1,
-                counters: {
-                    [props.nextCounterId]: {
-                        id:  props.nextCounterId,
-                        name: props.newName,
-                    },
-                },
-            };
+                nextCounterId: this.state.nextCounterId + 1,
+            });
+
         },
         removeCounter(counterId) {
-            // Lean Redux works beautifully with curried functions. Such as
-            // lodash/fp or Ramda. Without currying this would look like this:
-            //     {counters: counters => omit(counterId, counters)}
-            return {counters: omit(counterId)};
+            this.setState(update(["counters"], omit(counterId)));
         },
     },
 

@@ -41,17 +41,15 @@ AsyncAdvanced = connectLean({
             cancel(e) {
                 e.preventDefault();
                 clearTimeout(timer);
-                return {status: "canceled"};
+                this.setState({status: "canceled"});
             },
             fetchAsync(e) {
                 e.preventDefault();
-                return thunk((update, getProps) => {
-                    update({status: "fetching"});
-                    timer = setTimeout(() => {
-                        update({status: "done"});
-                        getProps().setData("async fetched data!");
-                    }, 3000);
-                });
+                this.setState({status: "fetching"});
+                timer = setTimeout(() => {
+                    this.setState({status: "done"});
+                    this.setData("async fetched data!");
+                }, 3000);
             },
         };
     },
