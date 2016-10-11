@@ -88,7 +88,7 @@ Functions exported by the `lean-redux` module.
 Connects a React component to a Redux store. Like `connect()` in React Redux it
 does not modify the component but returns a new one.
 
-#### `options` keys
+#### `options`
 
 - `scope: string|Array` Scope the component to a part of the state. Deep
 scopes can be defined with arrays. Works like paths in
