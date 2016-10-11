@@ -7,8 +7,8 @@
 
 
 - Basic Redux state access and updating should be simple as it is with the component local state
-  - No need to manually define action types, reducers or even actions creators
-  - Nearly the same API with React components!
+  - No need to create action types, reducers or even action creators
+  - Nearly the same API with React Components!
 - Redux state can be scoped to the components
   - Component cannot interfere with parts of the state that do not belong to it
 - Play well with other tools in the Redux community
