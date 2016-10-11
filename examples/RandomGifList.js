@@ -27,27 +27,27 @@ RandomGifList = connectLean({
             gifs: {},
         };
     },
-    handlers: {
-        handleTagChange(e) {
-            e.preventDefault();
-            return {newTag: e.target.value};
-        },
-        addGif(e) {
-            e.preventDefault();
 
-            this.setState(u({
-                newTag: "",
-                nextId: i => i + 1,
-                gifs: {
-                    [this.props.nextId]: {
-                        id:  this.props.nextId,
-                        tag: this.props.newTag,
-                    },
-                },
-            }));
-        },
+    handleTagChange(e) {
+        e.preventDefault();
+        this.setState({newTag: e.target.value});
     },
 
+    addGif(e) {
+        e.preventDefault();
+
+        console.log("setting from new tag", this.state);
+        this.setState(u({
+            newTag: "",
+            nextId: i => i + 1,
+            gifs: {
+                [this.state.nextId]: {
+                    id:  this.state.nextId,
+                    tag: this.state.newTag,
+                },
+            },
+        }));
+    },
 })(RandomGifList);
 
 

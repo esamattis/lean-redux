@@ -18,20 +18,20 @@ var DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (
 );
 DynamicCounters = connectLean({
     scope: "dynamicCounters",
+
     getInitialState() {
         return {counterCount: 1};
     },
-    handlers: {
-        addCounter(e) {
-            e.preventDefault();
-            this.setState({counterCount: this.state.counterCount + 1});
-        },
-        removeCounter(e) {
-            e.preventDefault();
-            this.setState({counterCount: Math.max(this.state.counterCount - 1, 0)});
-        },
+
+    addCounter(e) {
+        e.preventDefault();
+        this.setState({counterCount: this.state.counterCount + 1});
     },
 
+    removeCounter(e) {
+        e.preventDefault();
+        this.setState({counterCount: Math.max(this.state.counterCount - 1, 0)});
+    },
 })(DynamicCounters);
 
 

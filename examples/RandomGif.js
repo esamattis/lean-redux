@@ -1,5 +1,5 @@
 import React from "react";
-import {connectLean, thunk} from "../src/lean";
+import {connectLean} from "../src/lean";
 
 class RandomGif extends React.PureComponent {
     componentDidMount() {
@@ -21,29 +21,29 @@ class RandomGif extends React.PureComponent {
 }
 RandomGif = connectLean({
     scope: "singleRandomGif",
+
     getInitialState() {
         return {
             status: "waiting",
             url: null,
         };
     },
-    handlers: {
-        setUrl(url) {
-            return {url};
-        },
-        fetchGif() {
-            this.setState({status: "fetching"});
-            fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + this.props.tag)
-            .then(res => res.json())
-            .then(json => {
-                this.setState({
-                    status: "ok",
-                    url: json.data.fixed_height_small_url,
-                });
-            });
-        },
+
+    setUrl(url) {
+        return {url};
     },
 
+    fetchGif() {
+        this.setState({status: "fetching"});
+        fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + this.props.tag)
+        .then(res => res.json())
+        .then(json => {
+            this.setState({
+                status: "ok",
+                url: json.data.fixed_height_small_url,
+            });
+        });
+    },
 })(RandomGif);
 
 
