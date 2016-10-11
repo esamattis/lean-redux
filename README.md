@@ -14,8 +14,8 @@
   - Component cannot interfere with parts of the state that do not belong to it
 - Play well with other tools in the Redux community
   - Time travel debuggers, Redux Form etc. work well with Lean Redux
-  - You should be able to drop this into your existing project and start using
-    it only for parts of the app
+  - You can drop this into your existing project and start using it only for
+    parts of the app
 - Good performance
   - Lean Redux is build on top of the new `connectAdvanced()` primitive of
     React Redux 5.0 and implements the same optimizations as `connect()`
