@@ -93,6 +93,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <NamedCounters />
         </Example>
 
+
         <h2>Multiple Named Counters</h2>
         <p>
             Just to reiterate. Scoping works for complex components too.
@@ -101,6 +102,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <MultipleNamedCounters />
         </Example>
 
+
         <h2>Async updates</h2>
         <p>
             Like redux-thunk.
@@ -108,6 +110,7 @@ var Main = ({gifsVisible, showGifs}) => (
         <Example source="Async.js" >
             <Async />
         </Example>
+
         <h2>Advanced Async</h2>
         <p>
             Use constructor pattern to handle component specific async state.
@@ -115,6 +118,7 @@ var Main = ({gifsVisible, showGifs}) => (
         <Example source="AsyncAdvanced.js" >
             <AsyncAdvanced />
         </Example>
+
 
         <h2>Random Gif</h2>
         <p>
@@ -176,7 +180,7 @@ Main = connectLean({
         showGifs(e) {
             e.preventDefault();
             setTimeout(() => highlight(".gifs pre code"), 0);
-            return {gifsVisible: true};
+            this.setState({gifsVisible: true});
         },
     },
 })(Main);

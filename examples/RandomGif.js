@@ -9,7 +9,7 @@ class RandomGif extends React.PureComponent {
         const {tag, status, url, fetchGif} = this.props;
         return (
             <div>
-                <h4>{tag}</h4>
+                <h4>gifs from tag: {tag}</h4>
                 {(url && status !== "fetching") && <img src={url} />}
                 <br />
                 <button onClick={fetchGif} disabled={status === "fetching"}>
@@ -32,17 +32,13 @@ RandomGif = connectLean({
             return {url};
         },
         fetchGif() {
-
-            return thunk((update, getProps) => {
-                update({status: "fetching"});
-
-                fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + getProps().tag)
-                .then(res => res.json())
-                .then(json => {
-                    update({
-                        status: "ok",
-                        url: json.data.fixed_height_small_url,
-                    });
+            this.setState({status: "fetching"});
+            fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + this.props.tag)
+            .then(res => res.json())
+            .then(json => {
+                this.setState({
+                    status: "ok",
+                    url: json.data.fixed_height_small_url,
                 });
             });
         },
