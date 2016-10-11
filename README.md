@@ -5,18 +5,15 @@
 
 ## Design goals
 
-- Simple things should be simple
-  - No need to manually define action types, reducers or even actions creators.
-  Just create event handlers which directly manipulate the Redux state scoped
-  to them.
-- Components should be mountable to other parts of the state easily like in Elm
+
+- Basic Redux state access and updating should be simple as it is with the component local state
+  - No need to manually define action types, reducers or even actions creators
+  - Nearly the same API!
+- Redux state can be scoped to the components
+  - Component cannot interfere with parts of the state that do not belong to it
 - Play well with other tools in the Redux community
   - Time travel debuggers, Redux Form etc. work well with Lean Redux
   - You should be able to drop this into your existing project and start using it only for parts of the app
-- Make it easy to avoid [pure render anti-patterns](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f#.5idpdujva)
-  - No need to create callbacks in during renders. Just use the `handlers` option.
-- Keep the awesome performance of [React Redux](https://github.com/reactjs/react-redux)
-  - Lean Redux is build on top of the new `connectAdvanced()` primitive of React Redux 5.0
 
 
 ## Example
@@ -33,11 +30,9 @@ Counter = connectLean({
     getInitialState() {
         return {count: 0};
     },
-    handlers: {
-        inc(e) {
-            e.preventDefault();
-            return {count: i => i + 1};
-        },
+    inc(e) {
+        e.preventDefault();
+        this.setState({count: this.state.count + 1});
     },
 })(Counter);
 ```
