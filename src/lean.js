@@ -112,20 +112,25 @@ export function connectLean(options=plain) {
 
                     type += "/" + handlerName;
 
+                    const methods = {
+                        setState(update) {
+                            dispatch({
+                                type,
+                                initialState,
+                                update,
+                                scope: scopeCache,
+                            });
+                        },
+                    };
+
 
                     return (...args) => {
-                        var localContext = {...handlerContext, ...{
-                            setState(update) {
 
-
-                                dispatch({
-                                    type,
-                                    initialState,
-                                    update,
-                                    scope: scopeCache,
-                                });
-                            },
-                        }};
+                        var localContext = {
+                            ...handlerContext,
+                            ...boundHandlersCache,
+                            ...methods,
+                        };
 
                         handler.apply(localContext, args);
                     };
