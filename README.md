@@ -95,12 +95,31 @@ scopes can be defined with arrays. Works like paths in
 [Lodash](https://lodash.com/docs/4.16.4#set). If `scope` is passed as a prop
 from the parent component it will override the value defined here.
 - `getInitialState(): Object` Create default values for the scoped state. Like
-component getInitialState this is executed only once when the component is
+React component `getInitialState()` this is executed only once when the component is
 mounted.
-- `mapState(state: Object, ownProps: Object): Object` Just like the
-`mapStateToProps` in React Redux, but the state is scoped according to the
-`scope` option. If not defined the default implementation is to return the
-props matching what `getInitialState()` returns.
+- `mapState(state: Object, ownProps: Object): Object` Modify the state before
+  passing it to the wrapped component. Just like the `mapStateToProps` in React
+  Redux, but the state is scoped according to the `scope` option. If not
+  defined the default implementation is to return the props matching what
+  `getInitialState()` returns.
+- `defaultProps: Object` Default props for the handler context.
+
+Any other methods are considered to be "handlers" and are passed the wrapped
+component as props.
+
+#### `handlerContext` 
+
+The context, `this`, in the handlers is like in a React Component. It's exactly
+like with the components.
+
+- `this.state: Object` The current scoped state.
+- `this.props: Object` Props from `defaultProps` and any additional props passed by
+  the parent component.
+- `this.setState(function|object nextState, [function callback])` Function to
+  update the scoped Redux state. The API is exactly the same with the React
+  Component [`setState()`](https://facebook.github.io/react/docs/component-api.html#setstate).
+
+
 - `handlers: Object|createHandlers(): Object` Object of event handler to be
 passed to the component as props. Each handler can return a `LeanUpdate` which
 transforms the part of the state scoped to the component. See below for
