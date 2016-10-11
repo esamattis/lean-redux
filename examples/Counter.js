@@ -13,10 +13,9 @@ class Counter extends React.PureComponent {
 
     render() {
         const {count, inc, amount} = this.props;
-        console.log("rendering", amount);
         return (
             <span>
-                {count} <button onClick={inc}>inc</button>
+                {count} <button onClick={inc}>+{amount}</button>
             </span>
         );
     }
