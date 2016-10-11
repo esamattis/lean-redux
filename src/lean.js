@@ -44,9 +44,6 @@ export function update(...args) {
 
 const plain = {};
 
-export function thunk(cb) {
-    return {_thunk: cb};
-}
 export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
         let initialState = plain;
