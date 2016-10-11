@@ -131,13 +131,13 @@ export function connectLean(_options=plain) {
 
                     return (...args) => {
 
-                        var localContext = {
-                            ...handlerContext,
-                            ...boundHandlersCache,
-                            ...methods,
-                        };
+                        Object.assign(
+                            handlerContext,
+                            boundHandlersCache,
+                            methods
+                        );
 
-                        handler.apply(localContext, args);
+                        handler.apply(handlerContext, args);
                     };
                 };
 
