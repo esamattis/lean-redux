@@ -103,7 +103,7 @@ does not modify the component but returns a new one.
   `getInitialState()` returns.
 - `defaultProps: Object` Default props for the handler context.
 
-Any other methods are considered to be "handlers" and are passed the wrapped
+Any other methods are considered to be "handlers" and are passed to the wrapped
 component as props.
 
 #### `handlerContext` 
