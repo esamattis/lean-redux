@@ -67,6 +67,7 @@ export function connectLean(_options=plain) {
 
         const handlerContext = {};
 
+        var setStateCallbacks = [];
         return (fullState, ownProps) => {
             scope = ownProps.scope || scope;
 
@@ -91,6 +92,10 @@ export function connectLean(_options=plain) {
             scopedState = {...initialState, ...scopedState};
             handlerContext.state = scopedState;
             handlerContext.props = props;
+            if (!isEmpty(setStateCallbacks)) {
+                setStateCallbacks.forEach(cb => cb());
+                setStateCallbacks = [];
+            }
 
             // Implement React Redux style advanced performance pattern where
             // the mapState can create the mapState function itself
@@ -117,7 +122,8 @@ export function connectLean(_options=plain) {
                     type += "/" + handlerName;
 
                     const methods = {
-                        setState(update) {
+                        setState(update, cb) {
+                            setStateCallbacks.push(cb);
                             dispatch({
                                 type,
                                 initialState,
