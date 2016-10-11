@@ -6,7 +6,10 @@ import pick from "lodash/fp/pick";
 import flattenDeep from "lodash/fp/flattenDeep";
 import isEqual from "lodash/fp/isEqual";
 import isEmpty from "lodash/fp/isEmpty";
+import pickBy from "lodash/fp/pickBy";
+
 const mapValuesWithKey = mapValues.convert({cap: false});
+const pickFunctions = pickBy(v => typeof v === "function");
 
 export function composeReducers(...reducers) {
     return (state=null, action) => {
@@ -44,33 +47,31 @@ export function update(...args) {
 
 const plain = {};
 
-export function connectLean(options=plain) {
+export function connectLean(_options=plain) {
     return connectAdvanced(dispatch => {
+        var {scope, defaultProps, mapState, getInitialState, ...handlers} = _options;
+        handlers = pickFunctions(handlers);
         let initialState = plain;
 
-        if (typeof options.getInitialState === "function") {
-            initialState = options.getInitialState();
+        if (typeof getInitialState === "function") {
+            initialState = getInitialState();
         }
 
         var boundHandlersCache = null;
         var scopeCache = {}; // Just something which is never equals with real scopes
 
-        var mapState = typeof options.mapState === "function"
-            ? options.mapState
+        mapState = typeof mapState === "function"
+            ? mapState
             : pick(Object.keys(initialState));
 
-        var handlers = options.handlers || plain;
-        if (typeof handlers === "function") {
-            handlers = handlers();
-        }
 
         const handlerContext = {};
 
         return (fullState, ownProps) => {
+            scope = ownProps.scope || scope;
 
             var generateHandlers = false;
-            var scope = ownProps.scope || options.scope;
-            var props = {...options.defaultProps, ...ownProps, scope};
+            var props = {...defaultProps, ...ownProps, scope};
 
             if (Array.isArray(scope)) {
                 scope = flattenDeep(scope);
