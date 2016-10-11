@@ -1,7 +1,7 @@
 
 # Lean Redux [![Build Status](https://secure.travis-ci.org/epeli/lean-redux.png?branch=master)](http://travis-ci.org/epeli/lean-redux)
 
-[Redux](http://redux.js.org/) without the boilerplate for [React](https://facebook.github.io/react/).
+[Redux](http://redux.js.org/) state like local state.
 
 ## Design goals
 
