@@ -44,7 +44,6 @@ export function update(...args) {
 
 
 const plain = {};
-const withSlash = s => s ? ("/" + s) : "";
 
 export function thunk(cb) {
     return {_thunk: cb};
@@ -55,26 +54,24 @@ export function connectLean(options=plain) {
 
         if (typeof options.getInitialState === "function") {
             initialState = options.getInitialState();
-        } else if (options.defaultProps) {
-            console.warn("You are using deprecated defaultProps. Update to getInitialState");
-            initialState = options.defaultProps;
         }
 
         var boundHandlersCache = null;
-        var propsCache = null;
         var prevScope = {}; // Just something which is never equal with real scopes
-        const getProps = () => propsCache;
 
         var mapState = typeof options.mapState === "function"
             ? options.mapState
             : pick(Object.keys(initialState));
 
-        const handlers = typeof options.handlers === "function"
-            ? options.handlers(getProps)
-            : options.handlers;
+        const handlers = options.handlers || plain;
+
+        const handlerContext = {};
 
         return (fullState, ownProps) => {
+
             var scope = ownProps.scope || options.scope;
+            var props = {...options.defaultProps, ...ownProps, scope};
+
             if (Array.isArray(scope)) {
                 scope = flattenDeep(scope);
             }
@@ -86,49 +83,58 @@ export function connectLean(options=plain) {
             }
 
             scopedState = {...initialState, ...scopedState};
+            handlerContext.state = scopedState;
+            handlerContext.props = props;
 
             // Implement React Redux style advanced performance pattern where
             // the mapState can create the mapState function itself
-            let _state =  mapState(scopedState, ownProps);
-            if (typeof _state === "function") {
+            let mappedState =  mapState(scopedState, props);
+            if (typeof mappedState === "function") {
                 // map state generated a new mapState function. Save it
-                mapState = _state;
+                mapState = mappedState;
                 // and use it to map the state
-                _state =  mapState(scopedState, ownProps);
+                mappedState =  mapState(scopedState, props);
             }
-            scopedState = _state;
 
 
             // Regenerate handlers only when the scope changes
             if (!isEqual(prevScope, scope)) {
                 prevScope = scope;
-                const dispatchUpdate = (updateName, update) => {
-                    if (!update) {
-                        return;
+
+                const bindDispatch = (handler, handlerName) => {
+                    var type = "LEAN_UPDATE";
+
+                    if (Array.isArray(scope)) {
+                        type += "/" + scope.join(".");
+                    } else if (typeof scope === "string") {
+                        type += "/" + scope;
                     }
 
-                    if (update && typeof update._thunk === "function") {
-                        return update._thunk(dispatchUpdate.bind(null, updateName), getProps);
-                    }
-                    var actionSuffix = scope;
-                    if (Array.isArray(actionSuffix)) {
-                        actionSuffix = actionSuffix.join(".");
-                    }
+                    type += "/" + handlerName;
 
-                    dispatch({
-                        type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
-                        update,
-                        initialState,
-                        scope,
-                    });
+                    console.log("binding handler", handlerName);
+
+                    return (...args) => {
+                        console.log("executing handler", handlerName);
+                        var localContext = {...handlerContext, ...{
+                            setState(updatedState) {
+                                dispatch({
+                                    type,
+                                    update: updatedState,
+                                    initialState,
+                                    scope,
+                                });
+                            },
+                        }};
+
+                        handler.apply(localContext, args);
+                    };
                 };
-
-                const bindDispatch = (updateFn, updateName) => (...args) => dispatchUpdate(updateName, updateFn(...args.concat(propsCache)));
 
                 boundHandlersCache = mapValuesWithKey(bindDispatch, handlers);
             }
 
-            return propsCache = {...ownProps, ...scopedState, ...boundHandlersCache, scope};
+            return {...props, ...mappedState, ...boundHandlersCache, scope};
         };
 
     }, {
