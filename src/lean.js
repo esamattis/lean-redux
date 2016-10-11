@@ -57,7 +57,7 @@ export function connectLean(options=plain) {
         }
 
         var boundHandlersCache = null;
-        var prevScope = {}; // Just something which is never equal with real scopes
+        var scopeCache = {}; // Just something which is never equals with real scopes
 
         var mapState = typeof options.mapState === "function"
             ? options.mapState
@@ -69,6 +69,7 @@ export function connectLean(options=plain) {
 
         return (fullState, ownProps) => {
 
+            var generateHandlers = false;
             var scope = ownProps.scope || options.scope;
             var props = {...options.defaultProps, ...ownProps, scope};
 
@@ -76,10 +77,15 @@ export function connectLean(options=plain) {
                 scope = flattenDeep(scope);
             }
 
+            if (!isEqual(scopeCache, scope)) {
+                scopeCache = scope;
+                generateHandlers = true;
+            }
+
             var scopedState = fullState || plain;
 
-            if (!isEmpty(scope)) {
-                scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
+            if (!isEmpty(scopeCache)) {
+                scopedState = {...getOr(plain, disableLodashPath(scopeCache), fullState), scope: scopeCache};
             }
 
             scopedState = {...initialState, ...scopedState};
@@ -134,7 +140,7 @@ export function connectLean(options=plain) {
                 boundHandlersCache = mapValuesWithKey(bindDispatch, handlers);
             }
 
-            return {...props, ...mappedState, ...boundHandlersCache, scope};
+            return {...props, ...mappedState, ...boundHandlersCache, scope: scopeCache};
         };
 
     }, {
