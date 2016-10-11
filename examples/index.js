@@ -13,6 +13,7 @@ import {leanReducer, connectLean} from "../src/lean";
 
 import Counter from "./Counter";
 import MultipleCounters from "./MultipleCounters";
+import ConfiguredCounter from "./ConfiguredCounter";
 import DynamicCounters from "./DynamicCounters";
 import NamedCounters from "./NamedCounters";
 import MultipleNamedCounters from "./MultipleNamedCounters";
@@ -100,6 +101,14 @@ var Main = ({gifsVisible, showGifs}) => (
         </p>
         <Example source="MultipleNamedCounters.js" >
             <MultipleNamedCounters />
+        </Example>
+
+        <h2>Configured Counter</h2>
+        <p>
+            Because the state is in Redux we can access it with normal Redux <em>connect()</em> too.
+        </p>
+        <Example source="ConfiguredCounter.js" name="">
+            <ConfiguredCounter />
         </Example>
 
 
