@@ -6,7 +6,6 @@ import pick from "lodash/fp/pick";
 import flattenDeep from "lodash/fp/flattenDeep";
 import isEqual from "lodash/fp/isEqual";
 import isEmpty from "lodash/fp/isEmpty";
-import updateObject from "updeep/dist/update";
 const mapValuesWithKey = mapValues.convert({cap: false});
 
 export function composeReducers(...reducers) {
@@ -103,32 +102,32 @@ export function connectLean(options=plain) {
             }
 
 
-            // Regenerate handlers only when the scope changes
-            if (!isEqual(prevScope, scope)) {
-                prevScope = scope;
+            if (generateHandlers) {
 
                 const bindDispatch = (handler, handlerName) => {
                     var type = "LEAN_UPDATE";
 
-                    if (Array.isArray(scope)) {
-                        type += "/" + scope.join(".");
-                    } else if (typeof scope === "string") {
-                        type += "/" + scope;
+                    if (Array.isArray(scopeCache)) {
+                        type += "/" + scopeCache.join(".");
+                    } else if (typeof scopeCache === "string") {
+                        type += "/" + scopeCache;
                     }
 
                     type += "/" + handlerName;
 
-                    console.log("binding handler", handlerName);
 
                     return (...args) => {
-                        console.log("executing handler", handlerName);
                         var localContext = {...handlerContext, ...{
                             setState(updatedState) {
+
+                                if (typeof updatedState === "function") {
+                                    updatedState = updatedState(scopedState);
+                                }
+
                                 dispatch({
                                     type,
-                                    update: updatedState,
-                                    initialState,
-                                    scope,
+                                    updatedState: {...scopedState, ...updatedState},
+                                    scope: scopeCache,
                                 });
                             },
                         }};
@@ -155,17 +154,17 @@ export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
         return state;
     }
-    let {scope, update, initialState} = action;
+    let {scope, updatedState} = action;
 
     if (!isEmpty(scope)) {
         return updateIn(
             disableLodashPath(scope),
-            s => updateObject(update, {...initialState, ...s}),
+            () => updatedState,
             state
         );
     }
 
-    return updateObject(action.update, {...initialState, ...state});
+    return updatedState;
 }
 
 export default leanReducer;
