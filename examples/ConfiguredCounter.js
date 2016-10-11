@@ -5,17 +5,20 @@ import {getOr} from "lodash/fp";
 
 import Counter from "./Counter";
 
-var Configurator = ({handleChange}) => (
+var Configurator = ({handleChange, amount}) => (
     <div>
-        Set increment amount <input type="text" onChange={handleChange} />
+        Set increment amount <input type="text" onChange={handleChange} value={amount} placeholder="1" />
     </div>
 );
 Configurator = connectLean({
     scope: "config",
-    handlers: {
-        handleChange(e) {
-            this.setState({amount: parseInt(e.target.value, 10)});
-        },
+
+    getInitialState() {
+        return {amount: ""};
+    },
+
+    handleChange(e) {
+        this.setState({amount: parseInt(e.target.value, 10)});
     },
 })(Configurator);
 

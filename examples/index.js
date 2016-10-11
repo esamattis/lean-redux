@@ -17,7 +17,6 @@ import ConfiguredCounter from "./ConfiguredCounter";
 import DynamicCounters from "./DynamicCounters";
 import NamedCounters from "./NamedCounters";
 import Async from "./Async";
-import AsyncAdvanced from "./AsyncAdvanced";
 import RandomGif from "./RandomGif";
 import RandomGifPair from "./RandomGifPair";
 import RandomGifList from "./RandomGifList";
@@ -63,6 +62,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <Counter />
         </Example>
 
+
         <h2>Multiple Counters</h2>
         <p>
             Instead of defining the scope in the <em>connectLean</em> HOC
@@ -74,6 +74,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <MultipleCounters />
         </Example>
 
+
         <h2>Dynamic Counters</h2>
         <p>
             The <em>scope</em> prop can be dynamic and even go deep into
@@ -84,6 +85,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <DynamicCounters />
         </Example>
 
+
         <h2>Named Counters</h2>
         <p>
             This is the standard TODO example (but with added counters!)
@@ -92,6 +94,7 @@ var Main = ({gifsVisible, showGifs}) => (
         <Example source="NamedCounters.js" >
             <NamedCounters />
         </Example>
+
 
         <h2>Configured Counter</h2>
         <p>
@@ -104,20 +107,13 @@ var Main = ({gifsVisible, showGifs}) => (
 
         <h2>Async updates</h2>
         <p>
-            Like redux-thunk.
+            Nothing really special. Like you would do in a component. If the
+            component is unmounted before the async operation finishes it will
+            still update the Redux state in the scope.
         </p>
         <Example source="Async.js" >
             <Async />
         </Example>
-
-        <h2>Advanced Async</h2>
-        <p>
-            Use constructor pattern to handle component specific async state.
-        </p>
-        <Example source="AsyncAdvanced.js" >
-            <AsyncAdvanced />
-        </Example>
-
 
         <h2>Random Gif</h2>
         <p>
@@ -175,12 +171,10 @@ Main = connectLean({
     getInitialState() {
         return {gifsVisible: false};
     },
-    handlers: {
-        showGifs(e) {
-            e.preventDefault();
-            setTimeout(() => highlight(".gifs pre code"), 0);
-            this.setState({gifsVisible: true});
-        },
+    showGifs(e) {
+        e.preventDefault();
+        setTimeout(() => highlight(".gifs pre code"), 0);
+        this.setState({gifsVisible: true});
     },
 })(Main);
 
