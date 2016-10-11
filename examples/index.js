@@ -130,7 +130,7 @@ var Main = ({gifsVisible, showGifs}) => (
             <a href="#" onClick={showGifs}>Click here the mount them</a>.
         </p>
         <p>
-            These gif examples do not use cover any new concepts anymore.
+            These gif examples do not use any new concepts anymore.
             They are just some more real worldish examples combining async
             loading with scopes.
         </p>
