@@ -109,10 +109,9 @@ component as props.
 
 #### `handlerContext` 
 
-The context, `this`, in the handlers is like in a React Component. It's exactly
-like with the components.
+The context, `this`, in the handlers is like in the React Components.
 
-- `this.state: Object` The current scoped state.
+- `this.state: Object` The current scoped state from Redux
 - `this.props: Object` Props from `defaultProps` and any additional props passed by
   the parent component.
 - `this.setState(function|object nextState, [function callback])` Function to
