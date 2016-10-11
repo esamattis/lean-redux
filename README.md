@@ -6,14 +6,19 @@
 ## Design goals
 
 
-- Basic Redux state access and updating should be simple as it is with the component local state
+- Basic Redux state access and updating should be simple as it is with the
+  component local state
   - No need to create action types, reducers or even action creators
   - Nearly the same API with React Components!
 - Redux state can be scoped to the components
   - Component cannot interfere with parts of the state that do not belong to it
 - Play well with other tools in the Redux community
   - Time travel debuggers, Redux Form etc. work well with Lean Redux
-  - You should be able to drop this into your existing project and start using it only for parts of the app
+  - You should be able to drop this into your existing project and start using
+    it only for parts of the app
+- Good performance
+  - Lean Redux is build on top of the new `connectAdvanced()` primitive of
+    React Redux 5.0 and implements the same optimizations as `connect()`
 
 
 ## Example
