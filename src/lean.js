@@ -74,6 +74,7 @@ export function connectLean(_options=plain) {
         let initialState = plain;
         const finalPropsCache = createCache();
         const scopedStateCache = createCache();
+        const propsCache = createCache();
         let mappedState = null;
 
         if (typeof getInitialState === "function") {
@@ -95,7 +96,7 @@ export function connectLean(_options=plain) {
             scope = ownProps.scope || scope;
 
             var generateHandlers = false;
-            var props = {...defaultProps, ...ownProps, scope};
+            var props = propsCache({...defaultProps, ...ownProps, scope});
 
             if (Array.isArray(scope)) {
                 scope = flattenDeep(scope);
@@ -120,7 +121,7 @@ export function connectLean(_options=plain) {
                 setStateCallbacks = [];
             }
 
-            if (mappedState === null || scopedState.changed) {
+            if (mappedState === null || scopedStateCache.changed || propsCache.changed) {
                 // Implement React Redux style advanced performance pattern where
                 // the mapState can create the mapState function itself
                 mappedState =  mapState(scopedState, props);
