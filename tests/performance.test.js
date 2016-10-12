@@ -107,5 +107,39 @@ describe("performance", () => {
         expect(mapSpy).toHaveBeenCalledTimes(mapCount + 1);
     });
 
+    test("mapState is not called if parent props dont' change even when it's using them", () => {
+        const store = createStore(leanReducer);
+        const mapSpy = jest.fn();
+
+        class Hello extends React.PureComponent {
+
+            render() {
+                return <div>Hello {name}</div>;
+            }
+        }
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "same value"};
+            },
+            defaultProps: {
+                aProp: "default prop",
+            },
+            mapState(state, ownProps) {
+                mapSpy();
+                return {name: "hard coded", p: ownProps.aProp};
+            },
+            setName() {
+                this.setState({name: "same value"});
+            },
+        })(Hello);
+
+        const {setProps} = render(store, Hello);
+        setProps({aProp: "from parent"});
+        const mapCount = mapSpy.mock.calls.length;
+        setProps({aProp: "from parent"});
+        expect(mapSpy).toHaveBeenCalledTimes(mapCount);
+    });
 
 });
