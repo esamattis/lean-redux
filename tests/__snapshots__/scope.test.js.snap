@@ -1,0 +1,7 @@
+exports[`scope is used to set the location in redux state 1`] = `
+Object {
+  "ascope": Object {
+    "name": "from handler",
+  },
+}
+`;
