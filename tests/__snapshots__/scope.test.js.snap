@@ -1,3 +1,13 @@
+exports[`scope can be an array 1`] = `
+Object {
+  "foo": Object {
+    "bar": Object {
+      "name": "from handler",
+    },
+  },
+}
+`;
+
 exports[`scope can be overridden from the parent 1`] = `
 Object {
   "parentScope": Object {

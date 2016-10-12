@@ -55,5 +55,30 @@ describe("scope", () => {
         handler();
         expect(store.getState()).toMatchSnapshot();
     });
+
+    test("can be an array", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: ["foo", "bar"],
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        handler();
+        expect(store.getState()).toMatchSnapshot();
+    });
+
 });
 
