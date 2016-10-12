@@ -67,33 +67,29 @@
 	
 	var _lean = __webpack_require__(/*! ../src/lean */ 209);
 	
-	var _Counter = __webpack_require__(/*! ./Counter */ 434);
+	var _Counter = __webpack_require__(/*! ./Counter */ 435);
 	
 	var _Counter2 = _interopRequireDefault(_Counter);
 	
-	var _MultipleCounters = __webpack_require__(/*! ./MultipleCounters */ 435);
+	var _MultipleCounters = __webpack_require__(/*! ./MultipleCounters */ 436);
 	
 	var _MultipleCounters2 = _interopRequireDefault(_MultipleCounters);
 	
-	var _DynamicCounters = __webpack_require__(/*! ./DynamicCounters */ 436);
+	var _ConfiguredCounter = __webpack_require__(/*! ./ConfiguredCounter */ 437);
+	
+	var _ConfiguredCounter2 = _interopRequireDefault(_ConfiguredCounter);
+	
+	var _DynamicCounters = __webpack_require__(/*! ./DynamicCounters */ 440);
 	
 	var _DynamicCounters2 = _interopRequireDefault(_DynamicCounters);
 	
-	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 439);
+	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 441);
 	
 	var _NamedCounters2 = _interopRequireDefault(_NamedCounters);
 	
-	var _MultipleNamedCounters = __webpack_require__(/*! ./MultipleNamedCounters */ 440);
-	
-	var _MultipleNamedCounters2 = _interopRequireDefault(_MultipleNamedCounters);
-	
-	var _Async = __webpack_require__(/*! ./Async */ 441);
+	var _Async = __webpack_require__(/*! ./Async */ 442);
 	
 	var _Async2 = _interopRequireDefault(_Async);
-	
-	var _AsyncAdvanced = __webpack_require__(/*! ./AsyncAdvanced */ 442);
-	
-	var _AsyncAdvanced2 = _interopRequireDefault(_AsyncAdvanced);
 	
 	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
 	
@@ -112,7 +108,7 @@
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	// eslint-disable-next-line
-	window.SOURCE = ({"Async.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nvar Async = ({fetchAsync, data, status}) => (\n    <div>\n        <p>status: {status}</p>\n        <p>data: {data}</p>\n        <button onClick={fetchAsync}>fetch</button>\n    </div>\n);\nAsync = connectLean({\n    scope: \"async\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            data: \"nodata\",\n        };\n    },\n    handlers: {\n        setData(data) {\n            return {data};\n        },\n        fetchAsync(e) {\n            e.preventDefault();\n\n            // Like redux-thunk. You can send multiple updates over time using\n            // the update function. If you need to get the updated version of\n            // the component props you can use the getProps function\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n                setTimeout(() => {\n                    update({status: \"done\"});\n                    getProps().setData(\"async fetched data!\");\n                }, 2000);\n            });\n        },\n    },\n\n})(Async);\n\n\nexport default Async;\n","AsyncAdvanced.js":"\nimport React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass AsyncAdvanced extends React.Component {\n    componentWillUnmount() {\n        // Cancel request on unmount\n        this.props.cancel();\n    }\n    render() {\n        const {fetchAsync, data, status, cancel} = this.props;\n        return (\n            <div>\n                <p>status: {status}</p>\n                <p>data: {data}</p>\n                <button onClick={fetchAsync}>fetch</button>\n                <button onClick={cancel}>cancel</button>\n            </div>\n        );\n    }\n}\n\nAsyncAdvanced = connectLean({\n    scope: \"asyncAdvanced\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            data: \"nodata\",\n        };\n    },\n    handlers() {\n        // If handlers is a function it will excuted once for each component\n        // instance. You may keep some component specific data here which is\n        // not ok for redux state. Such as xhr-objects, promises etc.\n        var timer = null;\n\n        return {\n            setData(data) {\n                return {data};\n            },\n            cancel(e) {\n                e.preventDefault();\n                clearTimeout(timer);\n                return {status: \"canceled\"};\n            },\n            fetchAsync(e) {\n                e.preventDefault();\n                return thunk((update, getProps) => {\n                    update({status: \"fetching\"});\n                    timer = setTimeout(() => {\n                        update({status: \"done\"});\n                        getProps().setData(\"async fetched data!\");\n                    }, 3000);\n                });\n            },\n        };\n    },\n\n})(AsyncAdvanced);\n\n\nexport default AsyncAdvanced;\n","Counter.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nvar Counter = ({count, inc}) => (\n    <span>\n        {count} <button onClick={inc}>inc</button>\n    </span>\n);\nCounter = connectLean({\n    // This scopes the counter under \"singleCounter\" key in the state. If this\n    // is omitted the component uses the full state.\n    scope: \"singleCounter\",\n\n    // By default only props defined in getInitialState() are passed to the\n    // wrapped component. If you want to add some other props from the state\n    // you can define a mapState key with a function returning the desired\n    // state.\n    getInitialState() {\n        return {count: 0};\n    },\n\n    // Handlers are passed as props to the component. The return values update\n    // the state. The updates respect the scope defined above.\n    handlers: {\n        // The props object is passed to the handlers as the last argument.\n        inc(e, _skip1, _skip2, props) {\n            e.preventDefault();\n            return {count: props.count + 1};\n        },\n    },\n})(Counter);\n\n\nexport default Counter;\n","DynamicCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {range} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (\n    <div>\n        <button onClick={addCounter} >add counter</button>\n        <button onClick={removeCounter} >remove counter</button>\n        {range(0, counterCount).map(i => (\n            <div key={i} >\n                <Counter scope={[scope, \"counters\", i]} />\n            </div>\n        ))}\n    </div>\n);\nDynamicCounters = connectLean({\n    scope: \"dynamicCounters\",\n    getInitialState() {\n        return {counterCount: 1};\n    },\n    handlers: {\n        addCounter(e) {\n            e.preventDefault();\n            // Instead of accessing the props from the arguments you can also\n            // return an object of functions to get the previus value in the\n            // key.\n            return {counterCount: i => i + 1};\n        },\n        removeCounter(e) {\n            e.preventDefault();\n            return {\n                counterCount: i => Math.max(i - 1, 0),\n            };\n        },\n    },\n\n})(DynamicCounters);\n\n\nexport default DynamicCounters;\n","MultipleCounters.js":"import React from \"react\";\n\nimport Counter from \"./Counter\";\n\nvar MultipleCounters = () => (\n    <div>\n        <div>\n            <Counter scope=\"multicounter1\" />\n        </div>\n        <div>\n            <Counter scope=\"multicounter2\" />\n        </div>\n    </div>\n);\n\nexport default MultipleCounters;\n","MultipleNamedCounters.js":"import React from \"react\";\n\nimport NamedCounters from \"./NamedCounters\";\n\nvar MultipleNamedCounters = () => (\n    <div>\n        <h3>First</h3>\n        <div>\n            <NamedCounters scope=\"multipleNamedCounters\" />\n        </div>\n        <h3>Second</h3>\n        <p>\n          We can deeply scope this too.\n        </p>\n        <div>\n            <NamedCounters scope={[\"multi\", \"deep\", \"example\"]} />\n        </div>\n    </div>\n);\n\nexport default MultipleNamedCounters;\n","NamedCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {omit, pick} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\n\nvar NamedCounter = ({scope, name, handleXClick}) => (\n    <div>\n        {name} <Counter scope={scope} /> <button onClick={handleXClick}>x</button>\n    </div>\n);\nNamedCounter = connectLean({\n    // name and id are the scoped part of the state. Pick those up.\n    mapState: pick([\"name\", \"id\"]),\n    handlers: {\n        handleXClick(e, _1, _2, props) {\n            e.preventDefault();\n            props.onRemove(props.id);\n        },\n    },\n})(NamedCounter);\n\nvar NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCounter, scope}) => (\n    <div>\n        <input onChange={handleNameChange} value={newName} />\n        <button onClick={addCounter} disabled={!newName}>add</button>\n        {Object.keys(counters).sort().map(counterId => (\n            <NamedCounter key={counterId} scope={[scope, \"counters\", counterId]} onRemove={removeCounter} />\n        ))}\n    </div>\n);\nNamedCounters = connectLean({\n    scope: \"namedCounters\",\n    getInitialState() {\n        return {\n            nextCounterId: 1,\n            newName: \"\",\n            counters: {},\n        };\n    },\n    handlers: {\n        handleNameChange(e) {\n            e.preventDefault();\n            return {newName: e.target.value};\n        },\n        addCounter(e, _1, _2, props) {\n            e.preventDefault();\n\n            return {\n                newName: \"\",\n                nextCounterId: i => i + 1,\n                counters: {\n                    [props.nextCounterId]: {\n                        id:  props.nextCounterId,\n                        name: props.newName,\n                    },\n                },\n            };\n        },\n        removeCounter(counterId) {\n            // Lean Redux works beautifully with curried functions. Such as\n            // lodash/fp or Ramda. Without currying this would look like this:\n            //     {counters: counters => omit(counterId, counters)}\n            return {counters: omit(counterId)};\n        },\n    },\n\n})(NamedCounters);\n\n\nexport default NamedCounters;\n","RandomGif.js":"import React from \"react\";\nimport {connectLean, thunk} from \"../src/lean\";\n\nclass RandomGif extends React.PureComponent {\n    componentDidMount() {\n        this.props.fetchGif();\n    }\n    render() {\n        const {tag, status, url, fetchGif} = this.props;\n        return (\n            <div>\n                <h4>{tag}</h4>\n                {(url && status !== \"fetching\") && <img src={url} />}\n                <br />\n                <button onClick={fetchGif} disabled={status === \"fetching\"}>\n                    {status === \"fetching\" ? \"loading...\" : \"Next!\"}\n                </button>\n            </div>\n        );\n    }\n}\nRandomGif = connectLean({\n    scope: \"singleRandomGif\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            url: null,\n        };\n    },\n    handlers: {\n        setUrl(url) {\n            return {url};\n        },\n        fetchGif() {\n\n            return thunk((update, getProps) => {\n                update({status: \"fetching\"});\n\n                fetch(\"https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=\" + getProps().tag)\n                .then(res => res.json())\n                .then(json => {\n                    update({\n                        status: \"ok\",\n                        url: json.data.fixed_height_small_url,\n                    });\n                });\n            });\n        },\n    },\n\n})(RandomGif);\n\n\nexport default RandomGif;\n","RandomGifList.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nimport RandomGif from \"./RandomGif\";\n\nconst RandomGifWithTag = connectLean({\n    mapState(state) {\n        return {tag: state.tag};\n    },\n})(RandomGif);\n\nvar RandomGifList = ({gifs, handleTagChange, newTag, addGif, scope}) => (\n    <div>\n        <input onChange={handleTagChange} value={newTag} />\n        <button onClick={addGif} disabled={!newTag}>add</button>\n        {Object.keys(gifs).sort().map(id => (\n            <RandomGifWithTag key={id} scope={[scope, \"gifs\", id]} />\n        ))}\n    </div>\n);\nRandomGifList = connectLean({\n    getInitialState() {\n        return {\n            nextId: 1,\n            newTag: \"ghost\",\n            gifs: {},\n        };\n    },\n    handlers: {\n        handleTagChange(e) {\n            e.preventDefault();\n            return {newTag: e.target.value};\n        },\n        addGif(e, _1, _2, props) {\n            e.preventDefault();\n\n            return {\n                newTag: \"\",\n                nextId: i => i + 1,\n                gifs: {\n                    [props.nextId]: {\n                        id:  props.nextId,\n                        tag: props.newTag,\n                    },\n                },\n            };\n        },\n    },\n\n})(RandomGifList);\n\n\nexport default RandomGifList;\n","RandomGifPair.js":"import React from \"react\";\n\nimport RandomGif from \"./RandomGif\";\n\nvar RandomGifPair = ({scope}) => (\n    <div>\n        <div>\n            <RandomGif scope={[scope, \"first\"]} tag=\"cats\" />\n        </div>\n        <div>\n            <RandomGif scope={[scope, \"second\"]} tag=\"cars\" />\n        </div>\n    </div>\n);\n\nexport default RandomGifPair;\n","index.js":"// eslint-disable-next-line\nwindow.SOURCE = SOURCE;\nvar SOURCE = window.SOURCE;\n\nimport React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport {createStore, applyMiddleware, compose} from \"redux\";\nimport {Provider} from \"react-redux\";\nimport createLogger from \"redux-logger\";\n\nimport {leanReducer, connectLean} from \"../src/lean\";\n\n\nimport Counter from \"./Counter\";\nimport MultipleCounters from \"./MultipleCounters\";\nimport DynamicCounters from \"./DynamicCounters\";\nimport NamedCounters from \"./NamedCounters\";\nimport MultipleNamedCounters from \"./MultipleNamedCounters\";\nimport Async from \"./Async\";\nimport AsyncAdvanced from \"./AsyncAdvanced\";\nimport RandomGif from \"./RandomGif\";\nimport RandomGifPair from \"./RandomGifPair\";\nimport RandomGifList from \"./RandomGifList\";\n\n\nvar enhancers = [\n    applyMiddleware(createLogger()),\n    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),\n].filter(Boolean);\n\nconst store = createStore(leanReducer, compose(...enhancers));\n\nconst GIF_SCOPE = \"gifStuff\";\n\nfunction highlight(sel) {\n    document.querySelectorAll(sel).forEach(function(block) {\n        window.hljs.highlightBlock(block);\n    });\n}\n\nconst Example = ({source, children}) => (\n    <div className=\"example\">\n        <div className=\"demo\">\n            {children}\n        </div>\n        <div className=\"source\">\n            <div>\n                <a href={\"https://github.com/epeli/lean-redux/blob/master/examples/\" + source}>{source}</a>\n            </div>\n            <pre>\n                <code className=\"javascript\">\n                    {(SOURCE[source] || \"\").trim()}\n                </code>\n            </pre>\n        </div>\n    </div>\n);\n\nvar Main = ({gifsVisible, showGifs}) => (\n    <div>\n        <h2>Simple counter</h2>\n        <Example source=\"Counter.js\" >\n            <Counter />\n        </Example>\n\n        <h2>Multiple Counters</h2>\n        <p>\n            Instead of defining the scope in the <em>connectLean</em> HOC\n            you can define it as a prop. Notice how we can reuse the\n            component from the previous example just by mounting it to a\n            antoher part of the state using the <em>scope</em> prop.\n        </p>\n        <Example source=\"MultipleCounters.js\" name=\"\">\n            <MultipleCounters />\n        </Example>\n\n        <h2>Dynamic Counters</h2>\n        <p>\n            The <em>scope</em> prop can be dynamic and even go deep into\n            the state using the array syntax. The path creation works like\n            in <a href=\"https://lodash.com/docs/4.16.4#set\">Lodash</a>.\n        </p>\n        <Example source=\"DynamicCounters.js\" >\n            <DynamicCounters />\n        </Example>\n\n        <h2>Named Counters</h2>\n        <p>\n            This is the standard TODO example (but with added counters!)\n            demonstrating advanced component scoping.\n        </p>\n        <Example source=\"NamedCounters.js\" >\n            <NamedCounters />\n        </Example>\n\n        <h2>Multiple Named Counters</h2>\n        <p>\n            Just to reiterate. Scoping works for complex components too.\n        </p>\n        <Example source=\"MultipleNamedCounters.js\" >\n            <MultipleNamedCounters />\n        </Example>\n\n        <h2>Async updates</h2>\n        <p>\n            Like redux-thunk.\n        </p>\n        <Example source=\"Async.js\" >\n            <Async />\n        </Example>\n        <h2>Advanced Async</h2>\n        <p>\n            Use constructor pattern to handle component specific async state.\n        </p>\n        <Example source=\"AsyncAdvanced.js\" >\n            <AsyncAdvanced />\n        </Example>\n\n        <h2>Random Gif</h2>\n        <p>\n            At last we'll partly solve the problem presented at <a href=\"https://github.com/slorber/scalable-frontend-with-elm-or-redux\">slorber/scalable-frontend-with-elm-or-redux</a>.\n            Partly because with this library you don't write the reducers or\n            actions yourself (unless you really want to you can of course). So\n            that part of the \"Specification\" is ignored.\n        </p>\n        <p>\n            The gif examples will fire some actions on mount so they are not\n            mounted initially make things cleaner.\n        </p>\n        <p>\n            <a href=\"#\" onClick={showGifs}>Click here the mount them</a>.\n        </p>\n        <p>\n            These gif examples do not use cover any new concepts anymore.\n            They are just some more real worldish examples combining async\n            loading with scopes.\n        </p>\n        <p>\n            For fun we'll scope all of them under <em>gifStuff</em> key in the\n            Redux state. Checkout\n            the <a href=\"https://github.com/epeli/lean-redux/blob/master/examples/index.js\">examples/index.js</a> on\n            github to see how the scope is initialized for them.\n        </p>\n\n        {gifsVisible && <div className=\"gifs\">\n            <Example source=\"RandomGif.js\" >\n                <RandomGif tag=\"robots\" scope={[GIF_SCOPE, \"single\"]} />\n            </Example>\n\n            <h2>Random Gif Pair</h2>\n            <p>\n                This should look very familiar. See how the scope is passed\n                along from the parent component.\n            </p>\n            <Example source=\"RandomGifPair.js\" >\n                <RandomGifPair scope={[GIF_SCOPE, \"pair\"]} />\n            </Example>\n\n            <h2>Random Gif List</h2>\n            <p>\n                This is just a simpler version the Named Counters example. The\n                fact that the nested components are async doesn't show up here\n                in anyway.\n            </p>\n            <Example source=\"RandomGifList.js\" >\n                <RandomGifList scope={[GIF_SCOPE, \"list\"]} />\n            </Example>\n        </div>}\n    </div>\n);\nMain = connectLean({\n    getInitialState() {\n        return {gifsVisible: false};\n    },\n    handlers: {\n        showGifs(e) {\n            e.preventDefault();\n            setTimeout(() => highlight(\".gifs pre code\"), 0);\n            return {gifsVisible: true};\n        },\n    },\n})(Main);\n\n\nReactDOM.render(<Provider store={store}><Main /></Provider>, document.getElementById(\"app\"));\nhighlight(\"pre code\");\n\n","webpack.config.js":"var webpack = require(\"webpack\");\nvar fs = require(\"fs\");\n\nvar jsFiles = fs.readdirSync(__dirname).filter(n => n.endsWith(\".js\"));\nvar sourceFiles = {};\njsFiles.forEach(filename => {\n    sourceFiles[filename] = fs.readFileSync(filename).toString();\n});\n\n\n\n\nvar config = {\n    entry: \"./index.js\",\n    output: {\n        path: \"dist\",\n        filename: \"bundle.js\",\n        publicPath: \"/dist\",\n    },\n    // devtool: \"cheap-module-eval-source-map\", // faster\n    devtool: \"sourceMap\",\n    module: {\n        loaders: [\n            {\n                test: /\\.jsx?$/,\n                loader: \"babel\",\n                exclude: /node_modules/,\n            },\n\n        ],\n    },\n    plugins: [\n        new webpack.DefinePlugin({\n            \"SOURCE\": JSON.stringify(sourceFiles),\n            \"process.env.NODE_ENV\": JSON.stringify(\"development\"),\n        }),\n    ],\n};\n\n\nmodule.exports = config;\n"});
+	window.SOURCE = ({"Async.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nclass Async extends React.Component {\n    componentWillUnmount() {\n        // Cancel request on unmount\n        this.props.cancel();\n    }\n    render() {\n        const {fetchAsync, data, status, cancel} = this.props;\n        return (\n            <div>\n                <p>status: {status}</p>\n                <p>data: {data}</p>\n                <button onClick={fetchAsync}>fetch</button>\n                <button onClick={cancel}>cancel</button>\n            </div>\n        );\n    }\n}\n\nAsync = connectLean({\n    scope: \"async\",\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            data: \"nodata\",\n        };\n    },\n\n    setData(data) {\n        this.setState({data});\n    },\n\n    fetchAsync(e) {\n        e.preventDefault();\n        this.setState({status: \"fetching\"});\n\n        // Context of leanConnect() is created when the component is mounted.\n        // So it can be used hold items that are not approciate for Redux\n        // state. Such as promises, errors, xhr objects etc.\n        this.timer = setTimeout(() => {\n            this.setState({status: \"done\"});\n            this.setData(\"async fetched data!\");\n        }, 3000);\n    },\n\n    cancel(e) {\n        e.preventDefault();\n        clearTimeout(this.timer);\n        this.setState({status: \"canceled\"});\n    },\n})(Async);\n\n\nexport default Async;\n","ConfiguredCounter.js":"import React from \"react\";\nimport {connect} from \"react-redux\";\nimport {connectLean} from \"../src/lean\";\nimport {getOr} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar Configurator = ({handleChange, amount}) => (\n    <div>\n        Set increment amount <input type=\"text\" onChange={handleChange} value={amount} placeholder=\"1\" />\n    </div>\n);\nConfigurator = connectLean({\n    scope: \"config\",\n\n    getInitialState() {\n        return {amount: \"\"};\n    },\n\n    handleChange(e) {\n        this.setState({amount: parseInt(e.target.value, 10)});\n    },\n})(Configurator);\n\n\nvar ConfiguredCounter = ({amount}) => (\n    <div>\n        <Counter scope={[\"configuredCounter\", \"inDeep\"]} amount={amount} />\n    </div>\n);\nConfiguredCounter = connect(\n    state => {\n        return {amount: getOr(1, [\"config\", \"amount\"], state)};\n    }\n)(ConfiguredCounter);\n\n\nvar Main = () => (\n    <div>\n        <Configurator />\n        <ConfiguredCounter />\n    </div>\n\n);\n\nexport default Main;\n","Counter.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nclass Counter extends React.PureComponent {\n\n    componentWillReceiveProps(nextProps) {\n        for (let key in this.props) {\n            if (nextProps[key] !== this.props[key]) {\n                console.log(this.props.amount, \"prop changed\", key);\n            }\n        }\n    }\n\n    render() {\n        const {count, inc, amount} = this.props;\n        return (\n            <span>\n                {count} <button onClick={inc}>+{amount}</button>\n            </span>\n        );\n    }\n}\n\nCounter = connectLean({\n    // This scopes the counter under \"singleCounter\" key in the state. If this\n    // is omitted the component uses the full state.\n    scope: \"singleCounter\",\n\n    defaultProps: {\n        amount: 1,\n    },\n\n    // By default only props defined in getInitialState() are passed to the\n    // wrapped component. If you want to add some other props from the state\n    // you can define a mapState key with a function returning the desired\n    // state.\n    getInitialState() {\n        return {count: 0};\n    },\n\n    inc() {\n        this.setState({count: this.state.count + this.props.amount});\n    },\n\n})(Counter);\n\n\nexport default Counter;\n","DynamicCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {range} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\nvar DynamicCounters = ({counterCount, scope, addCounter, removeCounter}) => (\n    <div>\n        <button onClick={addCounter} >add counter</button>\n        <button onClick={removeCounter} >remove counter</button>\n        {range(0, counterCount).map(i => (\n            <div key={i} >\n                <Counter scope={[scope, \"counters\", i]} />\n            </div>\n        ))}\n    </div>\n);\nDynamicCounters = connectLean({\n    scope: \"dynamicCounters\",\n\n    getInitialState() {\n        return {counterCount: 1};\n    },\n\n    addCounter(e) {\n        e.preventDefault();\n        this.setState({counterCount: this.state.counterCount + 1});\n    },\n\n    removeCounter(e) {\n        e.preventDefault();\n        this.setState({counterCount: Math.max(this.state.counterCount - 1, 0)});\n    },\n})(DynamicCounters);\n\n\nexport default DynamicCounters;\n","MultipleCounters.js":"import React from \"react\";\n\nimport Counter from \"./Counter\";\n\nvar MultipleCounters = () => (\n    <div>\n        <div>\n            <Counter scope=\"multicounter1\" amount={2} />\n        </div>\n        <div>\n            <Counter scope=\"multicounter2\" amount={10} />\n        </div>\n    </div>\n);\n\nexport default MultipleCounters;\n","NamedCounters.js":"\nimport React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport {omit, pick, update} from \"lodash/fp\";\n\nimport Counter from \"./Counter\";\n\n\nvar NamedCounter = ({scope, name, handleXClick}) => (\n    <div>\n        {name} <Counter scope={scope} /> <button onClick={handleXClick}>x</button>\n    </div>\n);\nNamedCounter = connectLean({\n    // name and id are the scoped part of the state. Pick those up.\n    mapState: pick([\"name\", \"id\"]),\n\n    handleXClick(e) {\n        e.preventDefault();\n        this.props.onRemove(this.props.id);\n    },\n})(NamedCounter);\n\nvar NamedCounters = ({counters, handleNameChange, newName, addCounter, removeCounter, scope}) => (\n    <div>\n        <input onChange={handleNameChange} value={newName} />\n        <button onClick={addCounter} disabled={!newName}>add</button>\n        {Object.keys(counters).sort().map(counterId => (\n            <NamedCounter key={counterId} scope={[scope, \"counters\", counterId]} onRemove={removeCounter} id={counterId} />\n        ))}\n    </div>\n);\nNamedCounters = connectLean({\n    scope: \"namedCounters\",\n\n    getInitialState() {\n        return {\n            nextCounterId: 1,\n            newName: \"\",\n            counters: {},\n        };\n    },\n\n    handleNameChange(e) {\n        e.preventDefault();\n        this.setState({newName: e.target.value});\n    },\n\n    addCounter(e) {\n        e.preventDefault();\n\n        // This is a little used feature React setState where you can give a\n        // function to update the state. Here we use the update() function from\n        // lodash/fp to update items deeply in the state. It's curried function\n        // which means it returns a function when all arguments are not given\n        // to it. It needs three PATH, UPDATER, DATA. We do give the DATA here\n        // so it returns a funtion waiting for the data.\n        this.setState(update(\n            [\"counters\", this.state.nextCounterId],\n            () => ({\n                id:  this.state.nextCounterId,\n                name: this.state.newName,\n            })\n        ));\n\n        this.setState({\n            newName: \"\",\n            nextCounterId: this.state.nextCounterId + 1,\n        });\n\n    },\n\n    removeCounter(counterId) {\n        this.setState(update([\"counters\"], omit(counterId)));\n    },\n})(NamedCounters);\n\n\nexport default NamedCounters;\n","RandomGif.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\n\nclass RandomGif extends React.PureComponent {\n    componentDidMount() {\n        this.props.fetchGif();\n    }\n    render() {\n        const {tag, status, src, fetchGif} = this.props;\n        return (\n            <div>\n                <h4>gifs from tag: {tag}</h4>\n                {src && <img src={src} />}\n                <br />\n                <button onClick={fetchGif} disabled={status !== \"ok\"}>\n                    Next!\n                </button> {status}\n            </div>\n        );\n    }\n}\nRandomGif = connectLean({\n    scope: \"singleRandomGif\",\n\n    getInitialState() {\n        return {\n            status: \"waiting\",\n            src: null,\n        };\n    },\n\n    fetchGif() {\n        this.setState({status: \"fetching meta\"});\n        fetch(\"https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=\" + this.props.tag)\n        .then(res => res.json())\n        .then(json => {\n            this.setState({status: \"loading image\"});\n            var src = json.data.fixed_height_small_url;\n\n            // preload the image\n            var img = new Image();\n            img.onload = () => {\n                this.setState({status: \"ok\", src});\n            };\n            img.src = src;\n\n\n        });\n    },\n})(RandomGif);\n\n\nexport default RandomGif;\n","RandomGifList.js":"import React from \"react\";\nimport {connectLean} from \"../src/lean\";\nimport u from \"updeep\";\n\nimport RandomGif from \"./RandomGif\";\n\nconst RandomGifWithTag = connectLean({\n    mapState(state) {\n        return {tag: state.tag};\n    },\n})(RandomGif);\n\nvar RandomGifList = ({gifs, handleTagChange, newTag, addGif, scope}) => (\n    <div>\n        <input onChange={handleTagChange} value={newTag} />\n        <button onClick={addGif} disabled={!newTag}>add</button>\n        {Object.keys(gifs).sort().map(id => (\n            <RandomGifWithTag key={id} scope={[scope, \"gifs\", id]} />\n        ))}\n    </div>\n);\nRandomGifList = connectLean({\n    getInitialState() {\n        return {\n            nextId: 1,\n            newTag: \"ghost\",\n            gifs: {},\n        };\n    },\n\n    handleTagChange(e) {\n        e.preventDefault();\n        this.setState({newTag: e.target.value});\n    },\n\n    addGif(e) {\n        e.preventDefault();\n\n        console.log(\"setting from new tag\", this.state);\n        this.setState(u({\n            newTag: \"\",\n            nextId: i => i + 1,\n            gifs: {\n                [this.state.nextId]: {\n                    id:  this.state.nextId,\n                    tag: this.state.newTag,\n                },\n            },\n        }));\n    },\n})(RandomGifList);\n\n\nexport default RandomGifList;\n","RandomGifPair.js":"import React from \"react\";\n\nimport RandomGif from \"./RandomGif\";\n\nvar RandomGifPair = ({scope}) => (\n    <div>\n        <div>\n            <RandomGif scope={[scope, \"first\"]} tag=\"cats\" />\n        </div>\n        <div>\n            <RandomGif scope={[scope, \"second\"]} tag=\"cars\" />\n        </div>\n    </div>\n);\n\nexport default RandomGifPair;\n","index.js":"// eslint-disable-next-line\nwindow.SOURCE = SOURCE;\nvar SOURCE = window.SOURCE;\n\nimport React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport {createStore, applyMiddleware, compose} from \"redux\";\nimport {Provider} from \"react-redux\";\nimport createLogger from \"redux-logger\";\n\nimport {leanReducer, connectLean} from \"../src/lean\";\n\n\nimport Counter from \"./Counter\";\nimport MultipleCounters from \"./MultipleCounters\";\nimport ConfiguredCounter from \"./ConfiguredCounter\";\nimport DynamicCounters from \"./DynamicCounters\";\nimport NamedCounters from \"./NamedCounters\";\nimport Async from \"./Async\";\nimport RandomGif from \"./RandomGif\";\nimport RandomGifPair from \"./RandomGifPair\";\nimport RandomGifList from \"./RandomGifList\";\n\n\nvar enhancers = [\n    applyMiddleware(createLogger()),\n    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),\n].filter(Boolean);\n\nconst store = createStore(leanReducer, compose(...enhancers));\n\nconst GIF_SCOPE = \"gifStuff\";\n\nfunction highlight(sel) {\n    document.querySelectorAll(sel).forEach(function(block) {\n        window.hljs.highlightBlock(block);\n    });\n}\n\nconst Example = ({source, children}) => (\n    <div className=\"example\">\n        <div className=\"demo\">\n            {children}\n        </div>\n        <div className=\"source\">\n            <div>\n                <a href={\"https://github.com/epeli/lean-redux/blob/master/examples/\" + source}>{source}</a>\n            </div>\n            <pre>\n                <code className=\"javascript\">\n                    {(SOURCE[source] || \"\").trim()}\n                </code>\n            </pre>\n        </div>\n    </div>\n);\n\nvar Main = ({gifsVisible, showGifs}) => (\n    <div>\n        <h2>Simple counter</h2>\n        <Example source=\"Counter.js\" >\n            <Counter />\n        </Example>\n\n\n        <h2>Multiple Counters</h2>\n        <p>\n            Instead of defining the scope in the <em>connectLean</em> HOC\n            you can define it as a prop. Notice how we can reuse the\n            component from the previous example just by mounting it to a\n            antoher part of the state using the <em>scope</em> prop.\n        </p>\n        <Example source=\"MultipleCounters.js\" name=\"\">\n            <MultipleCounters />\n        </Example>\n\n\n        <h2>Dynamic Counters</h2>\n        <p>\n            The <em>scope</em> prop can be dynamic and even go deep into\n            the state using the array syntax. The path creation works like\n            in <a href=\"https://lodash.com/docs/4.16.4#set\">Lodash</a>.\n        </p>\n        <Example source=\"DynamicCounters.js\" >\n            <DynamicCounters />\n        </Example>\n\n\n        <h2>Named Counters</h2>\n        <p>\n            This is the standard TODO example (but with added counters!)\n            demonstrating advanced component scoping.\n        </p>\n        <Example source=\"NamedCounters.js\" >\n            <NamedCounters />\n        </Example>\n\n\n        <h2>Configured Counter</h2>\n        <p>\n            Because the state is in Redux we can access it with normal Redux <em>connect()</em> too.\n        </p>\n        <Example source=\"ConfiguredCounter.js\" name=\"\">\n            <ConfiguredCounter />\n        </Example>\n\n\n        <h2>Async updates</h2>\n        <p>\n            Nothing really special. Like you would do in a component. If the\n            component is unmounted before the async operation finishes it will\n            still update the Redux state in the scope.\n        </p>\n        <Example source=\"Async.js\" >\n            <Async />\n        </Example>\n\n        <h2>Random Gif</h2>\n        <p>\n            At last we'll partly solve the problem presented at <a href=\"https://github.com/slorber/scalable-frontend-with-elm-or-redux\">slorber/scalable-frontend-with-elm-or-redux</a>.\n            Partly because with this library you don't write the reducers or\n            actions yourself (unless you really want to you can of course). So\n            that part of the \"Specification\" is ignored.\n        </p>\n        <p>\n            The gif examples will fire some actions on mount so they are not\n            mounted initially make things cleaner.\n        </p>\n        <p>\n            <a href=\"#\" onClick={showGifs}>Click here the mount them</a>.\n        </p>\n        <p>\n            These gif examples do not use any new concepts anymore.\n            They are just some more real worldish examples combining async\n            loading with scopes.\n        </p>\n        <p>\n            For fun we'll scope all of them under <em>gifStuff</em> key in the\n            Redux state. Checkout\n            the <a href=\"https://github.com/epeli/lean-redux/blob/master/examples/index.js\">examples/index.js</a> on\n            github to see how the scope is initialized for them.\n        </p>\n\n        {gifsVisible && <div className=\"gifs\">\n            <Example source=\"RandomGif.js\" >\n                <RandomGif tag=\"robots\" scope={[GIF_SCOPE, \"single\"]} />\n            </Example>\n\n            <h2>Random Gif Pair</h2>\n            <p>\n                This should look very familiar. See how the scope is passed\n                along from the parent component.\n            </p>\n            <Example source=\"RandomGifPair.js\" >\n                <RandomGifPair scope={[GIF_SCOPE, \"pair\"]} />\n            </Example>\n\n            <h2>Random Gif List</h2>\n            <p>\n                This is just a simpler version the Named Counters example. The\n                fact that the nested components are async doesn't show up here\n                in anyway.\n            </p>\n            <Example source=\"RandomGifList.js\" >\n                <RandomGifList scope={[GIF_SCOPE, \"list\"]} />\n            </Example>\n        </div>}\n    </div>\n);\nMain = connectLean({\n    getInitialState() {\n        return {gifsVisible: false};\n    },\n    showGifs(e) {\n        e.preventDefault();\n        setTimeout(() => highlight(\".gifs pre code\"), 0);\n        this.setState({gifsVisible: true});\n    },\n})(Main);\n\n\nReactDOM.render(<Provider store={store}><Main /></Provider>, document.getElementById(\"app\"));\nhighlight(\"pre code\");\n\n","webpack.config.js":"var webpack = require(\"webpack\");\nvar fs = require(\"fs\");\n\nvar jsFiles = fs.readdirSync(__dirname).filter(n => n.endsWith(\".js\"));\nvar sourceFiles = {};\njsFiles.forEach(filename => {\n    sourceFiles[filename] = fs.readFileSync(filename).toString();\n});\n\n\n\n\nvar config = {\n    entry: \"./index.js\",\n    output: {\n        path: \"dist\",\n        filename: \"bundle.js\",\n        publicPath: \"/dist\",\n    },\n    // devtool: \"cheap-module-eval-source-map\", // faster\n    devtool: \"sourceMap\",\n    module: {\n        loaders: [\n            {\n                test: /\\.jsx?$/,\n                loader: \"babel\",\n                exclude: /node_modules/,\n            },\n\n        ],\n    },\n    plugins: [\n        new webpack.DefinePlugin({\n            \"SOURCE\": JSON.stringify(sourceFiles),\n            \"process.env.NODE_ENV\": JSON.stringify(\"development\"),\n        }),\n    ],\n};\n\n\nmodule.exports = config;\n"});
 	var SOURCE = window.SOURCE;
 	
 	var enhancers = [(0, _redux.applyMiddleware)((0, _reduxLogger2.default)()), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()].filter(Boolean);
@@ -251,17 +247,23 @@
 	        _react2.default.createElement(
 	            "h2",
 	            null,
-	            "Multiple Named Counters"
+	            "Configured Counter"
 	        ),
 	        _react2.default.createElement(
 	            "p",
 	            null,
-	            "Just to reiterate. Scoping works for complex components too."
+	            "Because the state is in Redux we can access it with normal Redux ",
+	            _react2.default.createElement(
+	                "em",
+	                null,
+	                "connect()"
+	            ),
+	            " too."
 	        ),
 	        _react2.default.createElement(
 	            Example,
-	            { source: "MultipleNamedCounters.js" },
-	            _react2.default.createElement(_MultipleNamedCounters2.default, null)
+	            { source: "ConfiguredCounter.js", name: "" },
+	            _react2.default.createElement(_ConfiguredCounter2.default, null)
 	        ),
 	        _react2.default.createElement(
 	            "h2",
@@ -271,27 +273,12 @@
 	        _react2.default.createElement(
 	            "p",
 	            null,
-	            "Like redux-thunk."
+	            "Nothing really special. Like you would do in a component. If the component is unmounted before the async operation finishes it will still update the Redux state in the scope."
 	        ),
 	        _react2.default.createElement(
 	            Example,
 	            { source: "Async.js" },
 	            _react2.default.createElement(_Async2.default, null)
-	        ),
-	        _react2.default.createElement(
-	            "h2",
-	            null,
-	            "Advanced Async"
-	        ),
-	        _react2.default.createElement(
-	            "p",
-	            null,
-	            "Use constructor pattern to handle component specific async state."
-	        ),
-	        _react2.default.createElement(
-	            Example,
-	            { source: "AsyncAdvanced.js" },
-	            _react2.default.createElement(_AsyncAdvanced2.default, null)
 	        ),
 	        _react2.default.createElement(
 	            "h2",
@@ -327,7 +314,7 @@
 	        _react2.default.createElement(
 	            "p",
 	            null,
-	            "These gif examples do not use cover any new concepts anymore. They are just some more real worldish examples combining async loading with scopes."
+	            "These gif examples do not use any new concepts anymore. They are just some more real worldish examples combining async loading with scopes."
 	        ),
 	        _react2.default.createElement(
 	            "p",
@@ -391,15 +378,12 @@
 	    getInitialState: function getInitialState() {
 	        return { gifsVisible: false };
 	    },
-	
-	    handlers: {
-	        showGifs: function showGifs(e) {
-	            e.preventDefault();
-	            setTimeout(function () {
-	                return highlight(".gifs pre code");
-	            }, 0);
-	            return { gifsVisible: true };
-	        }
+	    showGifs: function showGifs(e) {
+	        e.preventDefault();
+	        setTimeout(function () {
+	            return highlight(".gifs pre code");
+	        }, 0);
+	        this.setState({ gifsVisible: true });
 	    }
 	})(Main);
 	
@@ -25238,7 +25222,6 @@
 	
 	exports.composeReducers = composeReducers;
 	exports.update = update;
-	exports.thunk = thunk;
 	exports.connectLean = connectLean;
 	exports.leanReducer = leanReducer;
 	
@@ -25264,23 +25247,29 @@
 	
 	var _flattenDeep2 = _interopRequireDefault(_flattenDeep);
 	
-	var _isEqual = __webpack_require__(/*! lodash/fp/isEqual */ 426);
-	
-	var _isEqual2 = _interopRequireDefault(_isEqual);
-	
-	var _isEmpty = __webpack_require__(/*! lodash/fp/isEmpty */ 428);
+	var _isEmpty = __webpack_require__(/*! lodash/fp/isEmpty */ 426);
 	
 	var _isEmpty2 = _interopRequireDefault(_isEmpty);
 	
-	var _update3 = __webpack_require__(/*! updeep/dist/update */ 430);
+	var _pickBy = __webpack_require__(/*! lodash/fp/pickBy */ 428);
 	
-	var _update4 = _interopRequireDefault(_update3);
+	var _pickBy2 = _interopRequireDefault(_pickBy);
+	
+	var _shallowEqual = __webpack_require__(/*! react-redux/lib/utils/shallowEqual */ 195);
+	
+	var _shallowEqual2 = _interopRequireDefault(_shallowEqual);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+	
+	// XXX: This probably not a public API. Should change to something stable.
+	
 	
 	var mapValuesWithKey = _mapValues2.default.convert({ cap: false });
+	var pickFunctions = (0, _pickBy2.default)(function (v) {
+	    return typeof v === "function";
+	});
 	
 	function composeReducers() {
 	    for (var _len = arguments.length, reducers = Array(_len), _key = 0; _key < _len; _key++) {
@@ -25329,103 +25318,154 @@
 	    };
 	}
 	
-	var plain = {};
-	var withSlash = function withSlash(s) {
-	    return s ? "/" + s : "";
-	};
+	function createCache() {
+	    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : plain;
 	
-	function thunk(cb) {
-	    return { _thunk: cb };
-	}
-	function connectLean() {
-	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : plain;
+	    var _ref$isEqual = _ref.isEqual;
+	    var isEqual = _ref$isEqual === undefined ? _shallowEqual2.default : _ref$isEqual;
+	    var _ref$initial = _ref.initial;
+	    var initial = _ref$initial === undefined ? plain : _ref$initial;
 	
-	    return (0, _reactRedux.connectAdvanced)(function (dispatch) {
-	        var initialState = plain;
+	    var cache = initial;
 	
-	        if (typeof options.getInitialState === "function") {
-	            initialState = options.getInitialState();
-	        } else if (options.defaultProps) {
-	            console.warn("You are using deprecated defaultProps. Update to getInitialState");
-	            initialState = options.defaultProps;
+	    var update = function update(o) {
+	        if (cache && isEqual(o, cache)) {
+	            update.changed = false;
+	            return cache;
 	        }
 	
-	        var boundHandlersCache = null;
-	        var propsCache = null;
-	        var prevScope = {}; // Just something which is never equal with real scopes
-	        var getProps = function getProps() {
-	            return propsCache;
-	        };
+	        update.changed = true;
+	        return cache = o;
+	    };
+	    update.changed = true;
+	    update.get = function () {
+	        return cache;
+	    };
 	
-	        var mapState = typeof options.mapState === "function" ? options.mapState : (0, _pick2.default)(Object.keys(initialState));
+	    return update;
+	}
 	
-	        var handlers = typeof options.handlers === "function" ? options.handlers(getProps) : options.handlers;
+	var plain = {};
 	
+	function connectLean() {
+	    var _options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : plain;
+	
+	    return (0, _reactRedux.connectAdvanced)(function (dispatch) {
+	        var scope = _options.scope;
+	        var defaultProps = _options.defaultProps;
+	        var mapState = _options.mapState;
+	        var getInitialState = _options.getInitialState;
+	
+	        var handlers = _objectWithoutProperties(_options, ["scope", "defaultProps", "mapState", "getInitialState"]);
+	
+	        handlers = pickFunctions(handlers);
+	
+	        var initialState = plain;
+	        var boundHandlers = null;
+	        var finalProps = null;
+	
+	        var scopedStateCache = createCache();
+	        var mappedStateCache = createCache({ initial: null });
+	        var propsCache = createCache();
+	        var scopeCache = createCache();
+	
+	        if (typeof getInitialState === "function") {
+	            initialState = getInitialState();
+	        }
+	
+	        mapState = typeof mapState === "function" ? mapState : (0, _pick2.default)(Object.keys(initialState));
+	
+	        var handlerContext = {};
+	
+	        var setStateCallbacks = [];
 	        return function (fullState, ownProps) {
-	            var scope = ownProps.scope || options.scope;
+	            scope = ownProps.scope || scope;
 	            if (Array.isArray(scope)) {
 	                scope = (0, _flattenDeep2.default)(scope);
 	            }
+	            scope = scopeCache(scope);
 	
+	            var props = propsCache(_extends({}, defaultProps, ownProps, { scope: scope }));
 	            var scopedState = fullState || plain;
 	
 	            if (!(0, _isEmpty2.default)(scope)) {
 	                scopedState = _extends({}, (0, _getOr2.default)(plain, disableLodashPath(scope), fullState), { scope: scope });
 	            }
 	
-	            scopedState = _extends({}, initialState, scopedState);
-	
-	            // Implement React Redux style advanced performance pattern where
-	            // the mapState can create the mapState function itself
-	            var _state = mapState(scopedState, ownProps);
-	            if (typeof _state === "function") {
-	                // map state generated a new mapState function. Save it
-	                mapState = _state;
-	                // and use it to map the state
-	                _state = mapState(scopedState, ownProps);
+	            scopedState = scopedStateCache(_extends({}, initialState, scopedState));
+	            handlerContext.state = scopedState;
+	            handlerContext.props = props;
+	            if (!(0, _isEmpty2.default)(setStateCallbacks)) {
+	                setStateCallbacks.forEach(function (cb) {
+	                    return cb();
+	                });
+	                setStateCallbacks = [];
 	            }
-	            scopedState = _state;
 	
-	            // Regenerate handlers only when the scope changes
-	            if (!(0, _isEqual2.default)(prevScope, scope)) {
-	                (function () {
-	                    prevScope = scope;
-	                    var dispatchUpdate = function dispatchUpdate(updateName, update) {
-	                        if (!update) {
-	                            return;
-	                        }
+	            while (true) {
+	                var mapStateUsesProps = mapState.length > 1;
+	                if (mappedStateCache.get() === null || scopedStateCache.changed || propsCache.changed && mapStateUsesProps) {
+	                    var mappedState = mapState(scopedState, props);
+	                    if (typeof mappedState === "function") {
+	                        // Map state was a map state creator. Update mapState and redo this.
+	                        mapState = mappedState;
+	                        continue;
+	                    }
+	                    mappedStateCache(mappedState);
+	                }
+	                break;
+	            }
 	
-	                        if (update && typeof update._thunk === "function") {
-	                            return update._thunk(dispatchUpdate.bind(null, updateName), getProps);
-	                        }
-	                        var actionSuffix = scope;
-	                        if (Array.isArray(actionSuffix)) {
-	                            actionSuffix = actionSuffix.join(".");
-	                        }
+	            if (scopeCache.changed || boundHandlers === null) {
 	
-	                        dispatch({
-	                            type: "LEAN_UPDATE" + withSlash(actionSuffix) + withSlash(updateName),
-	                            update: update,
-	                            initialState: initialState,
-	                            scope: scope
-	                        });
-	                    };
+	                var bindDispatch = function bindDispatch(handler, handlerName) {
+	                    var type = "LEAN_UPDATE";
 	
-	                    var bindDispatch = function bindDispatch(updateFn, updateName) {
-	                        return function () {
-	                            for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-	                                args[_key3] = arguments[_key3];
+	                    if (Array.isArray(scope)) {
+	                        type += "/" + scope.join(".");
+	                    } else if (typeof scope === "string") {
+	                        type += "/" + scope;
+	                    }
+	
+	                    type += "/" + handlerName;
+	
+	                    var methods = {
+	                        setState: function setState(update, cb) {
+	                            if (typeof cb === "function") {
+	                                setStateCallbacks.push(cb);
 	                            }
-	
-	                            return dispatchUpdate(updateName, updateFn.apply(undefined, _toConsumableArray(args.concat(propsCache))));
-	                        };
+	                            dispatch({
+	                                type: type,
+	                                initialState: initialState,
+	                                props: ownProps,
+	                                update: update,
+	                                scope: scope
+	                            });
+	                        }
 	                    };
 	
-	                    boundHandlersCache = mapValuesWithKey(bindDispatch, handlers);
-	                })();
+	                    return function () {
+	                        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+	                            args[_key3] = arguments[_key3];
+	                        }
+	
+	                        Object.assign(handlerContext, boundHandlers, methods);
+	
+	                        handler.apply(handlerContext, args);
+	                    };
+	                };
+	
+	                boundHandlers = mapValuesWithKey(bindDispatch, handlers);
 	            }
 	
-	            return propsCache = _extends({}, ownProps, scopedState, boundHandlersCache, { scope: scope });
+	            // The caching may seem really weird by but because connectAdvanced
+	            // checks for idendities we must return the previous idendity of
+	            // this object when we know there's no changes to avoid the wrapped
+	            // component from rendering.
+	            if (finalProps === null || propsCache.changed || mappedStateCache.changed || scopeCache.changed) {
+	                finalProps = _extends({}, props, mappedStateCache.get(), boundHandlers, { scope: scope });
+	            }
+	            return finalProps;
 	        };
 	    }, {
 	        getDisplayName: function getDisplayName(name) {
@@ -25441,17 +25481,26 @@
 	        return state;
 	    }
 	    var scope = action.scope;
-	    var update = action.update;
 	    var initialState = action.initialState;
+	    var update = action.update;
+	    var props = action.props;
 	
+	
+	    var doUpdate = function doUpdate(state) {
+	        var s = _extends({}, initialState, state);
+	
+	        if (typeof update === "function") {
+	            update = update(s, props);
+	        }
+	
+	        return _extends({}, initialState, state, update);
+	    };
 	
 	    if (!(0, _isEmpty2.default)(scope)) {
-	        return (0, _update2.default)(disableLodashPath(scope), function (s) {
-	            return (0, _update4.default)(update, _extends({}, initialState, s));
-	        }, state);
+	        return (0, _update2.default)(disableLodashPath(scope), doUpdate, state);
 	    }
 	
-	    return (0, _update4.default)(action.update, _extends({}, initialState, state));
+	    return doUpdate(state);
 	}
 	
 	exports.default = leanReducer;
@@ -34274,12 +34323,12 @@
 /***/ },
 /* 426 */
 /*!*********************************!*\
-  !*** ../~/lodash/fp/isEqual.js ***!
+  !*** ../~/lodash/fp/isEmpty.js ***!
   \*********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var convert = __webpack_require__(/*! ./convert */ 211),
-	    func = convert('isEqual', __webpack_require__(/*! ../isEqual */ 427));
+	    func = convert('isEmpty', __webpack_require__(/*! ../isEmpty */ 427), __webpack_require__(/*! ./_falseOptions */ 425));
 	
 	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
 	module.exports = func;
@@ -34287,64 +34336,6 @@
 
 /***/ },
 /* 427 */
-/*!******************************!*\
-  !*** ../~/lodash/isEqual.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var baseIsEqual = __webpack_require__(/*! ./_baseIsEqual */ 367);
-	
-	/**
-	 * Performs a deep comparison between two values to determine if they are
-	 * equivalent.
-	 *
-	 * **Note:** This method supports comparing arrays, array buffers, booleans,
-	 * date objects, error objects, maps, numbers, `Object` objects, regexes,
-	 * sets, strings, symbols, and typed arrays. `Object` objects are compared
-	 * by their own, not inherited, enumerable properties. Functions and DOM
-	 * nodes are **not** supported.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 0.1.0
-	 * @category Lang
-	 * @param {*} value The value to compare.
-	 * @param {*} other The other value to compare.
-	 * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-	 * @example
-	 *
-	 * var object = { 'a': 1 };
-	 * var other = { 'a': 1 };
-	 *
-	 * _.isEqual(object, other);
-	 * // => true
-	 *
-	 * object === other;
-	 * // => false
-	 */
-	function isEqual(value, other) {
-	  return baseIsEqual(value, other);
-	}
-	
-	module.exports = isEqual;
-
-
-/***/ },
-/* 428 */
-/*!*********************************!*\
-  !*** ../~/lodash/fp/isEmpty.js ***!
-  \*********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var convert = __webpack_require__(/*! ./convert */ 211),
-	    func = convert('isEmpty', __webpack_require__(/*! ../isEmpty */ 429), __webpack_require__(/*! ./_falseOptions */ 425));
-	
-	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
-	module.exports = func;
-
-
-/***/ },
-/* 429 */
 /*!******************************!*\
   !*** ../~/lodash/isEmpty.js ***!
   \******************************/
@@ -34427,153 +34418,1656 @@
 
 
 /***/ },
-/* 430 */
-/*!**********************************!*\
-  !*** ../~/updeep/dist/update.js ***!
-  \**********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	var _wrap = __webpack_require__(/*! ./wrap */ 431);
-	
-	var _wrap2 = _interopRequireDefault(_wrap);
-	
-	var _isPlainObject = __webpack_require__(/*! lodash/isPlainObject */ 174);
-	
-	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-	
-	function isEmpty(object) {
-	  return !Object.keys(object).length;
-	}
-	
-	function reduce(object, callback, initialValue) {
-	  return Object.keys(object).reduce(function (acc, key) {
-	    return callback(acc, object[key], key);
-	  }, initialValue);
-	}
-	
-	function resolveUpdates(updates, object) {
-	  return reduce(updates, function (acc, value, key) {
-	    var updatedValue = value;
-	
-	    if (!Array.isArray(value) && value !== null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
-	      updatedValue = update(value, object[key]); // eslint-disable-line no-use-before-define
-	    } else if (typeof value === 'function') {
-	      updatedValue = value(object[key]);
-	    }
-	
-	    if (object[key] !== updatedValue) {
-	      acc[key] = updatedValue; // eslint-disable-line no-param-reassign
-	    }
-	
-	    return acc;
-	  }, {});
-	}
-	
-	function updateArray(updates, object) {
-	  var newArray = [].concat(_toConsumableArray(object));
-	
-	  Object.keys(updates).forEach(function (key) {
-	    newArray[key] = updates[key];
-	  });
-	
-	  return newArray;
-	}
-	
-	/**
-	 * Recursively update an object or array.
-	 *
-	 * Can update with values:
-	 * update({ foo: 3 }, { foo: 1, bar: 2 });
-	 * // => { foo: 3, bar: 2 }
-	 *
-	 * Or with a function:
-	 * update({ foo: x => (x + 1) }, { foo: 2 });
-	 * // => { foo: 3 }
-	 *
-	 * @function
-	 * @name update
-	 * @param {Object|Function} updates
-	 * @param {Object|Array}    object to update
-	 * @return {Object|Array}   new object with modifications
-	 */
-	function update(updates, object) {
-	  if (typeof updates === 'function') {
-	    for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-	      args[_key - 2] = arguments[_key];
-	    }
-	
-	    return updates.apply(undefined, [object].concat(args));
-	  }
-	
-	  if (!(0, _isPlainObject2.default)(updates)) {
-	    return updates;
-	  }
-	
-	  var defaultedObject = typeof object === 'undefined' || object === null ? {} : object;
-	
-	  var resolvedUpdates = resolveUpdates(updates, defaultedObject);
-	
-	  if (isEmpty(resolvedUpdates)) {
-	    return defaultedObject;
-	  }
-	
-	  if (Array.isArray(defaultedObject)) {
-	    return updateArray(resolvedUpdates, defaultedObject);
-	  }
-	
-	  return _extends({}, defaultedObject, resolvedUpdates);
-	}
-	
-	exports.default = (0, _wrap2.default)(update, 2);
-
-/***/ },
-/* 431 */
+/* 428 */
 /*!********************************!*\
-  !*** ../~/updeep/dist/wrap.js ***!
+  !*** ../~/lodash/fp/pickBy.js ***!
   \********************************/
 /***/ function(module, exports, __webpack_require__) {
 
+	var convert = __webpack_require__(/*! ./convert */ 211),
+	    func = convert('pickBy', __webpack_require__(/*! ../pickBy */ 429));
+	
+	func.placeholder = __webpack_require__(/*! ./placeholder */ 214);
+	module.exports = func;
+
+
+/***/ },
+/* 429 */
+/*!*****************************!*\
+  !*** ../~/lodash/pickBy.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseIteratee = __webpack_require__(/*! ./_baseIteratee */ 364),
+	    basePickBy = __webpack_require__(/*! ./_basePickBy */ 422),
+	    getAllKeysIn = __webpack_require__(/*! ./_getAllKeysIn */ 430);
+	
+	/**
+	 * Creates an object composed of the `object` properties `predicate` returns
+	 * truthy for. The predicate is invoked with two arguments: (value, key).
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.0.0
+	 * @category Object
+	 * @param {Object} object The source object.
+	 * @param {Function} [predicate=_.identity] The function invoked per property.
+	 * @returns {Object} Returns the new object.
+	 * @example
+	 *
+	 * var object = { 'a': 1, 'b': '2', 'c': 3 };
+	 *
+	 * _.pickBy(object, _.isNumber);
+	 * // => { 'a': 1, 'c': 3 }
+	 */
+	function pickBy(object, predicate) {
+	  return object == null ? {} : basePickBy(object, getAllKeysIn(object), baseIteratee(predicate));
+	}
+	
+	module.exports = pickBy;
+
+
+/***/ },
+/* 430 */
+/*!************************************!*\
+  !*** ../~/lodash/_getAllKeysIn.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseGetAllKeys = __webpack_require__(/*! ./_baseGetAllKeys */ 338),
+	    getSymbolsIn = __webpack_require__(/*! ./_getSymbolsIn */ 431),
+	    keysIn = __webpack_require__(/*! ./keysIn */ 432);
+	
+	/**
+	 * Creates an array of own and inherited enumerable property names and
+	 * symbols of `object`.
+	 *
+	 * @private
+	 * @param {Object} object The object to query.
+	 * @returns {Array} Returns the array of property names and symbols.
+	 */
+	function getAllKeysIn(object) {
+	  return baseGetAllKeys(object, keysIn, getSymbolsIn);
+	}
+	
+	module.exports = getAllKeysIn;
+
+
+/***/ },
+/* 431 */
+/*!************************************!*\
+  !*** ../~/lodash/_getSymbolsIn.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayPush = __webpack_require__(/*! ./_arrayPush */ 339),
+	    getPrototype = __webpack_require__(/*! ./_getPrototype */ 175),
+	    getSymbols = __webpack_require__(/*! ./_getSymbols */ 335),
+	    stubArray = __webpack_require__(/*! ./stubArray */ 336);
+	
+	/* Built-in method references for those with the same name as other `lodash` methods. */
+	var nativeGetSymbols = Object.getOwnPropertySymbols;
+	
+	/**
+	 * Creates an array of the own and inherited enumerable symbol properties
+	 * of `object`.
+	 *
+	 * @private
+	 * @param {Object} object The object to query.
+	 * @returns {Array} Returns the array of symbols.
+	 */
+	var getSymbolsIn = !nativeGetSymbols ? stubArray : function(object) {
+	  var result = [];
+	  while (object) {
+	    arrayPush(result, getSymbols(object));
+	    object = getPrototype(object);
+	  }
+	  return result;
+	};
+	
+	module.exports = getSymbolsIn;
+
+
+/***/ },
+/* 432 */
+/*!*****************************!*\
+  !*** ../~/lodash/keysIn.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayLikeKeys = __webpack_require__(/*! ./_arrayLikeKeys */ 286),
+	    baseKeysIn = __webpack_require__(/*! ./_baseKeysIn */ 433),
+	    isArrayLike = __webpack_require__(/*! ./isArrayLike */ 301);
+	
+	/**
+	 * Creates an array of the own and inherited enumerable property names of `object`.
+	 *
+	 * **Note:** Non-object values are coerced to objects.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 3.0.0
+	 * @category Object
+	 * @param {Object} object The object to query.
+	 * @returns {Array} Returns the array of property names.
+	 * @example
+	 *
+	 * function Foo() {
+	 *   this.a = 1;
+	 *   this.b = 2;
+	 * }
+	 *
+	 * Foo.prototype.c = 3;
+	 *
+	 * _.keysIn(new Foo);
+	 * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+	 */
+	function keysIn(object) {
+	  return isArrayLike(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
+	}
+	
+	module.exports = keysIn;
+
+
+/***/ },
+/* 433 */
+/*!**********************************!*\
+  !*** ../~/lodash/_baseKeysIn.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isObject = __webpack_require__(/*! ./isObject */ 225),
+	    isPrototype = __webpack_require__(/*! ./_isPrototype */ 299),
+	    nativeKeysIn = __webpack_require__(/*! ./_nativeKeysIn */ 434);
+	
+	/** Used for built-in method references. */
+	var objectProto = Object.prototype;
+	
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+	
+	/**
+	 * The base implementation of `_.keysIn` which doesn't treat sparse arrays as dense.
+	 *
+	 * @private
+	 * @param {Object} object The object to query.
+	 * @returns {Array} Returns the array of property names.
+	 */
+	function baseKeysIn(object) {
+	  if (!isObject(object)) {
+	    return nativeKeysIn(object);
+	  }
+	  var isProto = isPrototype(object),
+	      result = [];
+	
+	  for (var key in object) {
+	    if (!(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+	      result.push(key);
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = baseKeysIn;
+
+
+/***/ },
+/* 434 */
+/*!************************************!*\
+  !*** ../~/lodash/_nativeKeysIn.js ***!
+  \************************************/
+/***/ function(module, exports) {
+
+	/**
+	 * This function is like
+	 * [`Object.keys`](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
+	 * except that it includes inherited enumerable properties.
+	 *
+	 * @private
+	 * @param {Object} object The object to query.
+	 * @returns {Array} Returns the array of property names.
+	 */
+	function nativeKeysIn(object) {
+	  var result = [];
+	  if (object != null) {
+	    for (var key in Object(object)) {
+	      result.push(key);
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = nativeKeysIn;
+
+
+/***/ },
+/* 435 */
+/*!********************!*\
+  !*** ./Counter.js ***!
+  \********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Counter = function (_React$PureComponent) {
+	    _inherits(Counter, _React$PureComponent);
+	
+	    function Counter() {
+	        _classCallCheck(this, Counter);
+	
+	        return _possibleConstructorReturn(this, (Counter.__proto__ || Object.getPrototypeOf(Counter)).apply(this, arguments));
+	    }
+	
+	    _createClass(Counter, [{
+	        key: "componentWillReceiveProps",
+	        value: function componentWillReceiveProps(nextProps) {
+	            for (var key in this.props) {
+	                if (nextProps[key] !== this.props[key]) {
+	                    console.log(this.props.amount, "prop changed", key);
+	                }
+	            }
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _props = this.props;
+	            var count = _props.count;
+	            var inc = _props.inc;
+	            var amount = _props.amount;
+	
+	            return _react2.default.createElement(
+	                "span",
+	                null,
+	                count,
+	                " ",
+	                _react2.default.createElement(
+	                    "button",
+	                    { onClick: inc },
+	                    "+",
+	                    amount
+	                )
+	            );
+	        }
+	    }]);
+	
+	    return Counter;
+	}(_react2.default.PureComponent);
+	
+	Counter = (0, _lean.connectLean)({
+	    // This scopes the counter under "singleCounter" key in the state. If this
+	    // is omitted the component uses the full state.
+	    scope: "singleCounter",
+	
+	    defaultProps: {
+	        amount: 1
+	    },
+	
+	    // By default only props defined in getInitialState() are passed to the
+	    // wrapped component. If you want to add some other props from the state
+	    // you can define a mapState key with a function returning the desired
+	    // state.
+	    getInitialState: function getInitialState() {
+	        return { count: 0 };
+	    },
+	    inc: function inc() {
+	        this.setState({ count: this.state.count + this.props.amount });
+	    }
+	})(Counter);
+	
+	exports.default = Counter;
+
+/***/ },
+/* 436 */
+/*!*****************************!*\
+  !*** ./MultipleCounters.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _Counter = __webpack_require__(/*! ./Counter */ 435);
+	
+	var _Counter2 = _interopRequireDefault(_Counter);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var MultipleCounters = function MultipleCounters() {
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_Counter2.default, { scope: "multicounter1", amount: 2 })
+	        ),
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_Counter2.default, { scope: "multicounter2", amount: 10 })
+	        )
+	    );
+	};
+	
+	exports.default = MultipleCounters;
+
+/***/ },
+/* 437 */
+/*!******************************!*\
+  !*** ./ConfiguredCounter.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactRedux = __webpack_require__(/*! react-redux */ 186);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	var _fp = __webpack_require__(/*! lodash/fp */ 438);
+	
+	var _Counter = __webpack_require__(/*! ./Counter */ 435);
+	
+	var _Counter2 = _interopRequireDefault(_Counter);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var Configurator = function Configurator(_ref) {
+	    var handleChange = _ref.handleChange;
+	    var amount = _ref.amount;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        "Set increment amount ",
+	        _react2.default.createElement("input", { type: "text", onChange: handleChange, value: amount, placeholder: "1" })
+	    );
+	};
+	Configurator = (0, _lean.connectLean)({
+	    scope: "config",
+	
+	    getInitialState: function getInitialState() {
+	        return { amount: "" };
+	    },
+	    handleChange: function handleChange(e) {
+	        this.setState({ amount: parseInt(e.target.value, 10) });
+	    }
+	})(Configurator);
+	
+	var ConfiguredCounter = function ConfiguredCounter(_ref2) {
+	    var amount = _ref2.amount;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(_Counter2.default, { scope: ["configuredCounter", "inDeep"], amount: amount })
+	    );
+	};
+	ConfiguredCounter = (0, _reactRedux.connect)(function (state) {
+	    return { amount: (0, _fp.getOr)(1, ["config", "amount"], state) };
+	})(ConfiguredCounter);
+	
+	var Main = function Main() {
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(Configurator, null),
+	        _react2.default.createElement(ConfiguredCounter, null)
+	    );
+	};
+	
+	exports.default = Main;
+
+/***/ },
+/* 438 */
+/*!*************************!*\
+  !*** ../~/lodash/fp.js ***!
+  \*************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(/*! ./lodash.min */ 439).runInContext();
+	module.exports = __webpack_require__(/*! ./fp/_baseConvert */ 212)(_, _);
+
+
+/***/ },
+/* 439 */
+/*!*********************************!*\
+  !*** ../~/lodash/lodash.min.js ***!
+  \*********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
+	 * @license
+	 * lodash lodash.com/license | Underscore.js 1.8.3 underscorejs.org/LICENSE
+	 */
+	;(function(){function t(t,n){return t.set(n[0],n[1]),t}function n(t,n){return t.add(n),t}function r(t,n,r){switch(r.length){case 0:return t.call(n);case 1:return t.call(n,r[0]);case 2:return t.call(n,r[0],r[1]);case 3:return t.call(n,r[0],r[1],r[2])}return t.apply(n,r)}function e(t,n,r,e){for(var u=-1,i=t?t.length:0;++u<i;){var o=t[u];n(e,o,r(o),t)}return e}function u(t,n){for(var r=-1,e=t?t.length:0;++r<e&&false!==n(t[r],r,t););return t}function i(t,n){for(var r=t?t.length:0;r--&&false!==n(t[r],r,t););
+	return t}function o(t,n){for(var r=-1,e=t?t.length:0;++r<e;)if(!n(t[r],r,t))return false;return true}function f(t,n){for(var r=-1,e=t?t.length:0,u=0,i=[];++r<e;){var o=t[r];n(o,r,t)&&(i[u++]=o)}return i}function c(t,n){return!(!t||!t.length)&&-1<d(t,n,0)}function a(t,n,r){for(var e=-1,u=t?t.length:0;++e<u;)if(r(n,t[e]))return true;return false}function l(t,n){for(var r=-1,e=t?t.length:0,u=Array(e);++r<e;)u[r]=n(t[r],r,t);return u}function s(t,n){for(var r=-1,e=n.length,u=t.length;++r<e;)t[u+r]=n[r];return t}function h(t,n,r,e){
+	var u=-1,i=t?t.length:0;for(e&&i&&(r=t[++u]);++u<i;)r=n(r,t[u],u,t);return r}function p(t,n,r,e){var u=t?t.length:0;for(e&&u&&(r=t[--u]);u--;)r=n(r,t[u],u,t);return r}function _(t,n){for(var r=-1,e=t?t.length:0;++r<e;)if(n(t[r],r,t))return true;return false}function v(t,n,r){var e;return r(t,function(t,r,u){if(n(t,r,u))return e=r,false}),e}function g(t,n,r,e){var u=t.length;for(r+=e?1:-1;e?r--:++r<u;)if(n(t[r],r,t))return r;return-1}function d(t,n,r){if(n===n)t:{--r;for(var e=t.length;++r<e;)if(t[r]===n){t=r;
+	break t}t=-1}else t=g(t,b,r);return t}function y(t,n,r,e){--r;for(var u=t.length;++r<u;)if(e(t[r],n))return r;return-1}function b(t){return t!==t}function x(t,n){var r=t?t.length:0;return r?k(t,n)/r:P}function j(t){return function(n){return null==n?F:n[t]}}function w(t){return function(n){return null==t?F:t[n]}}function m(t,n,r,e,u){return u(t,function(t,u,i){r=e?(e=false,t):n(r,t,u,i)}),r}function A(t,n){var r=t.length;for(t.sort(n);r--;)t[r]=t[r].c;return t}function k(t,n){for(var r,e=-1,u=t.length;++e<u;){
+	var i=n(t[e]);i!==F&&(r=r===F?i:r+i)}return r}function E(t,n){for(var r=-1,e=Array(t);++r<t;)e[r]=n(r);return e}function O(t,n){return l(n,function(n){return[n,t[n]]})}function S(t){return function(n){return t(n)}}function I(t,n){return l(n,function(n){return t[n]})}function R(t,n){return t.has(n)}function z(t,n){for(var r=-1,e=t.length;++r<e&&-1<d(n,t[r],0););return r}function W(t,n){for(var r=t.length;r--&&-1<d(n,t[r],0););return r}function B(t){return"\\"+Dt[t]}function L(t){var n=-1,r=Array(t.size);
+	return t.forEach(function(t,e){r[++n]=[e,t]}),r}function U(t,n){return function(r){return t(n(r))}}function C(t,n){for(var r=-1,e=t.length,u=0,i=[];++r<e;){var o=t[r];o!==n&&"__lodash_placeholder__"!==o||(t[r]="__lodash_placeholder__",i[u++]=r)}return i}function M(t){var n=-1,r=Array(t.size);return t.forEach(function(t){r[++n]=t}),r}function D(t){var n=-1,r=Array(t.size);return t.forEach(function(t){r[++n]=[t,t]}),r}function T(t){if(Wt.test(t)){for(var n=Rt.lastIndex=0;Rt.test(t);)++n;t=n}else t=tn(t);
+	return t}function $(t){return Wt.test(t)?t.match(Rt)||[]:t.split("")}var F,N=1/0,P=NaN,Z=[["ary",128],["bind",1],["bindKey",2],["curry",8],["curryRight",16],["flip",512],["partial",32],["partialRight",64],["rearg",256]],q=/\b__p\+='';/g,V=/\b(__p\+=)''\+/g,K=/(__e\(.*?\)|\b__t\))\+'';/g,G=/&(?:amp|lt|gt|quot|#39);/g,J=/[&<>"']/g,Y=RegExp(G.source),H=RegExp(J.source),Q=/<%-([\s\S]+?)%>/g,X=/<%([\s\S]+?)%>/g,tt=/<%=([\s\S]+?)%>/g,nt=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,rt=/^\w*$/,et=/^\./,ut=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g,it=/[\\^$.*+?()[\]{}|]/g,ot=RegExp(it.source),ft=/^\s+|\s+$/g,ct=/^\s+/,at=/\s+$/,lt=/\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,st=/\{\n\/\* \[wrapped with (.+)\] \*/,ht=/,? & /,pt=/[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g,_t=/\\(\\)?/g,vt=/\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g,gt=/\w*$/,dt=/^[-+]0x[0-9a-f]+$/i,yt=/^0b[01]+$/i,bt=/^\[object .+?Constructor\]$/,xt=/^0o[0-7]+$/i,jt=/^(?:0|[1-9]\d*)$/,wt=/[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g,mt=/($^)/,At=/['\n\r\u2028\u2029\\]/g,kt="[\\ufe0e\\ufe0f]?(?:[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]|\\ud83c[\\udffb-\\udfff])?(?:\\u200d(?:[^\\ud800-\\udfff]|(?:\\ud83c[\\udde6-\\uddff]){2}|[\\ud800-\\udbff][\\udc00-\\udfff])[\\ufe0e\\ufe0f]?(?:[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]|\\ud83c[\\udffb-\\udfff])?)*",Et="(?:[\\u2700-\\u27bf]|(?:\\ud83c[\\udde6-\\uddff]){2}|[\\ud800-\\udbff][\\udc00-\\udfff])"+kt,Ot="(?:[^\\ud800-\\udfff][\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]?|[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]|(?:\\ud83c[\\udde6-\\uddff]){2}|[\\ud800-\\udbff][\\udc00-\\udfff]|[\\ud800-\\udfff])",St=RegExp("['\u2019]","g"),It=RegExp("[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]","g"),Rt=RegExp("\\ud83c[\\udffb-\\udfff](?=\\ud83c[\\udffb-\\udfff])|"+Ot+kt,"g"),zt=RegExp(["[A-Z\\xc0-\\xd6\\xd8-\\xde]?[a-z\\xdf-\\xf6\\xf8-\\xff]+(?:['\u2019](?:d|ll|m|re|s|t|ve))?(?=[\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]|[A-Z\\xc0-\\xd6\\xd8-\\xde]|$)|(?:[A-Z\\xc0-\\xd6\\xd8-\\xde]|[^\\ud800-\\udfff\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000\\d+\\u2700-\\u27bfa-z\\xdf-\\xf6\\xf8-\\xffA-Z\\xc0-\\xd6\\xd8-\\xde])+(?:['\u2019](?:D|LL|M|RE|S|T|VE))?(?=[\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]|[A-Z\\xc0-\\xd6\\xd8-\\xde](?:[a-z\\xdf-\\xf6\\xf8-\\xff]|[^\\ud800-\\udfff\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000\\d+\\u2700-\\u27bfa-z\\xdf-\\xf6\\xf8-\\xffA-Z\\xc0-\\xd6\\xd8-\\xde])|$)|[A-Z\\xc0-\\xd6\\xd8-\\xde]?(?:[a-z\\xdf-\\xf6\\xf8-\\xff]|[^\\ud800-\\udfff\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000\\d+\\u2700-\\u27bfa-z\\xdf-\\xf6\\xf8-\\xffA-Z\\xc0-\\xd6\\xd8-\\xde])+(?:['\u2019](?:d|ll|m|re|s|t|ve))?|[A-Z\\xc0-\\xd6\\xd8-\\xde]+(?:['\u2019](?:D|LL|M|RE|S|T|VE))?|\\d+",Et].join("|"),"g"),Wt=RegExp("[\\u200d\\ud800-\\udfff\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0\\ufe0e\\ufe0f]"),Bt=/[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/,Lt="Array Buffer DataView Date Error Float32Array Float64Array Function Int8Array Int16Array Int32Array Map Math Object Promise RegExp Set String Symbol TypeError Uint8Array Uint8ClampedArray Uint16Array Uint32Array WeakMap _ clearTimeout isFinite parseInt setTimeout".split(" "),Ut={};
+	Ut["[object Float32Array]"]=Ut["[object Float64Array]"]=Ut["[object Int8Array]"]=Ut["[object Int16Array]"]=Ut["[object Int32Array]"]=Ut["[object Uint8Array]"]=Ut["[object Uint8ClampedArray]"]=Ut["[object Uint16Array]"]=Ut["[object Uint32Array]"]=true,Ut["[object Arguments]"]=Ut["[object Array]"]=Ut["[object ArrayBuffer]"]=Ut["[object Boolean]"]=Ut["[object DataView]"]=Ut["[object Date]"]=Ut["[object Error]"]=Ut["[object Function]"]=Ut["[object Map]"]=Ut["[object Number]"]=Ut["[object Object]"]=Ut["[object RegExp]"]=Ut["[object Set]"]=Ut["[object String]"]=Ut["[object WeakMap]"]=false;
+	var Ct={};Ct["[object Arguments]"]=Ct["[object Array]"]=Ct["[object ArrayBuffer]"]=Ct["[object DataView]"]=Ct["[object Boolean]"]=Ct["[object Date]"]=Ct["[object Float32Array]"]=Ct["[object Float64Array]"]=Ct["[object Int8Array]"]=Ct["[object Int16Array]"]=Ct["[object Int32Array]"]=Ct["[object Map]"]=Ct["[object Number]"]=Ct["[object Object]"]=Ct["[object RegExp]"]=Ct["[object Set]"]=Ct["[object String]"]=Ct["[object Symbol]"]=Ct["[object Uint8Array]"]=Ct["[object Uint8ClampedArray]"]=Ct["[object Uint16Array]"]=Ct["[object Uint32Array]"]=true,
+	Ct["[object Error]"]=Ct["[object Function]"]=Ct["[object WeakMap]"]=false;var Mt,Dt={"\\":"\\","'":"'","\n":"n","\r":"r","\u2028":"u2028","\u2029":"u2029"},Tt=parseFloat,$t=parseInt,Ft=typeof global=="object"&&global&&global.Object===Object&&global,Nt=typeof self=="object"&&self&&self.Object===Object&&self,Pt=Ft||Nt||Function("return this")(),Zt=typeof exports=="object"&&exports&&!exports.nodeType&&exports,qt=Zt&&typeof module=="object"&&module&&!module.nodeType&&module,Vt=qt&&qt.exports===Zt,Kt=Vt&&Ft.h;
+	t:{try{Mt=Kt&&Kt.g("util");break t}catch(t){}Mt=void 0}var Gt=Mt&&Mt.isArrayBuffer,Jt=Mt&&Mt.isDate,Yt=Mt&&Mt.isMap,Ht=Mt&&Mt.isRegExp,Qt=Mt&&Mt.isSet,Xt=Mt&&Mt.isTypedArray,tn=j("length"),nn=w({"\xc0":"A","\xc1":"A","\xc2":"A","\xc3":"A","\xc4":"A","\xc5":"A","\xe0":"a","\xe1":"a","\xe2":"a","\xe3":"a","\xe4":"a","\xe5":"a","\xc7":"C","\xe7":"c","\xd0":"D","\xf0":"d","\xc8":"E","\xc9":"E","\xca":"E","\xcb":"E","\xe8":"e","\xe9":"e","\xea":"e","\xeb":"e","\xcc":"I","\xcd":"I","\xce":"I","\xcf":"I",
+	"\xec":"i","\xed":"i","\xee":"i","\xef":"i","\xd1":"N","\xf1":"n","\xd2":"O","\xd3":"O","\xd4":"O","\xd5":"O","\xd6":"O","\xd8":"O","\xf2":"o","\xf3":"o","\xf4":"o","\xf5":"o","\xf6":"o","\xf8":"o","\xd9":"U","\xda":"U","\xdb":"U","\xdc":"U","\xf9":"u","\xfa":"u","\xfb":"u","\xfc":"u","\xdd":"Y","\xfd":"y","\xff":"y","\xc6":"Ae","\xe6":"ae","\xde":"Th","\xfe":"th","\xdf":"ss","\u0100":"A","\u0102":"A","\u0104":"A","\u0101":"a","\u0103":"a","\u0105":"a","\u0106":"C","\u0108":"C","\u010a":"C","\u010c":"C",
+	"\u0107":"c","\u0109":"c","\u010b":"c","\u010d":"c","\u010e":"D","\u0110":"D","\u010f":"d","\u0111":"d","\u0112":"E","\u0114":"E","\u0116":"E","\u0118":"E","\u011a":"E","\u0113":"e","\u0115":"e","\u0117":"e","\u0119":"e","\u011b":"e","\u011c":"G","\u011e":"G","\u0120":"G","\u0122":"G","\u011d":"g","\u011f":"g","\u0121":"g","\u0123":"g","\u0124":"H","\u0126":"H","\u0125":"h","\u0127":"h","\u0128":"I","\u012a":"I","\u012c":"I","\u012e":"I","\u0130":"I","\u0129":"i","\u012b":"i","\u012d":"i","\u012f":"i",
+	"\u0131":"i","\u0134":"J","\u0135":"j","\u0136":"K","\u0137":"k","\u0138":"k","\u0139":"L","\u013b":"L","\u013d":"L","\u013f":"L","\u0141":"L","\u013a":"l","\u013c":"l","\u013e":"l","\u0140":"l","\u0142":"l","\u0143":"N","\u0145":"N","\u0147":"N","\u014a":"N","\u0144":"n","\u0146":"n","\u0148":"n","\u014b":"n","\u014c":"O","\u014e":"O","\u0150":"O","\u014d":"o","\u014f":"o","\u0151":"o","\u0154":"R","\u0156":"R","\u0158":"R","\u0155":"r","\u0157":"r","\u0159":"r","\u015a":"S","\u015c":"S","\u015e":"S",
+	"\u0160":"S","\u015b":"s","\u015d":"s","\u015f":"s","\u0161":"s","\u0162":"T","\u0164":"T","\u0166":"T","\u0163":"t","\u0165":"t","\u0167":"t","\u0168":"U","\u016a":"U","\u016c":"U","\u016e":"U","\u0170":"U","\u0172":"U","\u0169":"u","\u016b":"u","\u016d":"u","\u016f":"u","\u0171":"u","\u0173":"u","\u0174":"W","\u0175":"w","\u0176":"Y","\u0177":"y","\u0178":"Y","\u0179":"Z","\u017b":"Z","\u017d":"Z","\u017a":"z","\u017c":"z","\u017e":"z","\u0132":"IJ","\u0133":"ij","\u0152":"Oe","\u0153":"oe","\u0149":"'n",
+	"\u017f":"s"}),rn=w({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}),en=w({"&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&#39;":"'"}),un=function w(kt){function Et(t){return fi.call(t)}function Ot(t){if(vu(t)&&!nf(t)&&!(t instanceof Dt)){if(t instanceof Mt)return t;if(ui.call(t,"__wrapped__"))return De(t)}return new Mt(t)}function Rt(){}function Mt(t,n){this.__wrapped__=t,this.__actions__=[],this.__chain__=!!n,this.__index__=0,this.__values__=F}function Dt(t){this.__wrapped__=t,this.__actions__=[],
+	this.__dir__=1,this.__filtered__=false,this.__iteratees__=[],this.__takeCount__=4294967295,this.__views__=[]}function Ft(t){var n=-1,r=t?t.length:0;for(this.clear();++n<r;){var e=t[n];this.set(e[0],e[1])}}function Nt(t){var n=-1,r=t?t.length:0;for(this.clear();++n<r;){var e=t[n];this.set(e[0],e[1])}}function Zt(t){var n=-1,r=t?t.length:0;for(this.clear();++n<r;){var e=t[n];this.set(e[0],e[1])}}function qt(t){var n=-1,r=t?t.length:0;for(this.__data__=new Zt;++n<r;)this.add(t[n])}function Kt(t){this.size=(this.__data__=new Nt(t)).size;
+	}function tn(t,n){var r,e=nf(t),u=!e&&tf(t),i=!e&&!u&&ef(t),o=!e&&!u&&!i&&af(t),u=(e=e||u||i||o)?E(t.length,Hu):[],f=u.length;for(r in t)!n&&!ui.call(t,r)||e&&("length"==r||i&&("offset"==r||"parent"==r)||o&&("buffer"==r||"byteLength"==r||"byteOffset"==r)||me(r,f))||u.push(r);return u}function on(t){var n=t.length;return n?t[cr(0,n-1)]:F}function fn(t,n){return Le(Cr(t),dn(n,0,t.length))}function cn(t){return Le(Cr(t))}function an(t,n,r,e){return t===F||fu(t,ti[r])&&!ui.call(e,r)?n:t}function ln(t,n,r){
+	(r===F||fu(t[n],r))&&(r!==F||n in t)||vn(t,n,r)}function sn(t,n,r){var e=t[n];ui.call(t,n)&&fu(e,r)&&(r!==F||n in t)||vn(t,n,r)}function hn(t,n){for(var r=t.length;r--;)if(fu(t[r][0],n))return r;return-1}function pn(t,n,r,e){return to(t,function(t,u,i){n(e,t,r(t),i)}),e}function _n(t,n){return t&&Mr(n,Iu(n),t)}function vn(t,n,r){"__proto__"==n&&xi?xi(t,n,{configurable:true,enumerable:true,value:r,writable:true}):t[n]=r}function gn(t,n){for(var r=-1,e=null==t,u=n.length,i=Zu(u);++r<u;)i[r]=e?F:Ou(t,n[r]);
+	return i}function dn(t,n,r){return t===t&&(r!==F&&(t=t<=r?t:r),n!==F&&(t=t>=n?t:n)),t}function yn(t,n,r,e,i,o,f){var c;if(e&&(c=o?e(t,i,o,f):e(t)),c!==F)return c;if(!_u(t))return t;if(i=nf(t)){if(c=be(t),!n)return Cr(t,c)}else{var a=Et(t),l="[object Function]"==a||"[object GeneratorFunction]"==a;if(ef(t))return Rr(t,n);if("[object Object]"==a||"[object Arguments]"==a||l&&!o){if(c=xe(l?{}:t),!n)return Dr(t,_n(c,t))}else{if(!Ct[a])return o?t:{};c=je(t,a,yn,n)}}if(f||(f=new Kt),o=f.get(t))return o;f.set(t,c);
+	var s=i?F:(r?se:Iu)(t);return u(s||t,function(u,i){s&&(i=u,u=t[i]),sn(c,i,yn(u,n,r,e,i,t,f))}),c}function bn(t){var n=Iu(t);return function(r){return xn(r,t,n)}}function xn(t,n,r){var e=r.length;if(null==t)return!e;for(t=Ju(t);e--;){var u=r[e],i=n[u],o=t[u];if(o===F&&!(u in t)||!i(o))return false}return true}function jn(t,n,r){if(typeof t!="function")throw new Qu("Expected a function");return po(function(){t.apply(F,r)},n)}function wn(t,n,r,e){var u=-1,i=c,o=true,f=t.length,s=[],h=n.length;if(!f)return s;r&&(n=l(n,S(r))),
+	e?(i=a,o=false):200<=n.length&&(i=R,o=false,n=new qt(n));t:for(;++u<f;){var p=t[u],_=r?r(p):p,p=e||0!==p?p:0;if(o&&_===_){for(var v=h;v--;)if(n[v]===_)continue t;s.push(p)}else i(n,_,e)||s.push(p)}return s}function mn(t,n){var r=true;return to(t,function(t,e,u){return r=!!n(t,e,u)}),r}function An(t,n,r){for(var e=-1,u=t.length;++e<u;){var i=t[e],o=n(i);if(null!=o&&(f===F?o===o&&!bu(o):r(o,f)))var f=o,c=i}return c}function kn(t,n){var r=[];return to(t,function(t,e,u){n(t,e,u)&&r.push(t)}),r}function En(t,n,r,e,u){
+	var i=-1,o=t.length;for(r||(r=we),u||(u=[]);++i<o;){var f=t[i];0<n&&r(f)?1<n?En(f,n-1,r,e,u):s(u,f):e||(u[u.length]=f)}return u}function On(t,n){return t&&ro(t,n,Iu)}function Sn(t,n){return t&&eo(t,n,Iu)}function In(t,n){return f(n,function(n){return su(t[n])})}function Rn(t,n){n=ke(n,t)?[n]:Sr(n);for(var r=0,e=n.length;null!=t&&r<e;)t=t[Ue(n[r++])];return r&&r==e?t:F}function zn(t,n,r){return n=n(t),nf(t)?n:s(n,r(t))}function Wn(t,n){return t>n}function Bn(t,n){return null!=t&&ui.call(t,n)}function Ln(t,n){
+	return null!=t&&n in Ju(t)}function Un(t,n,r){for(var e=r?a:c,u=t[0].length,i=t.length,o=i,f=Zu(i),s=1/0,h=[];o--;){var p=t[o];o&&n&&(p=l(p,S(n))),s=Wi(p.length,s),f[o]=!r&&(n||120<=u&&120<=p.length)?new qt(o&&p):F}var p=t[0],_=-1,v=f[0];t:for(;++_<u&&h.length<s;){var g=p[_],d=n?n(g):g,g=r||0!==g?g:0;if(v?!R(v,d):!e(h,d,r)){for(o=i;--o;){var y=f[o];if(y?!R(y,d):!e(t[o],d,r))continue t}v&&v.push(d),h.push(g)}}return h}function Cn(t,n,r){var e={};return On(t,function(t,u,i){n(e,r(t),u,i)}),e}function Mn(t,n,e){
+	return ke(n,t)||(n=Sr(n),t=ze(t,n),n=Pe(n)),n=null==t?t:t[Ue(n)],null==n?F:r(n,t,e)}function Dn(t){return vu(t)&&"[object Arguments]"==fi.call(t)}function Tn(t){return vu(t)&&"[object ArrayBuffer]"==fi.call(t)}function $n(t){return vu(t)&&"[object Date]"==fi.call(t)}function Fn(t,n,r,e,u){if(t===n)n=true;else if(null==t||null==n||!_u(t)&&!vu(n))n=t!==t&&n!==n;else t:{var i=nf(t),o=nf(n),f="[object Array]",c="[object Array]";i||(f=Et(t),f="[object Arguments]"==f?"[object Object]":f),o||(c=Et(n),c="[object Arguments]"==c?"[object Object]":c);
+	var a="[object Object]"==f,o="[object Object]"==c;if((c=f==c)&&ef(t)){if(!ef(n)){n=false;break t}i=true,a=false}if(c&&!a)u||(u=new Kt),n=i||af(t)?ce(t,n,Fn,r,e,u):ae(t,n,f,Fn,r,e,u);else{if(!(2&e)&&(i=a&&ui.call(t,"__wrapped__"),f=o&&ui.call(n,"__wrapped__"),i||f)){t=i?t.value():t,n=f?n.value():n,u||(u=new Kt),n=Fn(t,n,r,e,u);break t}if(c)n:if(u||(u=new Kt),i=2&e,f=Iu(t),o=f.length,c=Iu(n).length,o==c||i){for(a=o;a--;){var l=f[a];if(!(i?l in n:ui.call(n,l))){n=false;break n}}if((c=u.get(t))&&u.get(n))n=c==n;else{
+	c=true,u.set(t,n),u.set(n,t);for(var s=i;++a<o;){var l=f[a],h=t[l],p=n[l];if(r)var _=i?r(p,h,l,n,t,u):r(h,p,l,t,n,u);if(_===F?h!==p&&!Fn(h,p,r,e,u):!_){c=false;break}s||(s="constructor"==l)}c&&!s&&(r=t.constructor,e=n.constructor,r!=e&&"constructor"in t&&"constructor"in n&&!(typeof r=="function"&&r instanceof r&&typeof e=="function"&&e instanceof e)&&(c=false)),u.delete(t),u.delete(n),n=c}}else n=false;else n=false}}return n}function Nn(t){return vu(t)&&"[object Map]"==Et(t)}function Pn(t,n,r,e){var u=r.length,i=u,o=!e;
+	if(null==t)return!i;for(t=Ju(t);u--;){var f=r[u];if(o&&f[2]?f[1]!==t[f[0]]:!(f[0]in t))return false}for(;++u<i;){var f=r[u],c=f[0],a=t[c],l=f[1];if(o&&f[2]){if(a===F&&!(c in t))return false}else{if(f=new Kt,e)var s=e(a,l,c,t,n,f);if(s===F?!Fn(l,a,e,3,f):!s)return false}}return true}function Zn(t){return!(!_u(t)||ri&&ri in t)&&(su(t)?ai:bt).test(Ce(t))}function qn(t){return _u(t)&&"[object RegExp]"==fi.call(t)}function Vn(t){return vu(t)&&"[object Set]"==Et(t)}function Kn(t){return vu(t)&&pu(t.length)&&!!Ut[fi.call(t)];
+	}function Gn(t){return typeof t=="function"?t:null==t?Mu:typeof t=="object"?nf(t)?Xn(t[0],t[1]):Qn(t):Fu(t)}function Jn(t){if(!Oe(t))return Ri(t);var n,r=[];for(n in Ju(t))ui.call(t,n)&&"constructor"!=n&&r.push(n);return r}function Yn(t,n){return t<n}function Hn(t,n){var r=-1,e=cu(t)?Zu(t.length):[];return to(t,function(t,u,i){e[++r]=n(t,u,i)}),e}function Qn(t){var n=ge(t);return 1==n.length&&n[0][2]?Se(n[0][0],n[0][1]):function(r){return r===t||Pn(r,t,n)}}function Xn(t,n){return ke(t)&&n===n&&!_u(n)?Se(Ue(t),n):function(r){
+	var e=Ou(r,t);return e===F&&e===n?Su(r,t):Fn(n,e,F,3)}}function tr(t,n,r,e,u){t!==n&&ro(n,function(i,o){if(_u(i)){u||(u=new Kt);var f=u,c=t[o],a=n[o],l=f.get(a);if(l)ln(t,o,l);else{var l=e?e(c,a,o+"",t,n,f):F,s=l===F;if(s){var h=nf(a),p=!h&&ef(a),_=!h&&!p&&af(a),l=a;h||p||_?nf(c)?l=c:au(c)?l=Cr(c):p?(s=false,l=Rr(a,true)):_?(s=false,l=Wr(a,true)):l=[]:du(a)||tf(a)?(l=c,tf(c)?l=ku(c):(!_u(c)||r&&su(c))&&(l=xe(a))):s=false}s&&(f.set(a,l),tr(l,a,r,e,f),f.delete(a)),ln(t,o,l)}}else f=e?e(t[o],i,o+"",t,n,u):F,f===F&&(f=i),
+	ln(t,o,f)},Ru)}function nr(t,n){var r=t.length;if(r)return n+=0>n?r:0,me(n,r)?t[n]:F}function rr(t,n,r){var e=-1;return n=l(n.length?n:[Mu],S(_e())),t=Hn(t,function(t){return{a:l(n,function(n){return n(t)}),b:++e,c:t}}),A(t,function(t,n){var e;t:{e=-1;for(var u=t.a,i=n.a,o=u.length,f=r.length;++e<o;){var c=Br(u[e],i[e]);if(c){e=e>=f?c:c*("desc"==r[e]?-1:1);break t}}e=t.b-n.b}return e})}function er(t,n){return t=Ju(t),ur(t,n,function(n,r){return r in t})}function ur(t,n,r){for(var e=-1,u=n.length,i={};++e<u;){
+	var o=n[e],f=t[o];r(f,o)&&vn(i,o,f)}return i}function ir(t){return function(n){return Rn(n,t)}}function or(t,n,r,e){var u=e?y:d,i=-1,o=n.length,f=t;for(t===n&&(n=Cr(n)),r&&(f=l(t,S(r)));++i<o;)for(var c=0,a=n[i],a=r?r(a):a;-1<(c=u(f,a,c,e));)f!==t&&yi.call(f,c,1),yi.call(t,c,1);return t}function fr(t,n){for(var r=t?n.length:0,e=r-1;r--;){var u=n[r];if(r==e||u!==i){var i=u;if(me(u))yi.call(t,u,1);else if(ke(u,t))delete t[Ue(u)];else{var u=Sr(u),o=ze(t,u);null!=o&&delete o[Ue(Pe(u))]}}}}function cr(t,n){
+	return t+ki(Ui()*(n-t+1))}function ar(t,n){var r="";if(!t||1>n||9007199254740991<n)return r;do n%2&&(r+=t),(n=ki(n/2))&&(t+=t);while(n);return r}function lr(t,n){return _o(Re(t,n,Mu),t+"")}function sr(t){return on(Wu(t))}function hr(t,n){var r=Wu(t);return Le(r,dn(n,0,r.length))}function pr(t,n,r,e){if(!_u(t))return t;n=ke(n,t)?[n]:Sr(n);for(var u=-1,i=n.length,o=i-1,f=t;null!=f&&++u<i;){var c=Ue(n[u]),a=r;if(u!=o){var l=f[c],a=e?e(l,c,f):F;a===F&&(a=_u(l)?l:me(n[u+1])?[]:{})}sn(f,c,a),f=f[c]}return t;
+	}function _r(t){return Le(Wu(t))}function vr(t,n,r){var e=-1,u=t.length;for(0>n&&(n=-n>u?0:u+n),r=r>u?u:r,0>r&&(r+=u),u=n>r?0:r-n>>>0,n>>>=0,r=Zu(u);++e<u;)r[e]=t[e+n];return r}function gr(t,n){var r;return to(t,function(t,e,u){return r=n(t,e,u),!r}),!!r}function dr(t,n,r){var e=0,u=t?t.length:e;if(typeof n=="number"&&n===n&&2147483647>=u){for(;e<u;){var i=e+u>>>1,o=t[i];null!==o&&!bu(o)&&(r?o<=n:o<n)?e=i+1:u=i}return u}return yr(t,n,Mu,r)}function yr(t,n,r,e){n=r(n);for(var u=0,i=t?t.length:0,o=n!==n,f=null===n,c=bu(n),a=n===F;u<i;){
+	var l=ki((u+i)/2),s=r(t[l]),h=s!==F,p=null===s,_=s===s,v=bu(s);(o?e||_:a?_&&(e||h):f?_&&h&&(e||!p):c?_&&h&&!p&&(e||!v):p||v?0:e?s<=n:s<n)?u=l+1:i=l}return Wi(i,4294967294)}function br(t,n){for(var r=-1,e=t.length,u=0,i=[];++r<e;){var o=t[r],f=n?n(o):o;if(!r||!fu(f,c)){var c=f;i[u++]=0===o?0:o}}return i}function xr(t){return typeof t=="number"?t:bu(t)?P:+t}function jr(t){if(typeof t=="string")return t;if(nf(t))return l(t,jr)+"";if(bu(t))return Qi?Qi.call(t):"";var n=t+"";return"0"==n&&1/t==-N?"-0":n;
+	}function wr(t,n,r){var e=-1,u=c,i=t.length,o=true,f=[],l=f;if(r)o=false,u=a;else if(200<=i){if(u=n?null:fo(t))return M(u);o=false,u=R,l=new qt}else l=n?[]:f;t:for(;++e<i;){var s=t[e],h=n?n(s):s,s=r||0!==s?s:0;if(o&&h===h){for(var p=l.length;p--;)if(l[p]===h)continue t;n&&l.push(h),f.push(s)}else u(l,h,r)||(l!==f&&l.push(h),f.push(s))}return f}function mr(t,n,r,e){for(var u=t.length,i=e?u:-1;(e?i--:++i<u)&&n(t[i],i,t););return r?vr(t,e?0:i,e?i+1:u):vr(t,e?i+1:0,e?u:i)}function Ar(t,n){var r=t;return r instanceof Dt&&(r=r.value()),
+	h(n,function(t,n){return n.func.apply(n.thisArg,s([t],n.args))},r)}function kr(t,n,r){for(var e=-1,u=t.length;++e<u;)var i=i?s(wn(i,t[e],n,r),wn(t[e],i,n,r)):t[e];return i&&i.length?wr(i,n,r):[]}function Er(t,n,r){for(var e=-1,u=t.length,i=n.length,o={};++e<u;)r(o,t[e],e<i?n[e]:F);return o}function Or(t){return au(t)?t:[]}function Sr(t){return nf(t)?t:vo(t)}function Ir(t,n,r){var e=t.length;return r=r===F?e:r,!n&&r>=e?t:vr(t,n,r)}function Rr(t,n){if(n)return t.slice();var r=t.length,r=pi?pi(r):new t.constructor(r);
+	return t.copy(r),r}function zr(t){var n=new t.constructor(t.byteLength);return new hi(n).set(new hi(t)),n}function Wr(t,n){return new t.constructor(n?zr(t.buffer):t.buffer,t.byteOffset,t.length)}function Br(t,n){if(t!==n){var r=t!==F,e=null===t,u=t===t,i=bu(t),o=n!==F,f=null===n,c=n===n,a=bu(n);if(!f&&!a&&!i&&t>n||i&&o&&c&&!f&&!a||e&&o&&c||!r&&c||!u)return 1;if(!e&&!i&&!a&&t<n||a&&r&&u&&!e&&!i||f&&r&&u||!o&&u||!c)return-1}return 0}function Lr(t,n,r,e){var u=-1,i=t.length,o=r.length,f=-1,c=n.length,a=zi(i-o,0),l=Zu(c+a);
+	for(e=!e;++f<c;)l[f]=n[f];for(;++u<o;)(e||u<i)&&(l[r[u]]=t[u]);for(;a--;)l[f++]=t[u++];return l}function Ur(t,n,r,e){var u=-1,i=t.length,o=-1,f=r.length,c=-1,a=n.length,l=zi(i-f,0),s=Zu(l+a);for(e=!e;++u<l;)s[u]=t[u];for(l=u;++c<a;)s[l+c]=n[c];for(;++o<f;)(e||u<i)&&(s[l+r[o]]=t[u++]);return s}function Cr(t,n){var r=-1,e=t.length;for(n||(n=Zu(e));++r<e;)n[r]=t[r];return n}function Mr(t,n,r,e){var u=!r;r||(r={});for(var i=-1,o=n.length;++i<o;){var f=n[i],c=e?e(r[f],t[f],f,r,t):F;c===F&&(c=t[f]),u?vn(r,f,c):sn(r,f,c);
+	}return r}function Dr(t,n){return Mr(t,ao(t),n)}function Tr(t,n){return function(r,u){var i=nf(r)?e:pn,o=n?n():{};return i(r,t,_e(u,2),o)}}function $r(t){return lr(function(n,r){var e=-1,u=r.length,i=1<u?r[u-1]:F,o=2<u?r[2]:F,i=3<t.length&&typeof i=="function"?(u--,i):F;for(o&&Ae(r[0],r[1],o)&&(i=3>u?F:i,u=1),n=Ju(n);++e<u;)(o=r[e])&&t(n,o,e,i);return n})}function Fr(t,n){return function(r,e){if(null==r)return r;if(!cu(r))return t(r,e);for(var u=r.length,i=n?u:-1,o=Ju(r);(n?i--:++i<u)&&false!==e(o[i],i,o););
+	return r}}function Nr(t){return function(n,r,e){var u=-1,i=Ju(n);e=e(n);for(var o=e.length;o--;){var f=e[t?o:++u];if(false===r(i[f],f,i))break}return n}}function Pr(t,n,r){function e(){return(this&&this!==Pt&&this instanceof e?i:t).apply(u?r:this,arguments)}var u=1&n,i=Vr(t);return e}function Zr(t){return function(n){n=Eu(n);var r=Wt.test(n)?$(n):F,e=r?r[0]:n.charAt(0);return n=r?Ir(r,1).join(""):n.slice(1),e[t]()+n}}function qr(t){return function(n){return h(Uu(Lu(n).replace(St,"")),t,"")}}function Vr(t){
+	return function(){var n=arguments;switch(n.length){case 0:return new t;case 1:return new t(n[0]);case 2:return new t(n[0],n[1]);case 3:return new t(n[0],n[1],n[2]);case 4:return new t(n[0],n[1],n[2],n[3]);case 5:return new t(n[0],n[1],n[2],n[3],n[4]);case 6:return new t(n[0],n[1],n[2],n[3],n[4],n[5]);case 7:return new t(n[0],n[1],n[2],n[3],n[4],n[5],n[6])}var r=Xi(t.prototype),n=t.apply(r,n);return _u(n)?n:r}}function Kr(t,n,e){function u(){for(var o=arguments.length,f=Zu(o),c=o,a=pe(u);c--;)f[c]=arguments[c];
+	return c=3>o&&f[0]!==a&&f[o-1]!==a?[]:C(f,a),o-=c.length,o<e?ue(t,n,Yr,u.placeholder,F,f,c,F,F,e-o):r(this&&this!==Pt&&this instanceof u?i:t,this,f)}var i=Vr(t);return u}function Gr(t){return function(n,r,e){var u=Ju(n);if(!cu(n)){var i=_e(r,3);n=Iu(n),r=function(t){return i(u[t],t,u)}}return r=t(n,r,e),-1<r?u[i?n[r]:r]:F}}function Jr(t){return le(function(n){var r=n.length,e=r,u=Mt.prototype.thru;for(t&&n.reverse();e--;){var i=n[e];if(typeof i!="function")throw new Qu("Expected a function");if(u&&!o&&"wrapper"==he(i))var o=new Mt([],true);
+	}for(e=o?e:r;++e<r;)var i=n[e],u=he(i),f="wrapper"==u?co(i):F,o=f&&Ee(f[0])&&424==f[1]&&!f[4].length&&1==f[9]?o[he(f[0])].apply(o,f[3]):1==i.length&&Ee(i)?o[u]():o.thru(i);return function(){var t=arguments,e=t[0];if(o&&1==t.length&&nf(e)&&200<=e.length)return o.plant(e).value();for(var u=0,t=r?n[u].apply(this,t):e;++u<r;)t=n[u].call(this,t);return t}})}function Yr(t,n,r,e,u,i,o,f,c,a){function l(){for(var d=arguments.length,y=Zu(d),b=d;b--;)y[b]=arguments[b];if(_){var x,j=pe(l),b=y.length;for(x=0;b--;)y[b]===j&&++x;
+	}if(e&&(y=Lr(y,e,u,_)),i&&(y=Ur(y,i,o,_)),d-=x,_&&d<a)return j=C(y,j),ue(t,n,Yr,l.placeholder,r,y,j,f,c,a-d);if(j=h?r:this,b=p?j[t]:t,d=y.length,f){x=y.length;for(var w=Wi(f.length,x),m=Cr(y);w--;){var A=f[w];y[w]=me(A,x)?m[A]:F}}else v&&1<d&&y.reverse();return s&&c<d&&(y.length=c),this&&this!==Pt&&this instanceof l&&(b=g||Vr(b)),b.apply(j,y)}var s=128&n,h=1&n,p=2&n,_=24&n,v=512&n,g=p?F:Vr(t);return l}function Hr(t,n){return function(r,e){return Cn(r,t,n(e))}}function Qr(t,n){return function(r,e){
+	var u;if(r===F&&e===F)return n;if(r!==F&&(u=r),e!==F){if(u===F)return e;typeof r=="string"||typeof e=="string"?(r=jr(r),e=jr(e)):(r=xr(r),e=xr(e)),u=t(r,e)}return u}}function Xr(t){return le(function(n){return n=l(n,S(_e())),lr(function(e){var u=this;return t(n,function(t){return r(t,u,e)})})})}function te(t,n){n=n===F?" ":jr(n);var r=n.length;return 2>r?r?ar(n,t):n:(r=ar(n,Ai(t/T(n))),Wt.test(n)?Ir($(r),0,t).join(""):r.slice(0,t))}function ne(t,n,e,u){function i(){for(var n=-1,c=arguments.length,a=-1,l=u.length,s=Zu(l+c),h=this&&this!==Pt&&this instanceof i?f:t;++a<l;)s[a]=u[a];
+	for(;c--;)s[a++]=arguments[++n];return r(h,o?e:this,s)}var o=1&n,f=Vr(t);return i}function re(t){return function(n,r,e){e&&typeof e!="number"&&Ae(n,r,e)&&(r=e=F),n=ju(n),r===F?(r=n,n=0):r=ju(r),e=e===F?n<r?1:-1:ju(e);var u=-1;r=zi(Ai((r-n)/(e||1)),0);for(var i=Zu(r);r--;)i[t?r:++u]=n,n+=e;return i}}function ee(t){return function(n,r){return typeof n=="string"&&typeof r=="string"||(n=Au(n),r=Au(r)),t(n,r)}}function ue(t,n,r,e,u,i,o,f,c,a){var l=8&n,s=l?o:F;o=l?F:o;var h=l?i:F;return i=l?F:i,n=(n|(l?32:64))&~(l?64:32),
+	4&n||(n&=-4),u=[t,n,u,h,s,i,o,f,c,a],r=r.apply(F,u),Ee(t)&&ho(r,u),r.placeholder=e,We(r,t,n)}function ie(t){var n=Gu[t];return function(t,r){if(t=Au(t),r=Wi(wu(r),292)){var e=(Eu(t)+"e").split("e"),e=n(e[0]+"e"+(+e[1]+r)),e=(Eu(e)+"e").split("e");return+(e[0]+"e"+(+e[1]-r))}return n(t)}}function oe(t){return function(n){var r=Et(n);return"[object Map]"==r?L(n):"[object Set]"==r?D(n):O(n,t(n))}}function fe(t,n,r,e,u,i,o,f){var c=2&n;if(!c&&typeof t!="function")throw new Qu("Expected a function");var a=e?e.length:0;
+	if(a||(n&=-97,e=u=F),o=o===F?o:zi(wu(o),0),f=f===F?f:wu(f),a-=u?u.length:0,64&n){var l=e,s=u;e=u=F}var h=c?F:co(t);return i=[t,n,r,e,u,l,s,i,o,f],h&&(r=i[1],t=h[1],n=r|t,e=128==t&&8==r||128==t&&256==r&&i[7].length<=h[8]||384==t&&h[7].length<=h[8]&&8==r,131>n||e)&&(1&t&&(i[2]=h[2],n|=1&r?0:4),(r=h[3])&&(e=i[3],i[3]=e?Lr(e,r,h[4]):r,i[4]=e?C(i[3],"__lodash_placeholder__"):h[4]),(r=h[5])&&(e=i[5],i[5]=e?Ur(e,r,h[6]):r,i[6]=e?C(i[5],"__lodash_placeholder__"):h[6]),(r=h[7])&&(i[7]=r),128&t&&(i[8]=null==i[8]?h[8]:Wi(i[8],h[8])),
+	null==i[9]&&(i[9]=h[9]),i[0]=h[0],i[1]=n),t=i[0],n=i[1],r=i[2],e=i[3],u=i[4],f=i[9]=null==i[9]?c?0:t.length:zi(i[9]-a,0),!f&&24&n&&(n&=-25),We((h?uo:ho)(n&&1!=n?8==n||16==n?Kr(t,n,f):32!=n&&33!=n||u.length?Yr.apply(F,i):ne(t,n,r,e):Pr(t,n,r),i),t,n)}function ce(t,n,r,e,u,i){var o=2&u,f=t.length,c=n.length;if(f!=c&&!(o&&c>f))return false;if((c=i.get(t))&&i.get(n))return c==n;var c=-1,a=true,l=1&u?new qt:F;for(i.set(t,n),i.set(n,t);++c<f;){var s=t[c],h=n[c];if(e)var p=o?e(h,s,c,n,t,i):e(s,h,c,t,n,i);if(p!==F){
+	if(p)continue;a=false;break}if(l){if(!_(n,function(t,n){if(!R(l,n)&&(s===t||r(s,t,e,u,i)))return l.push(n)})){a=false;break}}else if(s!==h&&!r(s,h,e,u,i)){a=false;break}}return i.delete(t),i.delete(n),a}function ae(t,n,r,e,u,i,o){switch(r){case"[object DataView]":if(t.byteLength!=n.byteLength||t.byteOffset!=n.byteOffset)break;t=t.buffer,n=n.buffer;case"[object ArrayBuffer]":if(t.byteLength!=n.byteLength||!e(new hi(t),new hi(n)))break;return true;case"[object Boolean]":case"[object Date]":case"[object Number]":
+	return fu(+t,+n);case"[object Error]":return t.name==n.name&&t.message==n.message;case"[object RegExp]":case"[object String]":return t==n+"";case"[object Map]":var f=L;case"[object Set]":if(f||(f=M),t.size!=n.size&&!(2&i))break;return(r=o.get(t))?r==n:(i|=1,o.set(t,n),n=ce(f(t),f(n),e,u,i,o),o.delete(t),n);case"[object Symbol]":if(Hi)return Hi.call(t)==Hi.call(n)}return false}function le(t){return _o(Re(t,F,Fe),t+"")}function se(t){return zn(t,Iu,ao)}function he(t){for(var n=t.name+"",r=Zi[n],e=ui.call(Zi,n)?r.length:0;e--;){
+	var u=r[e],i=u.func;if(null==i||i==t)return u.name}return n}function pe(t){return(ui.call(Ot,"placeholder")?Ot:t).placeholder}function _e(){var t=Ot.iteratee||Du,t=t===Du?Gn:t;return arguments.length?t(arguments[0],arguments[1]):t}function ve(t,n){var r=t.__data__,e=typeof n;return("string"==e||"number"==e||"symbol"==e||"boolean"==e?"__proto__"!==n:null===n)?r[typeof n=="string"?"string":"hash"]:r.map}function ge(t){for(var n=Iu(t),r=n.length;r--;){var e=n[r],u=t[e];n[r]=[e,u,u===u&&!_u(u)]}return n;
+	}function de(t,n){var r=null==t?F:t[n];return Zn(r)?r:F}function ye(t,n,r){n=ke(n,t)?[n]:Sr(n);for(var e=-1,u=n.length,i=false;++e<u;){var o=Ue(n[e]);if(!(i=null!=t&&r(t,o)))break;t=t[o]}return i||++e!=u?i:(u=t?t.length:0,!!u&&pu(u)&&me(o,u)&&(nf(t)||tf(t)))}function be(t){var n=t.length,r=t.constructor(n);return n&&"string"==typeof t[0]&&ui.call(t,"index")&&(r.index=t.index,r.input=t.input),r}function xe(t){return typeof t.constructor!="function"||Oe(t)?{}:Xi(_i(t))}function je(r,e,u,i){var o=r.constructor;
+	switch(e){case"[object ArrayBuffer]":return zr(r);case"[object Boolean]":case"[object Date]":return new o(+r);case"[object DataView]":return e=i?zr(r.buffer):r.buffer,new r.constructor(e,r.byteOffset,r.byteLength);case"[object Float32Array]":case"[object Float64Array]":case"[object Int8Array]":case"[object Int16Array]":case"[object Int32Array]":case"[object Uint8Array]":case"[object Uint8ClampedArray]":case"[object Uint16Array]":case"[object Uint32Array]":return Wr(r,i);case"[object Map]":return e=i?u(L(r),true):L(r),
+	h(e,t,new r.constructor);case"[object Number]":case"[object String]":return new o(r);case"[object RegExp]":return e=new r.constructor(r.source,gt.exec(r)),e.lastIndex=r.lastIndex,e;case"[object Set]":return e=i?u(M(r),true):M(r),h(e,n,new r.constructor);case"[object Symbol]":return Hi?Ju(Hi.call(r)):{}}}function we(t){return nf(t)||tf(t)||!!(bi&&t&&t[bi])}function me(t,n){return n=null==n?9007199254740991:n,!!n&&(typeof t=="number"||jt.test(t))&&-1<t&&0==t%1&&t<n}function Ae(t,n,r){if(!_u(r))return false;
+	var e=typeof n;return!!("number"==e?cu(r)&&me(n,r.length):"string"==e&&n in r)&&fu(r[n],t)}function ke(t,n){if(nf(t))return false;var r=typeof t;return!("number"!=r&&"symbol"!=r&&"boolean"!=r&&null!=t&&!bu(t))||(rt.test(t)||!nt.test(t)||null!=n&&t in Ju(n))}function Ee(t){var n=he(t),r=Ot[n];return typeof r=="function"&&n in Dt.prototype&&(t===r||(n=co(r),!!n&&t===n[0]))}function Oe(t){var n=t&&t.constructor;return t===(typeof n=="function"&&n.prototype||ti)}function Se(t,n){return function(r){return null!=r&&(r[t]===n&&(n!==F||t in Ju(r)));
+	}}function Ie(t,n,r,e,u,i){return _u(t)&&_u(n)&&(i.set(n,t),tr(t,n,F,Ie,i),i.delete(n)),t}function Re(t,n,e){return n=zi(n===F?t.length-1:n,0),function(){for(var u=arguments,i=-1,o=zi(u.length-n,0),f=Zu(o);++i<o;)f[i]=u[n+i];for(i=-1,o=Zu(n+1);++i<n;)o[i]=u[i];return o[n]=e(f),r(t,this,o)}}function ze(t,n){return 1==n.length?t:Rn(t,vr(n,0,-1))}function We(t,n,r){var e=n+"";n=_o;var u,i=Me;return u=(u=e.match(st))?u[1].split(ht):[],r=i(u,r),(i=r.length)&&(u=i-1,r[u]=(1<i?"& ":"")+r[u],r=r.join(2<i?", ":" "),
+	e=e.replace(lt,"{\n/* [wrapped with "+r+"] */\n")),n(t,e)}function Be(t){var n=0,r=0;return function(){var e=Bi(),u=16-(e-r);if(r=e,0<u){if(500<=++n)return arguments[0]}else n=0;return t.apply(F,arguments)}}function Le(t,n){var r=-1,e=t.length,u=e-1;for(n=n===F?e:n;++r<n;){var e=cr(r,u),i=t[e];t[e]=t[r],t[r]=i}return t.length=n,t}function Ue(t){if(typeof t=="string"||bu(t))return t;var n=t+"";return"0"==n&&1/t==-N?"-0":n}function Ce(t){if(null!=t){try{return ei.call(t)}catch(t){}return t+""}return"";
+	}function Me(t,n){return u(Z,function(r){var e="_."+r[0];n&r[1]&&!c(t,e)&&t.push(e)}),t.sort()}function De(t){if(t instanceof Dt)return t.clone();var n=new Mt(t.__wrapped__,t.__chain__);return n.__actions__=Cr(t.__actions__),n.__index__=t.__index__,n.__values__=t.__values__,n}function Te(t,n,r){var e=t?t.length:0;return e?(r=null==r?0:wu(r),0>r&&(r=zi(e+r,0)),g(t,_e(n,3),r)):-1}function $e(t,n,r){var e=t?t.length:0;if(!e)return-1;var u=e-1;return r!==F&&(u=wu(r),u=0>r?zi(e+u,0):Wi(u,e-1)),g(t,_e(n,3),u,true);
+	}function Fe(t){return t&&t.length?En(t,1):[]}function Ne(t){return t&&t.length?t[0]:F}function Pe(t){var n=t?t.length:0;return n?t[n-1]:F}function Ze(t,n){return t&&t.length&&n&&n.length?or(t,n):t}function qe(t){return t?Ci.call(t):t}function Ve(t){if(!t||!t.length)return[];var n=0;return t=f(t,function(t){if(au(t))return n=zi(t.length,n),true}),E(n,function(n){return l(t,j(n))})}function Ke(t,n){if(!t||!t.length)return[];var e=Ve(t);return null==n?e:l(e,function(t){return r(n,F,t)})}function Ge(t){
+	return t=Ot(t),t.__chain__=true,t}function Je(t,n){return n(t)}function Ye(){return this}function He(t,n){return(nf(t)?u:to)(t,_e(n,3))}function Qe(t,n){return(nf(t)?i:no)(t,_e(n,3))}function Xe(t,n){return(nf(t)?l:Hn)(t,_e(n,3))}function tu(t,n,r){return n=r?F:n,n=t&&null==n?t.length:n,fe(t,128,F,F,F,F,n)}function nu(t,n){var r;if(typeof n!="function")throw new Qu("Expected a function");return t=wu(t),function(){return 0<--t&&(r=n.apply(this,arguments)),1>=t&&(n=F),r}}function ru(t,n,r){return n=r?F:n,
+	t=fe(t,8,F,F,F,F,F,n),t.placeholder=ru.placeholder,t}function eu(t,n,r){return n=r?F:n,t=fe(t,16,F,F,F,F,F,n),t.placeholder=eu.placeholder,t}function uu(t,n,r){function e(n){var r=c,e=a;return c=a=F,_=n,s=t.apply(e,r)}function u(t){var r=t-p;return t-=_,p===F||r>=n||0>r||g&&t>=l}function i(){var t=Po();if(u(t))return o(t);var r,e=po;r=t-_,t=n-(t-p),r=g?Wi(t,l-r):t,h=e(i,r)}function o(t){return h=F,d&&c?e(t):(c=a=F,s)}function f(){var t=Po(),r=u(t);if(c=arguments,a=this,p=t,r){if(h===F)return _=t=p,
+	h=po(i,n),v?e(t):s;if(g)return h=po(i,n),e(p)}return h===F&&(h=po(i,n)),s}var c,a,l,s,h,p,_=0,v=false,g=false,d=true;if(typeof t!="function")throw new Qu("Expected a function");return n=Au(n)||0,_u(r)&&(v=!!r.leading,l=(g="maxWait"in r)?zi(Au(r.maxWait)||0,n):l,d="trailing"in r?!!r.trailing:d),f.cancel=function(){h!==F&&oo(h),_=0,c=p=a=h=F},f.flush=function(){return h===F?s:o(Po())},f}function iu(t,n){function r(){var e=arguments,u=n?n.apply(this,e):e[0],i=r.cache;return i.has(u)?i.get(u):(e=t.apply(this,e),
+	r.cache=i.set(u,e)||i,e)}if(typeof t!="function"||n&&typeof n!="function")throw new Qu("Expected a function");return r.cache=new(iu.Cache||Zt),r}function ou(t){if(typeof t!="function")throw new Qu("Expected a function");return function(){var n=arguments;switch(n.length){case 0:return!t.call(this);case 1:return!t.call(this,n[0]);case 2:return!t.call(this,n[0],n[1]);case 3:return!t.call(this,n[0],n[1],n[2])}return!t.apply(this,n)}}function fu(t,n){return t===n||t!==t&&n!==n}function cu(t){return null!=t&&pu(t.length)&&!su(t);
+	}function au(t){return vu(t)&&cu(t)}function lu(t){return!!vu(t)&&("[object Error]"==fi.call(t)||typeof t.message=="string"&&typeof t.name=="string")}function su(t){return t=_u(t)?fi.call(t):"","[object Function]"==t||"[object GeneratorFunction]"==t||"[object Proxy]"==t}function hu(t){return typeof t=="number"&&t==wu(t)}function pu(t){return typeof t=="number"&&-1<t&&0==t%1&&9007199254740991>=t}function _u(t){var n=typeof t;return null!=t&&("object"==n||"function"==n)}function vu(t){return null!=t&&typeof t=="object";
+	}function gu(t){return typeof t=="number"||vu(t)&&"[object Number]"==fi.call(t)}function du(t){return!(!vu(t)||"[object Object]"!=fi.call(t))&&(t=_i(t),null===t||(t=ui.call(t,"constructor")&&t.constructor,typeof t=="function"&&t instanceof t&&ei.call(t)==oi))}function yu(t){return typeof t=="string"||!nf(t)&&vu(t)&&"[object String]"==fi.call(t)}function bu(t){return typeof t=="symbol"||vu(t)&&"[object Symbol]"==fi.call(t)}function xu(t){if(!t)return[];if(cu(t))return yu(t)?$(t):Cr(t);if(vi&&t[vi]){t=t[vi]();
+	for(var n,r=[];!(n=t.next()).done;)r.push(n.value);return r}return n=Et(t),("[object Map]"==n?L:"[object Set]"==n?M:Wu)(t)}function ju(t){return t?(t=Au(t),t===N||t===-N?1.7976931348623157e308*(0>t?-1:1):t===t?t:0):0===t?t:0}function wu(t){t=ju(t);var n=t%1;return t===t?n?t-n:t:0}function mu(t){return t?dn(wu(t),0,4294967295):0}function Au(t){if(typeof t=="number")return t;if(bu(t))return P;if(_u(t)&&(t=typeof t.valueOf=="function"?t.valueOf():t,t=_u(t)?t+"":t),typeof t!="string")return 0===t?t:+t;
+	t=t.replace(ft,"");var n=yt.test(t);return n||xt.test(t)?$t(t.slice(2),n?2:8):dt.test(t)?P:+t}function ku(t){return Mr(t,Ru(t))}function Eu(t){return null==t?"":jr(t)}function Ou(t,n,r){return t=null==t?F:Rn(t,n),t===F?r:t}function Su(t,n){return null!=t&&ye(t,n,Ln)}function Iu(t){return cu(t)?tn(t):Jn(t)}function Ru(t){if(cu(t))t=tn(t,true);else if(_u(t)){var n,r=Oe(t),e=[];for(n in t)("constructor"!=n||!r&&ui.call(t,n))&&e.push(n);t=e}else{if(n=[],null!=t)for(r in Ju(t))n.push(r);t=n}return t}function zu(t,n){
+	return null==t?{}:ur(t,zn(t,Ru,lo),_e(n))}function Wu(t){return t?I(t,Iu(t)):[]}function Bu(t){return Uf(Eu(t).toLowerCase())}function Lu(t){return(t=Eu(t))&&t.replace(wt,nn).replace(It,"")}function Uu(t,n,r){return t=Eu(t),n=r?F:n,n===F?Bt.test(t)?t.match(zt)||[]:t.match(pt)||[]:t.match(n)||[]}function Cu(t){return function(){return t}}function Mu(t){return t}function Du(t){return Gn(typeof t=="function"?t:yn(t,true))}function Tu(t,n,r){var e=Iu(n),i=In(n,e);null!=r||_u(n)&&(i.length||!e.length)||(r=n,
+	n=t,t=this,i=In(n,Iu(n)));var o=!(_u(r)&&"chain"in r&&!r.chain),f=su(t);return u(i,function(r){var e=n[r];t[r]=e,f&&(t.prototype[r]=function(){var n=this.__chain__;if(o||n){var r=t(this.__wrapped__);return(r.__actions__=Cr(this.__actions__)).push({func:e,args:arguments,thisArg:t}),r.__chain__=n,r}return e.apply(t,s([this.value()],arguments))})}),t}function $u(){}function Fu(t){return ke(t)?j(Ue(t)):ir(t)}function Nu(){return[]}function Pu(){return false}kt=kt?un.defaults(Pt.Object(),kt,un.pick(Pt,Lt)):Pt;
+	var Zu=kt.Array,qu=kt.Date,Vu=kt.Error,Ku=kt.Function,Gu=kt.Math,Ju=kt.Object,Yu=kt.RegExp,Hu=kt.String,Qu=kt.TypeError,Xu=Zu.prototype,ti=Ju.prototype,ni=kt["__core-js_shared__"],ri=function(){var t=/[^.]+$/.exec(ni&&ni.keys&&ni.keys.IE_PROTO||"");return t?"Symbol(src)_1."+t:""}(),ei=Ku.prototype.toString,ui=ti.hasOwnProperty,ii=0,oi=ei.call(Ju),fi=ti.toString,ci=Pt._,ai=Yu("^"+ei.call(ui).replace(it,"\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g,"$1.*?")+"$"),li=Vt?kt.Buffer:F,si=kt.Symbol,hi=kt.Uint8Array,pi=li?li.f:F,_i=U(Ju.getPrototypeOf,Ju),vi=si?si.iterator:F,gi=Ju.create,di=ti.propertyIsEnumerable,yi=Xu.splice,bi=si?si.isConcatSpreadable:F,xi=function(){
+	try{var t=de(Ju,"defineProperty");return t({},"",{}),t}catch(t){}}(),ji=kt.clearTimeout!==Pt.clearTimeout&&kt.clearTimeout,wi=qu&&qu.now!==Pt.Date.now&&qu.now,mi=kt.setTimeout!==Pt.setTimeout&&kt.setTimeout,Ai=Gu.ceil,ki=Gu.floor,Ei=Ju.getOwnPropertySymbols,Oi=li?li.isBuffer:F,Si=kt.isFinite,Ii=Xu.join,Ri=U(Ju.keys,Ju),zi=Gu.max,Wi=Gu.min,Bi=qu.now,Li=kt.parseInt,Ui=Gu.random,Ci=Xu.reverse,Mi=de(kt,"DataView"),Di=de(kt,"Map"),Ti=de(kt,"Promise"),$i=de(kt,"Set"),Fi=de(kt,"WeakMap"),Ni=de(Ju,"create"),Pi=Fi&&new Fi,Zi={},qi=Ce(Mi),Vi=Ce(Di),Ki=Ce(Ti),Gi=Ce($i),Ji=Ce(Fi),Yi=si?si.prototype:F,Hi=Yi?Yi.valueOf:F,Qi=Yi?Yi.toString:F,Xi=function(){
+	function t(){}return function(n){return _u(n)?gi?gi(n):(t.prototype=n,n=new t,t.prototype=F,n):{}}}();Ot.templateSettings={escape:Q,evaluate:X,interpolate:tt,variable:"",imports:{_:Ot}},Ot.prototype=Rt.prototype,Ot.prototype.constructor=Ot,Mt.prototype=Xi(Rt.prototype),Mt.prototype.constructor=Mt,Dt.prototype=Xi(Rt.prototype),Dt.prototype.constructor=Dt,Ft.prototype.clear=function(){this.__data__=Ni?Ni(null):{},this.size=0},Ft.prototype.delete=function(t){return t=this.has(t)&&delete this.__data__[t],
+	this.size-=t?1:0,t},Ft.prototype.get=function(t){var n=this.__data__;return Ni?(t=n[t],"__lodash_hash_undefined__"===t?F:t):ui.call(n,t)?n[t]:F},Ft.prototype.has=function(t){var n=this.__data__;return Ni?n[t]!==F:ui.call(n,t)},Ft.prototype.set=function(t,n){var r=this.__data__;return this.size+=this.has(t)?0:1,r[t]=Ni&&n===F?"__lodash_hash_undefined__":n,this},Nt.prototype.clear=function(){this.__data__=[],this.size=0},Nt.prototype.delete=function(t){var n=this.__data__;return t=hn(n,t),!(0>t)&&(t==n.length-1?n.pop():yi.call(n,t,1),
+	--this.size,true)},Nt.prototype.get=function(t){var n=this.__data__;return t=hn(n,t),0>t?F:n[t][1]},Nt.prototype.has=function(t){return-1<hn(this.__data__,t)},Nt.prototype.set=function(t,n){var r=this.__data__,e=hn(r,t);return 0>e?(++this.size,r.push([t,n])):r[e][1]=n,this},Zt.prototype.clear=function(){this.size=0,this.__data__={hash:new Ft,map:new(Di||Nt),string:new Ft}},Zt.prototype.delete=function(t){return t=ve(this,t).delete(t),this.size-=t?1:0,t},Zt.prototype.get=function(t){return ve(this,t).get(t);
+	},Zt.prototype.has=function(t){return ve(this,t).has(t)},Zt.prototype.set=function(t,n){var r=ve(this,t),e=r.size;return r.set(t,n),this.size+=r.size==e?0:1,this},qt.prototype.add=qt.prototype.push=function(t){return this.__data__.set(t,"__lodash_hash_undefined__"),this},qt.prototype.has=function(t){return this.__data__.has(t)},Kt.prototype.clear=function(){this.__data__=new Nt,this.size=0},Kt.prototype.delete=function(t){var n=this.__data__;return t=n.delete(t),this.size=n.size,t},Kt.prototype.get=function(t){
+	return this.__data__.get(t)},Kt.prototype.has=function(t){return this.__data__.has(t)},Kt.prototype.set=function(t,n){var r=this.__data__;if(r instanceof Nt){var e=r.__data__;if(!Di||199>e.length)return e.push([t,n]),this.size=++r.size,this;r=this.__data__=new Zt(e)}return r.set(t,n),this.size=r.size,this};var to=Fr(On),no=Fr(Sn,true),ro=Nr(),eo=Nr(true),uo=Pi?function(t,n){return Pi.set(t,n),t}:Mu,io=xi?function(t,n){return xi(t,"toString",{configurable:true,enumerable:false,value:Cu(n),writable:true})}:Mu,oo=ji||function(t){
+	return Pt.clearTimeout(t)},fo=$i&&1/M(new $i([,-0]))[1]==N?function(t){return new $i(t)}:$u,co=Pi?function(t){return Pi.get(t)}:$u,ao=Ei?U(Ei,Ju):Nu,lo=Ei?function(t){for(var n=[];t;)s(n,ao(t)),t=_i(t);return n}:Nu;(Mi&&"[object DataView]"!=Et(new Mi(new ArrayBuffer(1)))||Di&&"[object Map]"!=Et(new Di)||Ti&&"[object Promise]"!=Et(Ti.resolve())||$i&&"[object Set]"!=Et(new $i)||Fi&&"[object WeakMap]"!=Et(new Fi))&&(Et=function(t){var n=fi.call(t);if(t=(t="[object Object]"==n?t.constructor:F)?Ce(t):F)switch(t){
+	case qi:return"[object DataView]";case Vi:return"[object Map]";case Ki:return"[object Promise]";case Gi:return"[object Set]";case Ji:return"[object WeakMap]"}return n});var so=ni?su:Pu,ho=Be(uo),po=mi||function(t,n){return Pt.setTimeout(t,n)},_o=Be(io),vo=function(t){t=iu(t,function(t){return 500===n.size&&n.clear(),t});var n=t.cache;return t}(function(t){t=Eu(t);var n=[];return et.test(t)&&n.push(""),t.replace(ut,function(t,r,e,u){n.push(e?u.replace(_t,"$1"):r||t)}),n}),go=lr(function(t,n){return au(t)?wn(t,En(n,1,au,true)):[];
+	}),yo=lr(function(t,n){var r=Pe(n);return au(r)&&(r=F),au(t)?wn(t,En(n,1,au,true),_e(r,2)):[]}),bo=lr(function(t,n){var r=Pe(n);return au(r)&&(r=F),au(t)?wn(t,En(n,1,au,true),F,r):[]}),xo=lr(function(t){var n=l(t,Or);return n.length&&n[0]===t[0]?Un(n):[]}),jo=lr(function(t){var n=Pe(t),r=l(t,Or);return n===Pe(r)?n=F:r.pop(),r.length&&r[0]===t[0]?Un(r,_e(n,2)):[]}),wo=lr(function(t){var n=Pe(t),r=l(t,Or);return n===Pe(r)?n=F:r.pop(),r.length&&r[0]===t[0]?Un(r,F,n):[]}),mo=lr(Ze),Ao=le(function(t,n){var r=t?t.length:0,e=gn(t,n);
+	return fr(t,l(n,function(t){return me(t,r)?+t:t}).sort(Br)),e}),ko=lr(function(t){return wr(En(t,1,au,true))}),Eo=lr(function(t){var n=Pe(t);return au(n)&&(n=F),wr(En(t,1,au,true),_e(n,2))}),Oo=lr(function(t){var n=Pe(t);return au(n)&&(n=F),wr(En(t,1,au,true),F,n)}),So=lr(function(t,n){return au(t)?wn(t,n):[]}),Io=lr(function(t){return kr(f(t,au))}),Ro=lr(function(t){var n=Pe(t);return au(n)&&(n=F),kr(f(t,au),_e(n,2))}),zo=lr(function(t){var n=Pe(t);return au(n)&&(n=F),kr(f(t,au),F,n)}),Wo=lr(Ve),Bo=lr(function(t){
+	var n=t.length,n=1<n?t[n-1]:F,n=typeof n=="function"?(t.pop(),n):F;return Ke(t,n)}),Lo=le(function(t){function n(n){return gn(n,t)}var r=t.length,e=r?t[0]:0,u=this.__wrapped__;return!(1<r||this.__actions__.length)&&u instanceof Dt&&me(e)?(u=u.slice(e,+e+(r?1:0)),u.__actions__.push({func:Je,args:[n],thisArg:F}),new Mt(u,this.__chain__).thru(function(t){return r&&!t.length&&t.push(F),t})):this.thru(n)}),Uo=Tr(function(t,n,r){ui.call(t,r)?++t[r]:vn(t,r,1)}),Co=Gr(Te),Mo=Gr($e),Do=Tr(function(t,n,r){
+	ui.call(t,r)?t[r].push(n):vn(t,r,[n])}),To=lr(function(t,n,e){var u=-1,i=typeof n=="function",o=ke(n),f=cu(t)?Zu(t.length):[];return to(t,function(t){var c=i?n:o&&null!=t?t[n]:F;f[++u]=c?r(c,t,e):Mn(t,n,e)}),f}),$o=Tr(function(t,n,r){vn(t,r,n)}),Fo=Tr(function(t,n,r){t[r?0:1].push(n)},function(){return[[],[]]}),No=lr(function(t,n){if(null==t)return[];var r=n.length;return 1<r&&Ae(t,n[0],n[1])?n=[]:2<r&&Ae(n[0],n[1],n[2])&&(n=[n[0]]),rr(t,En(n,1),[])}),Po=wi||function(){return Pt.Date.now()},Zo=lr(function(t,n,r){
+	var e=1;if(r.length)var u=C(r,pe(Zo)),e=32|e;return fe(t,e,n,r,u)}),qo=lr(function(t,n,r){var e=3;if(r.length)var u=C(r,pe(qo)),e=32|e;return fe(n,e,t,r,u)}),Vo=lr(function(t,n){return jn(t,1,n)}),Ko=lr(function(t,n,r){return jn(t,Au(n)||0,r)});iu.Cache=Zt;var Go=lr(function(t,n){n=1==n.length&&nf(n[0])?l(n[0],S(_e())):l(En(n,1),S(_e()));var e=n.length;return lr(function(u){for(var i=-1,o=Wi(u.length,e);++i<o;)u[i]=n[i].call(this,u[i]);return r(t,this,u)})}),Jo=lr(function(t,n){return fe(t,32,F,n,C(n,pe(Jo)));
+	}),Yo=lr(function(t,n){return fe(t,64,F,n,C(n,pe(Yo)))}),Ho=le(function(t,n){return fe(t,256,F,F,F,n)}),Qo=ee(Wn),Xo=ee(function(t,n){return t>=n}),tf=Dn(function(){return arguments}())?Dn:function(t){return vu(t)&&ui.call(t,"callee")&&!di.call(t,"callee")},nf=Zu.isArray,rf=Gt?S(Gt):Tn,ef=Oi||Pu,uf=Jt?S(Jt):$n,of=Yt?S(Yt):Nn,ff=Ht?S(Ht):qn,cf=Qt?S(Qt):Vn,af=Xt?S(Xt):Kn,lf=ee(Yn),sf=ee(function(t,n){return t<=n}),hf=$r(function(t,n){if(Oe(n)||cu(n))Mr(n,Iu(n),t);else for(var r in n)ui.call(n,r)&&sn(t,r,n[r]);
+	}),pf=$r(function(t,n){Mr(n,Ru(n),t)}),_f=$r(function(t,n,r,e){Mr(n,Ru(n),t,e)}),vf=$r(function(t,n,r,e){Mr(n,Iu(n),t,e)}),gf=le(gn),df=lr(function(t){return t.push(F,an),r(_f,F,t)}),yf=lr(function(t){return t.push(F,Ie),r(mf,F,t)}),bf=Hr(function(t,n,r){t[n]=r},Cu(Mu)),xf=Hr(function(t,n,r){ui.call(t,n)?t[n].push(r):t[n]=[r]},_e),jf=lr(Mn),wf=$r(function(t,n,r){tr(t,n,r)}),mf=$r(function(t,n,r,e){tr(t,n,r,e)}),Af=le(function(t,n){return null==t?{}:(n=l(n,Ue),er(t,wn(zn(t,Ru,lo),n)))}),kf=le(function(t,n){
+	return null==t?{}:er(t,l(n,Ue))}),Ef=oe(Iu),Of=oe(Ru),Sf=qr(function(t,n,r){return n=n.toLowerCase(),t+(r?Bu(n):n)}),If=qr(function(t,n,r){return t+(r?"-":"")+n.toLowerCase()}),Rf=qr(function(t,n,r){return t+(r?" ":"")+n.toLowerCase()}),zf=Zr("toLowerCase"),Wf=qr(function(t,n,r){return t+(r?"_":"")+n.toLowerCase()}),Bf=qr(function(t,n,r){return t+(r?" ":"")+Uf(n)}),Lf=qr(function(t,n,r){return t+(r?" ":"")+n.toUpperCase()}),Uf=Zr("toUpperCase"),Cf=lr(function(t,n){try{return r(t,F,n)}catch(t){return lu(t)?t:new Vu(t);
+	}}),Mf=le(function(t,n){return u(n,function(n){n=Ue(n),vn(t,n,Zo(t[n],t))}),t}),Df=Jr(),Tf=Jr(true),$f=lr(function(t,n){return function(r){return Mn(r,t,n)}}),Ff=lr(function(t,n){return function(r){return Mn(t,r,n)}}),Nf=Xr(l),Pf=Xr(o),Zf=Xr(_),qf=re(),Vf=re(true),Kf=Qr(function(t,n){return t+n},0),Gf=ie("ceil"),Jf=Qr(function(t,n){return t/n},1),Yf=ie("floor"),Hf=Qr(function(t,n){return t*n},1),Qf=ie("round"),Xf=Qr(function(t,n){return t-n},0);return Ot.after=function(t,n){if(typeof n!="function")throw new Qu("Expected a function");
+	return t=wu(t),function(){if(1>--t)return n.apply(this,arguments)}},Ot.ary=tu,Ot.assign=hf,Ot.assignIn=pf,Ot.assignInWith=_f,Ot.assignWith=vf,Ot.at=gf,Ot.before=nu,Ot.bind=Zo,Ot.bindAll=Mf,Ot.bindKey=qo,Ot.castArray=function(){if(!arguments.length)return[];var t=arguments[0];return nf(t)?t:[t]},Ot.chain=Ge,Ot.chunk=function(t,n,r){if(n=(r?Ae(t,n,r):n===F)?1:zi(wu(n),0),r=t?t.length:0,!r||1>n)return[];for(var e=0,u=0,i=Zu(Ai(r/n));e<r;)i[u++]=vr(t,e,e+=n);return i},Ot.compact=function(t){for(var n=-1,r=t?t.length:0,e=0,u=[];++n<r;){
+	var i=t[n];i&&(u[e++]=i)}return u},Ot.concat=function(){var t=arguments.length;if(!t)return[];for(var n=Zu(t-1),r=arguments[0];t--;)n[t-1]=arguments[t];return s(nf(r)?Cr(r):[r],En(n,1))},Ot.cond=function(t){var n=t?t.length:0,e=_e();return t=n?l(t,function(t){if("function"!=typeof t[1])throw new Qu("Expected a function");return[e(t[0]),t[1]]}):[],lr(function(e){for(var u=-1;++u<n;){var i=t[u];if(r(i[0],this,e))return r(i[1],this,e)}})},Ot.conforms=function(t){return bn(yn(t,true))},Ot.constant=Cu,Ot.countBy=Uo,
+	Ot.create=function(t,n){var r=Xi(t);return n?_n(r,n):r},Ot.curry=ru,Ot.curryRight=eu,Ot.debounce=uu,Ot.defaults=df,Ot.defaultsDeep=yf,Ot.defer=Vo,Ot.delay=Ko,Ot.difference=go,Ot.differenceBy=yo,Ot.differenceWith=bo,Ot.drop=function(t,n,r){var e=t?t.length:0;return e?(n=r||n===F?1:wu(n),vr(t,0>n?0:n,e)):[]},Ot.dropRight=function(t,n,r){var e=t?t.length:0;return e?(n=r||n===F?1:wu(n),n=e-n,vr(t,0,0>n?0:n)):[]},Ot.dropRightWhile=function(t,n){return t&&t.length?mr(t,_e(n,3),true,true):[]},Ot.dropWhile=function(t,n){
+	return t&&t.length?mr(t,_e(n,3),true):[]},Ot.fill=function(t,n,r,e){var u=t?t.length:0;if(!u)return[];for(r&&typeof r!="number"&&Ae(t,n,r)&&(r=0,e=u),u=t.length,r=wu(r),0>r&&(r=-r>u?0:u+r),e=e===F||e>u?u:wu(e),0>e&&(e+=u),e=r>e?0:mu(e);r<e;)t[r++]=n;return t},Ot.filter=function(t,n){return(nf(t)?f:kn)(t,_e(n,3))},Ot.flatMap=function(t,n){return En(Xe(t,n),1)},Ot.flatMapDeep=function(t,n){return En(Xe(t,n),N)},Ot.flatMapDepth=function(t,n,r){return r=r===F?1:wu(r),En(Xe(t,n),r)},Ot.flatten=Fe,Ot.flattenDeep=function(t){
+	return t&&t.length?En(t,N):[]},Ot.flattenDepth=function(t,n){return t&&t.length?(n=n===F?1:wu(n),En(t,n)):[]},Ot.flip=function(t){return fe(t,512)},Ot.flow=Df,Ot.flowRight=Tf,Ot.fromPairs=function(t){for(var n=-1,r=t?t.length:0,e={};++n<r;){var u=t[n];e[u[0]]=u[1]}return e},Ot.functions=function(t){return null==t?[]:In(t,Iu(t))},Ot.functionsIn=function(t){return null==t?[]:In(t,Ru(t))},Ot.groupBy=Do,Ot.initial=function(t){return t&&t.length?vr(t,0,-1):[]},Ot.intersection=xo,Ot.intersectionBy=jo,Ot.intersectionWith=wo,
+	Ot.invert=bf,Ot.invertBy=xf,Ot.invokeMap=To,Ot.iteratee=Du,Ot.keyBy=$o,Ot.keys=Iu,Ot.keysIn=Ru,Ot.map=Xe,Ot.mapKeys=function(t,n){var r={};return n=_e(n,3),On(t,function(t,e,u){vn(r,n(t,e,u),t)}),r},Ot.mapValues=function(t,n){var r={};return n=_e(n,3),On(t,function(t,e,u){vn(r,e,n(t,e,u))}),r},Ot.matches=function(t){return Qn(yn(t,true))},Ot.matchesProperty=function(t,n){return Xn(t,yn(n,true))},Ot.memoize=iu,Ot.merge=wf,Ot.mergeWith=mf,Ot.method=$f,Ot.methodOf=Ff,Ot.mixin=Tu,Ot.negate=ou,Ot.nthArg=function(t){
+	return t=wu(t),lr(function(n){return nr(n,t)})},Ot.omit=Af,Ot.omitBy=function(t,n){return zu(t,ou(_e(n)))},Ot.once=function(t){return nu(2,t)},Ot.orderBy=function(t,n,r,e){return null==t?[]:(nf(n)||(n=null==n?[]:[n]),r=e?F:r,nf(r)||(r=null==r?[]:[r]),rr(t,n,r))},Ot.over=Nf,Ot.overArgs=Go,Ot.overEvery=Pf,Ot.overSome=Zf,Ot.partial=Jo,Ot.partialRight=Yo,Ot.partition=Fo,Ot.pick=kf,Ot.pickBy=zu,Ot.property=Fu,Ot.propertyOf=function(t){return function(n){return null==t?F:Rn(t,n)}},Ot.pull=mo,Ot.pullAll=Ze,
+	Ot.pullAllBy=function(t,n,r){return t&&t.length&&n&&n.length?or(t,n,_e(r,2)):t},Ot.pullAllWith=function(t,n,r){return t&&t.length&&n&&n.length?or(t,n,F,r):t},Ot.pullAt=Ao,Ot.range=qf,Ot.rangeRight=Vf,Ot.rearg=Ho,Ot.reject=function(t,n){return(nf(t)?f:kn)(t,ou(_e(n,3)))},Ot.remove=function(t,n){var r=[];if(!t||!t.length)return r;var e=-1,u=[],i=t.length;for(n=_e(n,3);++e<i;){var o=t[e];n(o,e,t)&&(r.push(o),u.push(e))}return fr(t,u),r},Ot.rest=function(t,n){if(typeof t!="function")throw new Qu("Expected a function");
+	return n=n===F?n:wu(n),lr(t,n)},Ot.reverse=qe,Ot.sampleSize=function(t,n,r){return n=(r?Ae(t,n,r):n===F)?1:wu(n),(nf(t)?fn:hr)(t,n)},Ot.set=function(t,n,r){return null==t?t:pr(t,n,r)},Ot.setWith=function(t,n,r,e){return e=typeof e=="function"?e:F,null==t?t:pr(t,n,r,e)},Ot.shuffle=function(t){return(nf(t)?cn:_r)(t)},Ot.slice=function(t,n,r){var e=t?t.length:0;return e?(r&&typeof r!="number"&&Ae(t,n,r)?(n=0,r=e):(n=null==n?0:wu(n),r=r===F?e:wu(r)),vr(t,n,r)):[]},Ot.sortBy=No,Ot.sortedUniq=function(t){
+	return t&&t.length?br(t):[]},Ot.sortedUniqBy=function(t,n){return t&&t.length?br(t,_e(n,2)):[]},Ot.split=function(t,n,r){return r&&typeof r!="number"&&Ae(t,n,r)&&(n=r=F),r=r===F?4294967295:r>>>0,r?(t=Eu(t))&&(typeof n=="string"||null!=n&&!ff(n))&&(n=jr(n),!n&&Wt.test(t))?Ir($(t),0,r):t.split(n,r):[]},Ot.spread=function(t,n){if(typeof t!="function")throw new Qu("Expected a function");return n=n===F?0:zi(wu(n),0),lr(function(e){var u=e[n];return e=Ir(e,0,n),u&&s(e,u),r(t,this,e)})},Ot.tail=function(t){
+	var n=t?t.length:0;return n?vr(t,1,n):[]},Ot.take=function(t,n,r){return t&&t.length?(n=r||n===F?1:wu(n),vr(t,0,0>n?0:n)):[]},Ot.takeRight=function(t,n,r){var e=t?t.length:0;return e?(n=r||n===F?1:wu(n),n=e-n,vr(t,0>n?0:n,e)):[]},Ot.takeRightWhile=function(t,n){return t&&t.length?mr(t,_e(n,3),false,true):[]},Ot.takeWhile=function(t,n){return t&&t.length?mr(t,_e(n,3)):[]},Ot.tap=function(t,n){return n(t),t},Ot.throttle=function(t,n,r){var e=true,u=true;if(typeof t!="function")throw new Qu("Expected a function");
+	return _u(r)&&(e="leading"in r?!!r.leading:e,u="trailing"in r?!!r.trailing:u),uu(t,n,{leading:e,maxWait:n,trailing:u})},Ot.thru=Je,Ot.toArray=xu,Ot.toPairs=Ef,Ot.toPairsIn=Of,Ot.toPath=function(t){return nf(t)?l(t,Ue):bu(t)?[t]:Cr(vo(t))},Ot.toPlainObject=ku,Ot.transform=function(t,n,r){var e=nf(t),i=e||ef(t)||af(t);if(n=_e(n,4),null==r){var o=t&&t.constructor;r=i?e?new o:[]:_u(t)&&su(o)?Xi(_i(t)):{}}return(i?u:On)(t,function(t,e,u){return n(r,t,e,u)}),r},Ot.unary=function(t){return tu(t,1)},Ot.union=ko,
+	Ot.unionBy=Eo,Ot.unionWith=Oo,Ot.uniq=function(t){return t&&t.length?wr(t):[]},Ot.uniqBy=function(t,n){return t&&t.length?wr(t,_e(n,2)):[]},Ot.uniqWith=function(t,n){return t&&t.length?wr(t,F,n):[]},Ot.unset=function(t,n){var r;if(null==t)r=true;else{r=t;var e=n,e=ke(e,r)?[e]:Sr(e);r=ze(r,e),e=Ue(Pe(e)),r=!(null!=r&&ui.call(r,e))||delete r[e]}return r},Ot.unzip=Ve,Ot.unzipWith=Ke,Ot.update=function(t,n,r){return null==t?t:pr(t,n,(typeof r=="function"?r:Mu)(Rn(t,n)),void 0)},Ot.updateWith=function(t,n,r,e){
+	return e=typeof e=="function"?e:F,null!=t&&(t=pr(t,n,(typeof r=="function"?r:Mu)(Rn(t,n)),e)),t},Ot.values=Wu,Ot.valuesIn=function(t){return null==t?[]:I(t,Ru(t))},Ot.without=So,Ot.words=Uu,Ot.wrap=function(t,n){return n=null==n?Mu:n,Jo(n,t)},Ot.xor=Io,Ot.xorBy=Ro,Ot.xorWith=zo,Ot.zip=Wo,Ot.zipObject=function(t,n){return Er(t||[],n||[],sn)},Ot.zipObjectDeep=function(t,n){return Er(t||[],n||[],pr)},Ot.zipWith=Bo,Ot.entries=Ef,Ot.entriesIn=Of,Ot.extend=pf,Ot.extendWith=_f,Tu(Ot,Ot),Ot.add=Kf,Ot.attempt=Cf,
+	Ot.camelCase=Sf,Ot.capitalize=Bu,Ot.ceil=Gf,Ot.clamp=function(t,n,r){return r===F&&(r=n,n=F),r!==F&&(r=Au(r),r=r===r?r:0),n!==F&&(n=Au(n),n=n===n?n:0),dn(Au(t),n,r)},Ot.clone=function(t){return yn(t,false,true)},Ot.cloneDeep=function(t){return yn(t,true,true)},Ot.cloneDeepWith=function(t,n){return yn(t,true,true,n)},Ot.cloneWith=function(t,n){return yn(t,false,true,n)},Ot.conformsTo=function(t,n){return null==n||xn(t,n,Iu(n))},Ot.deburr=Lu,Ot.defaultTo=function(t,n){return null==t||t!==t?n:t},Ot.divide=Jf,Ot.endsWith=function(t,n,r){
+	t=Eu(t),n=jr(n);var e=t.length,e=r=r===F?e:dn(wu(r),0,e);return r-=n.length,0<=r&&t.slice(r,e)==n},Ot.eq=fu,Ot.escape=function(t){return(t=Eu(t))&&H.test(t)?t.replace(J,rn):t},Ot.escapeRegExp=function(t){return(t=Eu(t))&&ot.test(t)?t.replace(it,"\\$&"):t},Ot.every=function(t,n,r){var e=nf(t)?o:mn;return r&&Ae(t,n,r)&&(n=F),e(t,_e(n,3))},Ot.find=Co,Ot.findIndex=Te,Ot.findKey=function(t,n){return v(t,_e(n,3),On)},Ot.findLast=Mo,Ot.findLastIndex=$e,Ot.findLastKey=function(t,n){return v(t,_e(n,3),Sn);
+	},Ot.floor=Yf,Ot.forEach=He,Ot.forEachRight=Qe,Ot.forIn=function(t,n){return null==t?t:ro(t,_e(n,3),Ru)},Ot.forInRight=function(t,n){return null==t?t:eo(t,_e(n,3),Ru)},Ot.forOwn=function(t,n){return t&&On(t,_e(n,3))},Ot.forOwnRight=function(t,n){return t&&Sn(t,_e(n,3))},Ot.get=Ou,Ot.gt=Qo,Ot.gte=Xo,Ot.has=function(t,n){return null!=t&&ye(t,n,Bn)},Ot.hasIn=Su,Ot.head=Ne,Ot.identity=Mu,Ot.includes=function(t,n,r,e){return t=cu(t)?t:Wu(t),r=r&&!e?wu(r):0,e=t.length,0>r&&(r=zi(e+r,0)),yu(t)?r<=e&&-1<t.indexOf(n,r):!!e&&-1<d(t,n,r);
+	},Ot.indexOf=function(t,n,r){var e=t?t.length:0;return e?(r=null==r?0:wu(r),0>r&&(r=zi(e+r,0)),d(t,n,r)):-1},Ot.inRange=function(t,n,r){return n=ju(n),r===F?(r=n,n=0):r=ju(r),t=Au(t),t>=Wi(n,r)&&t<zi(n,r)},Ot.invoke=jf,Ot.isArguments=tf,Ot.isArray=nf,Ot.isArrayBuffer=rf,Ot.isArrayLike=cu,Ot.isArrayLikeObject=au,Ot.isBoolean=function(t){return true===t||false===t||vu(t)&&"[object Boolean]"==fi.call(t)},Ot.isBuffer=ef,Ot.isDate=uf,Ot.isElement=function(t){return null!=t&&1===t.nodeType&&vu(t)&&!du(t)},Ot.isEmpty=function(t){
+	if(cu(t)&&(nf(t)||typeof t=="string"||typeof t.splice=="function"||ef(t)||af(t)||tf(t)))return!t.length;var n=Et(t);if("[object Map]"==n||"[object Set]"==n)return!t.size;if(Oe(t))return!Jn(t).length;for(var r in t)if(ui.call(t,r))return false;return true},Ot.isEqual=function(t,n){return Fn(t,n)},Ot.isEqualWith=function(t,n,r){var e=(r=typeof r=="function"?r:F)?r(t,n):F;return e===F?Fn(t,n,r):!!e},Ot.isError=lu,Ot.isFinite=function(t){return typeof t=="number"&&Si(t)},Ot.isFunction=su,Ot.isInteger=hu,Ot.isLength=pu,
+	Ot.isMap=of,Ot.isMatch=function(t,n){return t===n||Pn(t,n,ge(n))},Ot.isMatchWith=function(t,n,r){return r=typeof r=="function"?r:F,Pn(t,n,ge(n),r)},Ot.isNaN=function(t){return gu(t)&&t!=+t},Ot.isNative=function(t){if(so(t))throw new Vu("Unsupported core-js use. Try https://github.com/es-shims.");return Zn(t)},Ot.isNil=function(t){return null==t},Ot.isNull=function(t){return null===t},Ot.isNumber=gu,Ot.isObject=_u,Ot.isObjectLike=vu,Ot.isPlainObject=du,Ot.isRegExp=ff,Ot.isSafeInteger=function(t){return hu(t)&&-9007199254740991<=t&&9007199254740991>=t;
+	},Ot.isSet=cf,Ot.isString=yu,Ot.isSymbol=bu,Ot.isTypedArray=af,Ot.isUndefined=function(t){return t===F},Ot.isWeakMap=function(t){return vu(t)&&"[object WeakMap]"==Et(t)},Ot.isWeakSet=function(t){return vu(t)&&"[object WeakSet]"==fi.call(t)},Ot.join=function(t,n){return t?Ii.call(t,n):""},Ot.kebabCase=If,Ot.last=Pe,Ot.lastIndexOf=function(t,n,r){var e=t?t.length:0;if(!e)return-1;var u=e;if(r!==F&&(u=wu(r),u=0>u?zi(e+u,0):Wi(u,e-1)),n===n){for(r=u+1;r--&&t[r]!==n;);t=r}else t=g(t,b,u,true);return t},
+	Ot.lowerCase=Rf,Ot.lowerFirst=zf,Ot.lt=lf,Ot.lte=sf,Ot.max=function(t){return t&&t.length?An(t,Mu,Wn):F},Ot.maxBy=function(t,n){return t&&t.length?An(t,_e(n,2),Wn):F},Ot.mean=function(t){return x(t,Mu)},Ot.meanBy=function(t,n){return x(t,_e(n,2))},Ot.min=function(t){return t&&t.length?An(t,Mu,Yn):F},Ot.minBy=function(t,n){return t&&t.length?An(t,_e(n,2),Yn):F},Ot.stubArray=Nu,Ot.stubFalse=Pu,Ot.stubObject=function(){return{}},Ot.stubString=function(){return""},Ot.stubTrue=function(){return true},Ot.multiply=Hf,
+	Ot.nth=function(t,n){return t&&t.length?nr(t,wu(n)):F},Ot.noConflict=function(){return Pt._===this&&(Pt._=ci),this},Ot.noop=$u,Ot.now=Po,Ot.pad=function(t,n,r){t=Eu(t);var e=(n=wu(n))?T(t):0;return!n||e>=n?t:(n=(n-e)/2,te(ki(n),r)+t+te(Ai(n),r))},Ot.padEnd=function(t,n,r){t=Eu(t);var e=(n=wu(n))?T(t):0;return n&&e<n?t+te(n-e,r):t},Ot.padStart=function(t,n,r){t=Eu(t);var e=(n=wu(n))?T(t):0;return n&&e<n?te(n-e,r)+t:t},Ot.parseInt=function(t,n,r){return r||null==n?n=0:n&&(n=+n),Li(Eu(t).replace(ct,""),n||0);
+	},Ot.random=function(t,n,r){if(r&&typeof r!="boolean"&&Ae(t,n,r)&&(n=r=F),r===F&&(typeof n=="boolean"?(r=n,n=F):typeof t=="boolean"&&(r=t,t=F)),t===F&&n===F?(t=0,n=1):(t=ju(t),n===F?(n=t,t=0):n=ju(n)),t>n){var e=t;t=n,n=e}return r||t%1||n%1?(r=Ui(),Wi(t+r*(n-t+Tt("1e-"+((r+"").length-1))),n)):cr(t,n)},Ot.reduce=function(t,n,r){var e=nf(t)?h:m,u=3>arguments.length;return e(t,_e(n,4),r,u,to)},Ot.reduceRight=function(t,n,r){var e=nf(t)?p:m,u=3>arguments.length;return e(t,_e(n,4),r,u,no)},Ot.repeat=function(t,n,r){
+	return n=(r?Ae(t,n,r):n===F)?1:wu(n),ar(Eu(t),n)},Ot.replace=function(){var t=arguments,n=Eu(t[0]);return 3>t.length?n:n.replace(t[1],t[2])},Ot.result=function(t,n,r){n=ke(n,t)?[n]:Sr(n);var e=-1,u=n.length;for(u||(t=F,u=1);++e<u;){var i=null==t?F:t[Ue(n[e])];i===F&&(e=u,i=r),t=su(i)?i.call(t):i}return t},Ot.round=Qf,Ot.runInContext=w,Ot.sample=function(t){return(nf(t)?on:sr)(t)},Ot.size=function(t){if(null==t)return 0;if(cu(t))return yu(t)?T(t):t.length;var n=Et(t);return"[object Map]"==n||"[object Set]"==n?t.size:Jn(t).length;
+	},Ot.snakeCase=Wf,Ot.some=function(t,n,r){var e=nf(t)?_:gr;return r&&Ae(t,n,r)&&(n=F),e(t,_e(n,3))},Ot.sortedIndex=function(t,n){return dr(t,n)},Ot.sortedIndexBy=function(t,n,r){return yr(t,n,_e(r,2))},Ot.sortedIndexOf=function(t,n){var r=t?t.length:0;if(r){var e=dr(t,n);if(e<r&&fu(t[e],n))return e}return-1},Ot.sortedLastIndex=function(t,n){return dr(t,n,true)},Ot.sortedLastIndexBy=function(t,n,r){return yr(t,n,_e(r,2),true)},Ot.sortedLastIndexOf=function(t,n){if(t&&t.length){var r=dr(t,n,true)-1;if(fu(t[r],n))return r;
+	}return-1},Ot.startCase=Bf,Ot.startsWith=function(t,n,r){return t=Eu(t),r=dn(wu(r),0,t.length),n=jr(n),t.slice(r,r+n.length)==n},Ot.subtract=Xf,Ot.sum=function(t){return t&&t.length?k(t,Mu):0},Ot.sumBy=function(t,n){return t&&t.length?k(t,_e(n,2)):0},Ot.template=function(t,n,r){var e=Ot.templateSettings;r&&Ae(t,n,r)&&(n=F),t=Eu(t),n=_f({},n,e,an),r=_f({},n.imports,e.imports,an);var u,i,o=Iu(r),f=I(r,o),c=0;r=n.interpolate||mt;var a="__p+='";r=Yu((n.escape||mt).source+"|"+r.source+"|"+(r===tt?vt:mt).source+"|"+(n.evaluate||mt).source+"|$","g");
+	var l="sourceURL"in n?"//# sourceURL="+n.sourceURL+"\n":"";if(t.replace(r,function(n,r,e,o,f,l){return e||(e=o),a+=t.slice(c,l).replace(At,B),r&&(u=true,a+="'+__e("+r+")+'"),f&&(i=true,a+="';"+f+";\n__p+='"),e&&(a+="'+((__t=("+e+"))==null?'':__t)+'"),c=l+n.length,n}),a+="';",(n=n.variable)||(a="with(obj){"+a+"}"),a=(i?a.replace(q,""):a).replace(V,"$1").replace(K,"$1;"),a="function("+(n||"obj")+"){"+(n?"":"obj||(obj={});")+"var __t,__p=''"+(u?",__e=_.escape":"")+(i?",__j=Array.prototype.join;function print(){__p+=__j.call(arguments,'')}":";")+a+"return __p}",
+	n=Cf(function(){return Ku(o,l+"return "+a).apply(F,f)}),n.source=a,lu(n))throw n;return n},Ot.times=function(t,n){if(t=wu(t),1>t||9007199254740991<t)return[];var r=4294967295,e=Wi(t,4294967295);for(n=_e(n),t-=4294967295,e=E(e,n);++r<t;)n(r);return e},Ot.toFinite=ju,Ot.toInteger=wu,Ot.toLength=mu,Ot.toLower=function(t){return Eu(t).toLowerCase()},Ot.toNumber=Au,Ot.toSafeInteger=function(t){return dn(wu(t),-9007199254740991,9007199254740991)},Ot.toString=Eu,Ot.toUpper=function(t){return Eu(t).toUpperCase();
+	},Ot.trim=function(t,n,r){return(t=Eu(t))&&(r||n===F)?t.replace(ft,""):t&&(n=jr(n))?(t=$(t),r=$(n),n=z(t,r),r=W(t,r)+1,Ir(t,n,r).join("")):t},Ot.trimEnd=function(t,n,r){return(t=Eu(t))&&(r||n===F)?t.replace(at,""):t&&(n=jr(n))?(t=$(t),n=W(t,$(n))+1,Ir(t,0,n).join("")):t},Ot.trimStart=function(t,n,r){return(t=Eu(t))&&(r||n===F)?t.replace(ct,""):t&&(n=jr(n))?(t=$(t),n=z(t,$(n)),Ir(t,n).join("")):t},Ot.truncate=function(t,n){var r=30,e="...";if(_u(n))var u="separator"in n?n.separator:u,r="length"in n?wu(n.length):r,e="omission"in n?jr(n.omission):e;
+	t=Eu(t);var i=t.length;if(Wt.test(t))var o=$(t),i=o.length;if(r>=i)return t;if(i=r-T(e),1>i)return e;if(r=o?Ir(o,0,i).join(""):t.slice(0,i),u===F)return r+e;if(o&&(i+=r.length-i),ff(u)){if(t.slice(i).search(u)){var f=r;for(u.global||(u=Yu(u.source,Eu(gt.exec(u))+"g")),u.lastIndex=0;o=u.exec(f);)var c=o.index;r=r.slice(0,c===F?i:c)}}else t.indexOf(jr(u),i)!=i&&(u=r.lastIndexOf(u),-1<u&&(r=r.slice(0,u)));return r+e},Ot.unescape=function(t){return(t=Eu(t))&&Y.test(t)?t.replace(G,en):t},Ot.uniqueId=function(t){
+	var n=++ii;return Eu(t)+n},Ot.upperCase=Lf,Ot.upperFirst=Uf,Ot.each=He,Ot.eachRight=Qe,Ot.first=Ne,Tu(Ot,function(){var t={};return On(Ot,function(n,r){ui.call(Ot.prototype,r)||(t[r]=n)}),t}(),{chain:false}),Ot.VERSION="4.16.4",u("bind bindKey curry curryRight partial partialRight".split(" "),function(t){Ot[t].placeholder=Ot}),u(["drop","take"],function(t,n){Dt.prototype[t]=function(r){var e=this.__filtered__;if(e&&!n)return new Dt(this);r=r===F?1:zi(wu(r),0);var u=this.clone();return e?u.__takeCount__=Wi(r,u.__takeCount__):u.__views__.push({
+	size:Wi(r,4294967295),type:t+(0>u.__dir__?"Right":"")}),u},Dt.prototype[t+"Right"]=function(n){return this.reverse()[t](n).reverse()}}),u(["filter","map","takeWhile"],function(t,n){var r=n+1,e=1==r||3==r;Dt.prototype[t]=function(t){var n=this.clone();return n.__iteratees__.push({iteratee:_e(t,3),type:r}),n.__filtered__=n.__filtered__||e,n}}),u(["head","last"],function(t,n){var r="take"+(n?"Right":"");Dt.prototype[t]=function(){return this[r](1).value()[0]}}),u(["initial","tail"],function(t,n){var r="drop"+(n?"":"Right");
+	Dt.prototype[t]=function(){return this.__filtered__?new Dt(this):this[r](1)}}),Dt.prototype.compact=function(){return this.filter(Mu)},Dt.prototype.find=function(t){return this.filter(t).head()},Dt.prototype.findLast=function(t){return this.reverse().find(t)},Dt.prototype.invokeMap=lr(function(t,n){return typeof t=="function"?new Dt(this):this.map(function(r){return Mn(r,t,n)})}),Dt.prototype.reject=function(t){return this.filter(ou(_e(t)))},Dt.prototype.slice=function(t,n){t=wu(t);var r=this;return r.__filtered__&&(0<t||0>n)?new Dt(r):(0>t?r=r.takeRight(-t):t&&(r=r.drop(t)),
+	n!==F&&(n=wu(n),r=0>n?r.dropRight(-n):r.take(n-t)),r)},Dt.prototype.takeRightWhile=function(t){return this.reverse().takeWhile(t).reverse()},Dt.prototype.toArray=function(){return this.take(4294967295)},On(Dt.prototype,function(t,n){var r=/^(?:filter|find|map|reject)|While$/.test(n),e=/^(?:head|last)$/.test(n),u=Ot[e?"take"+("last"==n?"Right":""):n],i=e||/^find/.test(n);u&&(Ot.prototype[n]=function(){function n(t){return t=u.apply(Ot,s([t],f)),e&&h?t[0]:t}var o=this.__wrapped__,f=e?[1]:arguments,c=o instanceof Dt,a=f[0],l=c||nf(o);
+	l&&r&&typeof a=="function"&&1!=a.length&&(c=l=false);var h=this.__chain__,p=!!this.__actions__.length,a=i&&!h,c=c&&!p;return!i&&l?(o=c?o:new Dt(this),o=t.apply(o,f),o.__actions__.push({func:Je,args:[n],thisArg:F}),new Mt(o,h)):a&&c?t.apply(this,f):(o=this.thru(n),a?e?o.value()[0]:o.value():o)})}),u("pop push shift sort splice unshift".split(" "),function(t){var n=Xu[t],r=/^(?:push|sort|unshift)$/.test(t)?"tap":"thru",e=/^(?:pop|shift)$/.test(t);Ot.prototype[t]=function(){var t=arguments;if(e&&!this.__chain__){
+	var u=this.value();return n.apply(nf(u)?u:[],t)}return this[r](function(r){return n.apply(nf(r)?r:[],t)})}}),On(Dt.prototype,function(t,n){var r=Ot[n];if(r){var e=r.name+"";(Zi[e]||(Zi[e]=[])).push({name:n,func:r})}}),Zi[Yr(F,2).name]=[{name:"wrapper",func:F}],Dt.prototype.clone=function(){var t=new Dt(this.__wrapped__);return t.__actions__=Cr(this.__actions__),t.__dir__=this.__dir__,t.__filtered__=this.__filtered__,t.__iteratees__=Cr(this.__iteratees__),t.__takeCount__=this.__takeCount__,t.__views__=Cr(this.__views__),
+	t},Dt.prototype.reverse=function(){if(this.__filtered__){var t=new Dt(this);t.__dir__=-1,t.__filtered__=true}else t=this.clone(),t.__dir__*=-1;return t},Dt.prototype.value=function(){var t,n=this.__wrapped__.value(),r=this.__dir__,e=nf(n),u=0>r,i=e?n.length:0;t=i;for(var o=this.__views__,f=0,c=-1,a=o.length;++c<a;){var l=o[c],s=l.size;switch(l.type){case"drop":f+=s;break;case"dropRight":t-=s;break;case"take":t=Wi(t,f+s);break;case"takeRight":f=zi(f,t-s)}}if(t={start:f,end:t},o=t.start,f=t.end,t=f-o,
+	u=u?f:o-1,o=this.__iteratees__,f=o.length,c=0,a=Wi(t,this.__takeCount__),!e||200>i||i==t&&a==t)return Ar(n,this.__actions__);e=[];t:for(;t--&&c<a;){for(u+=r,i=-1,l=n[u];++i<f;){var h=o[i],s=h.type,h=(0,h.iteratee)(l);if(2==s)l=h;else if(!h){if(1==s)continue t;break t}}e[c++]=l}return e},Ot.prototype.at=Lo,Ot.prototype.chain=function(){return Ge(this)},Ot.prototype.commit=function(){return new Mt(this.value(),this.__chain__)},Ot.prototype.next=function(){this.__values__===F&&(this.__values__=xu(this.value()));
+	var t=this.__index__>=this.__values__.length;return{done:t,value:t?F:this.__values__[this.__index__++]}},Ot.prototype.plant=function(t){for(var n,r=this;r instanceof Rt;){var e=De(r);e.__index__=0,e.__values__=F,n?u.__wrapped__=e:n=e;var u=e,r=r.__wrapped__}return u.__wrapped__=t,n},Ot.prototype.reverse=function(){var t=this.__wrapped__;return t instanceof Dt?(this.__actions__.length&&(t=new Dt(this)),t=t.reverse(),t.__actions__.push({func:Je,args:[qe],thisArg:F}),new Mt(t,this.__chain__)):this.thru(qe);
+	},Ot.prototype.toJSON=Ot.prototype.valueOf=Ot.prototype.value=function(){return Ar(this.__wrapped__,this.__actions__)},Ot.prototype.first=Ot.prototype.head,vi&&(Ot.prototype[vi]=Ye),Ot}(); true?(Pt._=un, !(__WEBPACK_AMD_DEFINE_RESULT__ = function(){return un}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))):qt?((qt.exports=un)._=un,Zt._=un):Pt._=un}).call(this);
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(/*! ./../webpack/buildin/module.js */ 291)(module)))
+
+/***/ },
+/* 440 */
+/*!****************************!*\
+  !*** ./DynamicCounters.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	var _fp = __webpack_require__(/*! lodash/fp */ 438);
+	
+	var _Counter = __webpack_require__(/*! ./Counter */ 435);
+	
+	var _Counter2 = _interopRequireDefault(_Counter);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var DynamicCounters = function DynamicCounters(_ref) {
+	    var counterCount = _ref.counterCount;
+	    var scope = _ref.scope;
+	    var addCounter = _ref.addCounter;
+	    var removeCounter = _ref.removeCounter;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: addCounter },
+	            "add counter"
+	        ),
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: removeCounter },
+	            "remove counter"
+	        ),
+	        (0, _fp.range)(0, counterCount).map(function (i) {
+	            return _react2.default.createElement(
+	                "div",
+	                { key: i },
+	                _react2.default.createElement(_Counter2.default, { scope: [scope, "counters", i] })
+	            );
+	        })
+	    );
+	};
+	DynamicCounters = (0, _lean.connectLean)({
+	    scope: "dynamicCounters",
+	
+	    getInitialState: function getInitialState() {
+	        return { counterCount: 1 };
+	    },
+	    addCounter: function addCounter(e) {
+	        e.preventDefault();
+	        this.setState({ counterCount: this.state.counterCount + 1 });
+	    },
+	    removeCounter: function removeCounter(e) {
+	        e.preventDefault();
+	        this.setState({ counterCount: Math.max(this.state.counterCount - 1, 0) });
+	    }
+	})(DynamicCounters);
+	
+	exports.default = DynamicCounters;
+
+/***/ },
+/* 441 */
+/*!**************************!*\
+  !*** ./NamedCounters.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	var _fp = __webpack_require__(/*! lodash/fp */ 438);
+	
+	var _Counter = __webpack_require__(/*! ./Counter */ 435);
+	
+	var _Counter2 = _interopRequireDefault(_Counter);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var NamedCounter = function NamedCounter(_ref) {
+	    var scope = _ref.scope;
+	    var name = _ref.name;
+	    var handleXClick = _ref.handleXClick;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        name,
+	        " ",
+	        _react2.default.createElement(_Counter2.default, { scope: scope }),
+	        " ",
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: handleXClick },
+	            "x"
+	        )
+	    );
+	};
+	NamedCounter = (0, _lean.connectLean)({
+	    // name and id are the scoped part of the state. Pick those up.
+	    mapState: (0, _fp.pick)(["name", "id"]),
+	
+	    handleXClick: function handleXClick(e) {
+	        e.preventDefault();
+	        this.props.onRemove(this.props.id);
+	    }
+	})(NamedCounter);
+	
+	var NamedCounters = function NamedCounters(_ref2) {
+	    var counters = _ref2.counters;
+	    var handleNameChange = _ref2.handleNameChange;
+	    var newName = _ref2.newName;
+	    var addCounter = _ref2.addCounter;
+	    var removeCounter = _ref2.removeCounter;
+	    var scope = _ref2.scope;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement("input", { onChange: handleNameChange, value: newName }),
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: addCounter, disabled: !newName },
+	            "add"
+	        ),
+	        Object.keys(counters).sort().map(function (counterId) {
+	            return _react2.default.createElement(NamedCounter, { key: counterId, scope: [scope, "counters", counterId], onRemove: removeCounter, id: counterId });
+	        })
+	    );
+	};
+	NamedCounters = (0, _lean.connectLean)({
+	    scope: "namedCounters",
+	
+	    getInitialState: function getInitialState() {
+	        return {
+	            nextCounterId: 1,
+	            newName: "",
+	            counters: {}
+	        };
+	    },
+	    handleNameChange: function handleNameChange(e) {
+	        e.preventDefault();
+	        this.setState({ newName: e.target.value });
+	    },
+	    addCounter: function addCounter(e) {
+	        var _this = this;
+	
+	        e.preventDefault();
+	
+	        // This is a little used feature React setState where you can give a
+	        // function to update the state. Here we use the update() function from
+	        // lodash/fp to update items deeply in the state. It's curried function
+	        // which means it returns a function when all arguments are not given
+	        // to it. It needs three PATH, UPDATER, DATA. We do give the DATA here
+	        // so it returns a funtion waiting for the data.
+	        this.setState((0, _fp.update)(["counters", this.state.nextCounterId], function () {
+	            return {
+	                id: _this.state.nextCounterId,
+	                name: _this.state.newName
+	            };
+	        }));
+	
+	        this.setState({
+	            newName: "",
+	            nextCounterId: this.state.nextCounterId + 1
+	        });
+	    },
+	    removeCounter: function removeCounter(counterId) {
+	        this.setState((0, _fp.update)(["counters"], (0, _fp.omit)(counterId)));
+	    }
+	})(NamedCounters);
+	
+	exports.default = NamedCounters;
+
+/***/ },
+/* 442 */
+/*!******************!*\
+  !*** ./Async.js ***!
+  \******************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Async = function (_React$Component) {
+	    _inherits(Async, _React$Component);
+	
+	    function Async() {
+	        _classCallCheck(this, Async);
+	
+	        return _possibleConstructorReturn(this, (Async.__proto__ || Object.getPrototypeOf(Async)).apply(this, arguments));
+	    }
+	
+	    _createClass(Async, [{
+	        key: "componentWillUnmount",
+	        value: function componentWillUnmount() {
+	            // Cancel request on unmount
+	            this.props.cancel();
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _props = this.props;
+	            var fetchAsync = _props.fetchAsync;
+	            var data = _props.data;
+	            var status = _props.status;
+	            var cancel = _props.cancel;
+	
+	            return _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "p",
+	                    null,
+	                    "status: ",
+	                    status
+	                ),
+	                _react2.default.createElement(
+	                    "p",
+	                    null,
+	                    "data: ",
+	                    data
+	                ),
+	                _react2.default.createElement(
+	                    "button",
+	                    { onClick: fetchAsync },
+	                    "fetch"
+	                ),
+	                _react2.default.createElement(
+	                    "button",
+	                    { onClick: cancel },
+	                    "cancel"
+	                )
+	            );
+	        }
+	    }]);
+	
+	    return Async;
+	}(_react2.default.Component);
+	
+	Async = (0, _lean.connectLean)({
+	    scope: "async",
+	    getInitialState: function getInitialState() {
+	        return {
+	            status: "waiting",
+	            data: "nodata"
+	        };
+	    },
+	    setData: function setData(data) {
+	        this.setState({ data: data });
+	    },
+	    fetchAsync: function fetchAsync(e) {
+	        var _this2 = this;
+	
+	        e.preventDefault();
+	        this.setState({ status: "fetching" });
+	
+	        // Context of leanConnect() is created when the component is mounted.
+	        // So it can be used hold items that are not approciate for Redux
+	        // state. Such as promises, errors, xhr objects etc.
+	        this.timer = setTimeout(function () {
+	            _this2.setState({ status: "done" });
+	            _this2.setData("async fetched data!");
+	        }, 3000);
+	    },
+	    cancel: function cancel(e) {
+	        e.preventDefault();
+	        clearTimeout(this.timer);
+	        this.setState({ status: "canceled" });
+	    }
+	})(Async);
+	
+	exports.default = Async;
+
+/***/ },
+/* 443 */
+/*!**********************!*\
+  !*** ./RandomGif.js ***!
+  \**********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var RandomGif = function (_React$PureComponent) {
+	    _inherits(RandomGif, _React$PureComponent);
+	
+	    function RandomGif() {
+	        _classCallCheck(this, RandomGif);
+	
+	        return _possibleConstructorReturn(this, (RandomGif.__proto__ || Object.getPrototypeOf(RandomGif)).apply(this, arguments));
+	    }
+	
+	    _createClass(RandomGif, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            this.props.fetchGif();
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            var _props = this.props;
+	            var tag = _props.tag;
+	            var status = _props.status;
+	            var src = _props.src;
+	            var fetchGif = _props.fetchGif;
+	
+	            return _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "h4",
+	                    null,
+	                    "gifs from tag: ",
+	                    tag
+	                ),
+	                src && _react2.default.createElement("img", { src: src }),
+	                _react2.default.createElement("br", null),
+	                _react2.default.createElement(
+	                    "button",
+	                    { onClick: fetchGif, disabled: status !== "ok" },
+	                    "Next!"
+	                ),
+	                " ",
+	                status
+	            );
+	        }
+	    }]);
+	
+	    return RandomGif;
+	}(_react2.default.PureComponent);
+	
+	RandomGif = (0, _lean.connectLean)({
+	    scope: "singleRandomGif",
+	
+	    getInitialState: function getInitialState() {
+	        return {
+	            status: "waiting",
+	            src: null
+	        };
+	    },
+	    fetchGif: function fetchGif() {
+	        var _this2 = this;
+	
+	        this.setState({ status: "fetching meta" });
+	        fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + this.props.tag).then(function (res) {
+	            return res.json();
+	        }).then(function (json) {
+	            _this2.setState({ status: "loading image" });
+	            var src = json.data.fixed_height_small_url;
+	
+	            // preload the image
+	            var img = new Image();
+	            img.onload = function () {
+	                _this2.setState({ status: "ok", src: src });
+	            };
+	            img.src = src;
+	        });
+	    }
+	})(RandomGif);
+	
+	exports.default = RandomGif;
+
+/***/ },
+/* 444 */
+/*!**************************!*\
+  !*** ./RandomGifPair.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	
+	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var RandomGifPair = function RandomGifPair(_ref) {
+	    var scope = _ref.scope;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_RandomGif2.default, { scope: [scope, "first"], tag: "cats" })
+	        ),
+	        _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(_RandomGif2.default, { scope: [scope, "second"], tag: "cars" })
+	        )
+	    );
+	};
+	
+	exports.default = RandomGifPair;
+
+/***/ },
+/* 445 */
+/*!**************************!*\
+  !*** ./RandomGifList.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	
+	var _updeep = __webpack_require__(/*! updeep */ 446);
+	
+	var _updeep2 = _interopRequireDefault(_updeep);
+	
+	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	
+	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var RandomGifWithTag = (0, _lean.connectLean)({
+	    mapState: function mapState(state) {
+	        return { tag: state.tag };
+	    }
+	})(_RandomGif2.default);
+	
+	var RandomGifList = function RandomGifList(_ref) {
+	    var gifs = _ref.gifs;
+	    var handleTagChange = _ref.handleTagChange;
+	    var newTag = _ref.newTag;
+	    var addGif = _ref.addGif;
+	    var scope = _ref.scope;
+	    return _react2.default.createElement(
+	        "div",
+	        null,
+	        _react2.default.createElement("input", { onChange: handleTagChange, value: newTag }),
+	        _react2.default.createElement(
+	            "button",
+	            { onClick: addGif, disabled: !newTag },
+	            "add"
+	        ),
+	        Object.keys(gifs).sort().map(function (id) {
+	            return _react2.default.createElement(RandomGifWithTag, { key: id, scope: [scope, "gifs", id] });
+	        })
+	    );
+	};
+	RandomGifList = (0, _lean.connectLean)({
+	    getInitialState: function getInitialState() {
+	        return {
+	            nextId: 1,
+	            newTag: "ghost",
+	            gifs: {}
+	        };
+	    },
+	    handleTagChange: function handleTagChange(e) {
+	        e.preventDefault();
+	        this.setState({ newTag: e.target.value });
+	    },
+	    addGif: function addGif(e) {
+	        e.preventDefault();
+	
+	        console.log("setting from new tag", this.state);
+	        this.setState((0, _updeep2.default)({
+	            newTag: "",
+	            nextId: function nextId(i) {
+	                return i + 1;
+	            },
+	            gifs: _defineProperty({}, this.state.nextId, {
+	                id: this.state.nextId,
+	                tag: this.state.newTag
+	            })
+	        }));
+	    }
+	})(RandomGifList);
+	
+	exports.default = RandomGifList;
+
+/***/ },
+/* 446 */
+/*!*********************************!*\
+  !*** ../~/updeep/dist/index.js ***!
+  \*********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _constant = __webpack_require__(/*! ./constant */ 447);
+	
+	var _constant2 = _interopRequireDefault(_constant);
+	
+	var _freeze = __webpack_require__(/*! ./freeze */ 448);
+	
+	var _freeze2 = _interopRequireDefault(_freeze);
+	
+	var _is = __webpack_require__(/*! ./is */ 449);
+	
+	var _is2 = _interopRequireDefault(_is);
+	
+	var _if2 = __webpack_require__(/*! ./if */ 458);
+	
+	var _if3 = _interopRequireDefault(_if2);
+	
+	var _ifElse = __webpack_require__(/*! ./ifElse */ 459);
+	
+	var _ifElse2 = _interopRequireDefault(_ifElse);
+	
+	var _map = __webpack_require__(/*! ./map */ 462);
+	
+	var _map2 = _interopRequireDefault(_map);
+	
+	var _omit = __webpack_require__(/*! ./omit */ 466);
+	
+	var _omit2 = _interopRequireDefault(_omit);
+	
+	var _omitBy = __webpack_require__(/*! ./omitBy */ 470);
+	
+	var _omitBy2 = _interopRequireDefault(_omitBy);
+	
+	var _reject = __webpack_require__(/*! ./reject */ 472);
+	
+	var _reject2 = _interopRequireDefault(_reject);
+	
+	var _update = __webpack_require__(/*! ./update */ 460);
+	
+	var _update2 = _interopRequireDefault(_update);
+	
+	var _updateIn = __webpack_require__(/*! ./updateIn */ 473);
+	
+	var _updateIn2 = _interopRequireDefault(_updateIn);
+	
+	var _withDefault = __webpack_require__(/*! ./withDefault */ 474);
+	
+	var _withDefault2 = _interopRequireDefault(_withDefault);
+	
+	var _curry = __webpack_require__(/*! ./util/curry */ 457);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var u = _update2.default;
+	
+	u._ = _curry._;
+	u.constant = _constant2.default;
+	u.if = _if3.default;
+	u.ifElse = _ifElse2.default;
+	u.is = _is2.default;
+	u.freeze = _freeze2.default;
+	u.map = _map2.default;
+	u.omit = _omit2.default;
+	u.omitBy = _omitBy2.default;
+	u.reject = _reject2.default;
+	u.update = _update2.default;
+	u.updateIn = _updateIn2.default;
+	u.withDefault = _withDefault2.default;
+	
+	module.exports = u;
+
+/***/ },
+/* 447 */
+/*!************************************!*\
+  !*** ../~/updeep/dist/constant.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.default = wrap;
 	
-	var _curry = __webpack_require__(/*! ./util/curry */ 432);
-	
-	var _curry2 = _interopRequireDefault(_curry);
-	
-	var _freeze = __webpack_require__(/*! ./freeze */ 433);
+	var _freeze = __webpack_require__(/*! ./freeze */ 448);
 	
 	var _freeze2 = _interopRequireDefault(_freeze);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function wrap(func) {
-	  var length = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : func.length;
+	/**
+	 * Returns a function that always returns the supplied value.
+	 *
+	 * Useful for replacing an object outright rather than merging it.
+	 *
+	 * @function
+	 * @sig a -> (* -> a)
+	 * @memberOf u
+	 * @param  {*} value what to return from returned function.
+	 * @return {function} a new function that will always return value.
+	 *
+	 * @example
+	 * var alwaysFour = u.constant(4);
+	 * expect(alwaysFour(32)).toEqual(4);
+	 *
+	 * @example
+	 * var user = {
+	 *   name: 'Mitch',
+	 *   favorites: {
+	 *     band: 'Nirvana',
+	 *     movie: 'The Matrix'
+	 *   }
+	 * };
+	 *
+	 * var newFavorites = {
+	 *   band: 'Coldplay'
+	 * };
+	 *
+	 * var result = u({ favorites: u.constant(newFavorites) }, user);
+	 *
+	 * expect(result).toEqual({ name: 'Mitch', favorites: { band: 'Coldplay' } });
+	 */
+	function constant(value) {
+	  var frozen = (0, _freeze2.default)(value);
+	  return function () {
+	    return frozen;
+	  };
+	}
 	
-	  return (0, _curry2.default)(function () {
-	    return (0, _freeze2.default)(func.apply(undefined, arguments));
-	  }, length);
+	exports.default = constant;
+
+/***/ },
+/* 448 */
+/*!**********************************!*\
+  !*** ../~/updeep/dist/freeze.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	function isFreezable(object) {
+	  if (object === null) return false;
+	  if (object instanceof RegExp) return false;
+	
+	  return Array.isArray(object) || (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object';
+	}
+	
+	function needsFreezing(object) {
+	  return isFreezable(object) && !Object.isFrozen(object);
+	}
+	
+	function recur(object) {
+	  Object.freeze(object);
+	
+	  Object.keys(object).forEach(function (key) {
+	    var value = object[key];
+	    if (needsFreezing(value)) {
+	      recur(value);
+	    }
+	  });
+	
+	  return object;
+	}
+	
+	/**
+	 * Deeply freeze a plain javascript object.
+	 *
+	 * If `process.env.NODE_ENV === 'production'`, this returns the original object
+	 * without freezing.
+	 *
+	 * Or if `process.env.UPDEEP_MODE === 'dangerously_never_freeze'`, this returns the original object
+	 * without freezing.
+	 *
+	 * @function
+	 * @sig a -> a
+	 * @param  {object} object Object to freeze.
+	 * @return {object} Frozen object, unless in production, then the same object.
+	 */
+	function freeze(object) {
+	  if (false) {
+	    return object;
+	  }
+	
+	  if (process.env.UPDEEP_MODE === 'dangerously_never_freeze') {
+	    return object;
+	  }
+	
+	  if (needsFreezing(object)) {
+	    recur(object);
+	  }
+	
+	  return object;
+	}
+	
+	exports.default = freeze;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ../~/process/browser.js */ 29)))
+
+/***/ },
+/* 449 */
+/*!******************************!*\
+  !*** ../~/updeep/dist/is.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _splitPath = __webpack_require__(/*! ./util/splitPath */ 450);
+	
+	var _splitPath2 = _interopRequireDefault(_splitPath);
+	
+	var _curry = __webpack_require__(/*! ./util/curry */ 457);
+	
+	var _curry2 = _interopRequireDefault(_curry);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function is(path, predicate, object) {
+	  var parts = (0, _splitPath2.default)(path);
+	
+	  var rest = object;
+	  for (var i = 0; i < parts.length; ++i) {
+	    if (typeof rest === 'undefined') return false;
+	    var part = parts[i];
+	    rest = rest[part];
+	  }
+	
+	  if (typeof predicate === 'function') {
+	    return predicate(rest);
+	  }
+	
+	  return predicate === rest;
+	}
+	
+	exports.default = (0, _curry2.default)(is);
+
+/***/ },
+/* 450 */
+/*!******************************************!*\
+  !*** ../~/updeep/dist/util/splitPath.js ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = splitPath;
+	
+	var _reject = __webpack_require__(/*! lodash/reject */ 451);
+	
+	var _reject2 = _interopRequireDefault(_reject);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function splitPath(path) {
+	  return Array.isArray(path) ? path : (0, _reject2.default)((path + '').split('.'), function (x) {
+	    return !x;
+	  });
 	}
 
 /***/ },
-/* 432 */
+/* 451 */
+/*!*****************************!*\
+  !*** ../~/lodash/reject.js ***!
+  \*****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayFilter = __webpack_require__(/*! ./_arrayFilter */ 452),
+	    baseFilter = __webpack_require__(/*! ./_baseFilter */ 453),
+	    baseIteratee = __webpack_require__(/*! ./_baseIteratee */ 364),
+	    isArray = __webpack_require__(/*! ./isArray */ 251),
+	    negate = __webpack_require__(/*! ./negate */ 456);
+	
+	/**
+	 * The opposite of `_.filter`; this method returns the elements of `collection`
+	 * that `predicate` does **not** return truthy for.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Collection
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} [predicate=_.identity] The function invoked per iteration.
+	 * @returns {Array} Returns the new filtered array.
+	 * @see _.filter
+	 * @example
+	 *
+	 * var users = [
+	 *   { 'user': 'barney', 'age': 36, 'active': false },
+	 *   { 'user': 'fred',   'age': 40, 'active': true }
+	 * ];
+	 *
+	 * _.reject(users, function(o) { return !o.active; });
+	 * // => objects for ['fred']
+	 *
+	 * // The `_.matches` iteratee shorthand.
+	 * _.reject(users, { 'age': 40, 'active': true });
+	 * // => objects for ['barney']
+	 *
+	 * // The `_.matchesProperty` iteratee shorthand.
+	 * _.reject(users, ['active', false]);
+	 * // => objects for ['fred']
+	 *
+	 * // The `_.property` iteratee shorthand.
+	 * _.reject(users, 'active');
+	 * // => objects for ['barney']
+	 */
+	function reject(collection, predicate) {
+	  var func = isArray(collection) ? arrayFilter : baseFilter;
+	  return func(collection, negate(baseIteratee(predicate, 3)));
+	}
+	
+	module.exports = reject;
+
+
+/***/ },
+/* 452 */
+/*!***********************************!*\
+  !*** ../~/lodash/_arrayFilter.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	/**
+	 * A specialized version of `_.filter` for arrays without support for
+	 * iteratee shorthands.
+	 *
+	 * @private
+	 * @param {Array} [array] The array to iterate over.
+	 * @param {Function} predicate The function invoked per iteration.
+	 * @returns {Array} Returns the new filtered array.
+	 */
+	function arrayFilter(array, predicate) {
+	  var index = -1,
+	      length = array ? array.length : 0,
+	      resIndex = 0,
+	      result = [];
+	
+	  while (++index < length) {
+	    var value = array[index];
+	    if (predicate(value, index, array)) {
+	      result[resIndex++] = value;
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = arrayFilter;
+
+
+/***/ },
+/* 453 */
+/*!**********************************!*\
+  !*** ../~/lodash/_baseFilter.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseEach = __webpack_require__(/*! ./_baseEach */ 454);
+	
+	/**
+	 * The base implementation of `_.filter` without support for iteratee shorthands.
+	 *
+	 * @private
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} predicate The function invoked per iteration.
+	 * @returns {Array} Returns the new filtered array.
+	 */
+	function baseFilter(collection, predicate) {
+	  var result = [];
+	  baseEach(collection, function(value, index, collection) {
+	    if (predicate(value, index, collection)) {
+	      result.push(value);
+	    }
+	  });
+	  return result;
+	}
+	
+	module.exports = baseFilter;
+
+
+/***/ },
+/* 454 */
+/*!********************************!*\
+  !*** ../~/lodash/_baseEach.js ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseForOwn = __webpack_require__(/*! ./_baseForOwn */ 416),
+	    createBaseEach = __webpack_require__(/*! ./_createBaseEach */ 455);
+	
+	/**
+	 * The base implementation of `_.forEach` without support for iteratee shorthands.
+	 *
+	 * @private
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array|Object} Returns `collection`.
+	 */
+	var baseEach = createBaseEach(baseForOwn);
+	
+	module.exports = baseEach;
+
+
+/***/ },
+/* 455 */
+/*!**************************************!*\
+  !*** ../~/lodash/_createBaseEach.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var isArrayLike = __webpack_require__(/*! ./isArrayLike */ 301);
+	
+	/**
+	 * Creates a `baseEach` or `baseEachRight` function.
+	 *
+	 * @private
+	 * @param {Function} eachFunc The function to iterate over a collection.
+	 * @param {boolean} [fromRight] Specify iterating from right to left.
+	 * @returns {Function} Returns the new base function.
+	 */
+	function createBaseEach(eachFunc, fromRight) {
+	  return function(collection, iteratee) {
+	    if (collection == null) {
+	      return collection;
+	    }
+	    if (!isArrayLike(collection)) {
+	      return eachFunc(collection, iteratee);
+	    }
+	    var length = collection.length,
+	        index = fromRight ? length : -1,
+	        iterable = Object(collection);
+	
+	    while ((fromRight ? index-- : ++index < length)) {
+	      if (iteratee(iterable[index], index, iterable) === false) {
+	        break;
+	      }
+	    }
+	    return collection;
+	  };
+	}
+	
+	module.exports = createBaseEach;
+
+
+/***/ },
+/* 456 */
+/*!*****************************!*\
+  !*** ../~/lodash/negate.js ***!
+  \*****************************/
+/***/ function(module, exports) {
+
+	/** Error message constants. */
+	var FUNC_ERROR_TEXT = 'Expected a function';
+	
+	/**
+	 * Creates a function that negates the result of the predicate `func`. The
+	 * `func` predicate is invoked with the `this` binding and arguments of the
+	 * created function.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 3.0.0
+	 * @category Function
+	 * @param {Function} predicate The predicate to negate.
+	 * @returns {Function} Returns the new negated function.
+	 * @example
+	 *
+	 * function isEven(n) {
+	 *   return n % 2 == 0;
+	 * }
+	 *
+	 * _.filter([1, 2, 3, 4, 5, 6], _.negate(isEven));
+	 * // => [1, 3, 5]
+	 */
+	function negate(predicate) {
+	  if (typeof predicate != 'function') {
+	    throw new TypeError(FUNC_ERROR_TEXT);
+	  }
+	  return function() {
+	    var args = arguments;
+	    switch (args.length) {
+	      case 0: return !predicate.call(this);
+	      case 1: return !predicate.call(this, args[0]);
+	      case 2: return !predicate.call(this, args[0], args[1]);
+	      case 3: return !predicate.call(this, args[0], args[1], args[2]);
+	    }
+	    return !predicate.apply(this, args);
+	  };
+	}
+	
+	module.exports = negate;
+
+
+/***/ },
+/* 457 */
 /*!**************************************!*\
   !*** ../~/updeep/dist/util/curry.js ***!
   \**************************************/
@@ -34781,1038 +36275,787 @@
 	}
 
 /***/ },
-/* 433 */
-/*!**********************************!*\
-  !*** ../~/updeep/dist/freeze.js ***!
-  \**********************************/
+/* 458 */
+/*!******************************!*\
+  !*** ../~/updeep/dist/if.js ***!
+  \******************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _ifElse = __webpack_require__(/*! ./ifElse */ 459);
 	
-	function isFreezable(object) {
-	  if (object === null) return false;
-	  if (object instanceof RegExp) return false;
+	var _ifElse2 = _interopRequireDefault(_ifElse);
 	
-	  return Array.isArray(object) || (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object';
-	}
+	var _curry = __webpack_require__(/*! ./util/curry */ 457);
 	
-	function needsFreezing(object) {
-	  return isFreezable(object) && !Object.isFrozen(object);
-	}
-	
-	function recur(object) {
-	  Object.freeze(object);
-	
-	  Object.keys(object).forEach(function (key) {
-	    var value = object[key];
-	    if (needsFreezing(value)) {
-	      recur(value);
-	    }
-	  });
-	
-	  return object;
-	}
-	
-	/**
-	 * Deeply freeze a plain javascript object.
-	 *
-	 * If `process.env.NODE_ENV === 'production'`, this returns the original object
-	 * without freezing.
-	 *
-	 * Or if `process.env.UPDEEP_MODE === 'dangerously_never_freeze'`, this returns the original object
-	 * without freezing.
-	 *
-	 * @function
-	 * @sig a -> a
-	 * @param  {object} object Object to freeze.
-	 * @return {object} Frozen object, unless in production, then the same object.
-	 */
-	function freeze(object) {
-	  if (false) {
-	    return object;
-	  }
-	
-	  if (process.env.UPDEEP_MODE === 'dangerously_never_freeze') {
-	    return object;
-	  }
-	
-	  if (needsFreezing(object)) {
-	    recur(object);
-	  }
-	
-	  return object;
-	}
-	
-	exports.default = freeze;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ../~/process/browser.js */ 29)))
-
-/***/ },
-/* 434 */
-/*!********************!*\
-  !*** ./Counter.js ***!
-  \********************/
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	var _curry2 = _interopRequireDefault(_curry);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var Counter = function Counter(_ref) {
-	    var count = _ref.count;
-	    var inc = _ref.inc;
-	    return _react2.default.createElement(
-	        "span",
-	        null,
-	        count,
-	        " ",
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: inc },
-	            "inc"
-	        )
-	    );
-	};
-	Counter = (0, _lean.connectLean)({
-	    // This scopes the counter under "singleCounter" key in the state. If this
-	    // is omitted the component uses the full state.
-	    scope: "singleCounter",
-	
-	    // By default only props defined in getInitialState() are passed to the
-	    // wrapped component. If you want to add some other props from the state
-	    // you can define a mapState key with a function returning the desired
-	    // state.
-	    getInitialState: function getInitialState() {
-	        return { count: 0 };
-	    },
-	
-	
-	    // Handlers are passed as props to the component. The return values update
-	    // the state. The updates respect the scope defined above.
-	    handlers: {
-	        // The props object is passed to the handlers as the last argument.
-	        inc: function inc(e, _skip1, _skip2, props) {
-	            e.preventDefault();
-	            return { count: props.count + 1 };
-	        }
-	    }
-	})(Counter);
-	
-	exports.default = Counter;
-
-/***/ },
-/* 435 */
-/*!*****************************!*\
-  !*** ./MultipleCounters.js ***!
-  \*****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	exports.default = (0, _curry2.default)(function (predicate, trueUpdates, object) {
+	  return (0, _ifElse2.default)(predicate, trueUpdates, function (x) {
+	    return x;
+	  }, object);
 	});
-	
-	var _react = __webpack_require__(/*! react */ 1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _Counter = __webpack_require__(/*! ./Counter */ 434);
-	
-	var _Counter2 = _interopRequireDefault(_Counter);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var MultipleCounters = function MultipleCounters() {
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(_Counter2.default, { scope: "multicounter1" })
-	        ),
-	        _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(_Counter2.default, { scope: "multicounter2" })
-	        )
-	    );
-	};
-	
-	exports.default = MultipleCounters;
 
 /***/ },
-/* 436 */
-/*!****************************!*\
-  !*** ./DynamicCounters.js ***!
-  \****************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
-	
-	var _fp = __webpack_require__(/*! lodash/fp */ 437);
-	
-	var _Counter = __webpack_require__(/*! ./Counter */ 434);
-	
-	var _Counter2 = _interopRequireDefault(_Counter);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var DynamicCounters = function DynamicCounters(_ref) {
-	    var counterCount = _ref.counterCount;
-	    var scope = _ref.scope;
-	    var addCounter = _ref.addCounter;
-	    var removeCounter = _ref.removeCounter;
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: addCounter },
-	            "add counter"
-	        ),
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: removeCounter },
-	            "remove counter"
-	        ),
-	        (0, _fp.range)(0, counterCount).map(function (i) {
-	            return _react2.default.createElement(
-	                "div",
-	                { key: i },
-	                _react2.default.createElement(_Counter2.default, { scope: [scope, "counters", i] })
-	            );
-	        })
-	    );
-	};
-	DynamicCounters = (0, _lean.connectLean)({
-	    scope: "dynamicCounters",
-	    getInitialState: function getInitialState() {
-	        return { counterCount: 1 };
-	    },
-	
-	    handlers: {
-	        addCounter: function addCounter(e) {
-	            e.preventDefault();
-	            // Instead of accessing the props from the arguments you can also
-	            // return an object of functions to get the previus value in the
-	            // key.
-	            return { counterCount: function counterCount(i) {
-	                    return i + 1;
-	                } };
-	        },
-	        removeCounter: function removeCounter(e) {
-	            e.preventDefault();
-	            return {
-	                counterCount: function counterCount(i) {
-	                    return Math.max(i - 1, 0);
-	                }
-	            };
-	        }
-	    }
-	
-	})(DynamicCounters);
-	
-	exports.default = DynamicCounters;
-
-/***/ },
-/* 437 */
-/*!*************************!*\
-  !*** ../~/lodash/fp.js ***!
-  \*************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(/*! ./lodash.min */ 438).runInContext();
-	module.exports = __webpack_require__(/*! ./fp/_baseConvert */ 212)(_, _);
-
-
-/***/ },
-/* 438 */
-/*!*********************************!*\
-  !*** ../~/lodash/lodash.min.js ***!
-  \*********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(global, module) {/**
-	 * @license
-	 * lodash lodash.com/license | Underscore.js 1.8.3 underscorejs.org/LICENSE
-	 */
-	;(function(){function t(t,n){return t.set(n[0],n[1]),t}function n(t,n){return t.add(n),t}function r(t,n,r){switch(r.length){case 0:return t.call(n);case 1:return t.call(n,r[0]);case 2:return t.call(n,r[0],r[1]);case 3:return t.call(n,r[0],r[1],r[2])}return t.apply(n,r)}function e(t,n,r,e){for(var u=-1,i=t?t.length:0;++u<i;){var o=t[u];n(e,o,r(o),t)}return e}function u(t,n){for(var r=-1,e=t?t.length:0;++r<e&&false!==n(t[r],r,t););return t}function i(t,n){for(var r=t?t.length:0;r--&&false!==n(t[r],r,t););
-	return t}function o(t,n){for(var r=-1,e=t?t.length:0;++r<e;)if(!n(t[r],r,t))return false;return true}function f(t,n){for(var r=-1,e=t?t.length:0,u=0,i=[];++r<e;){var o=t[r];n(o,r,t)&&(i[u++]=o)}return i}function c(t,n){return!(!t||!t.length)&&-1<d(t,n,0)}function a(t,n,r){for(var e=-1,u=t?t.length:0;++e<u;)if(r(n,t[e]))return true;return false}function l(t,n){for(var r=-1,e=t?t.length:0,u=Array(e);++r<e;)u[r]=n(t[r],r,t);return u}function s(t,n){for(var r=-1,e=n.length,u=t.length;++r<e;)t[u+r]=n[r];return t}function h(t,n,r,e){
-	var u=-1,i=t?t.length:0;for(e&&i&&(r=t[++u]);++u<i;)r=n(r,t[u],u,t);return r}function p(t,n,r,e){var u=t?t.length:0;for(e&&u&&(r=t[--u]);u--;)r=n(r,t[u],u,t);return r}function _(t,n){for(var r=-1,e=t?t.length:0;++r<e;)if(n(t[r],r,t))return true;return false}function v(t,n,r){var e;return r(t,function(t,r,u){if(n(t,r,u))return e=r,false}),e}function g(t,n,r,e){var u=t.length;for(r+=e?1:-1;e?r--:++r<u;)if(n(t[r],r,t))return r;return-1}function d(t,n,r){if(n===n)t:{--r;for(var e=t.length;++r<e;)if(t[r]===n){t=r;
-	break t}t=-1}else t=g(t,b,r);return t}function y(t,n,r,e){--r;for(var u=t.length;++r<u;)if(e(t[r],n))return r;return-1}function b(t){return t!==t}function x(t,n){var r=t?t.length:0;return r?k(t,n)/r:P}function j(t){return function(n){return null==n?F:n[t]}}function w(t){return function(n){return null==t?F:t[n]}}function m(t,n,r,e,u){return u(t,function(t,u,i){r=e?(e=false,t):n(r,t,u,i)}),r}function A(t,n){var r=t.length;for(t.sort(n);r--;)t[r]=t[r].c;return t}function k(t,n){for(var r,e=-1,u=t.length;++e<u;){
-	var i=n(t[e]);i!==F&&(r=r===F?i:r+i)}return r}function E(t,n){for(var r=-1,e=Array(t);++r<t;)e[r]=n(r);return e}function O(t,n){return l(n,function(n){return[n,t[n]]})}function S(t){return function(n){return t(n)}}function I(t,n){return l(n,function(n){return t[n]})}function R(t,n){return t.has(n)}function z(t,n){for(var r=-1,e=t.length;++r<e&&-1<d(n,t[r],0););return r}function W(t,n){for(var r=t.length;r--&&-1<d(n,t[r],0););return r}function B(t){return"\\"+Dt[t]}function L(t){var n=-1,r=Array(t.size);
-	return t.forEach(function(t,e){r[++n]=[e,t]}),r}function U(t,n){return function(r){return t(n(r))}}function C(t,n){for(var r=-1,e=t.length,u=0,i=[];++r<e;){var o=t[r];o!==n&&"__lodash_placeholder__"!==o||(t[r]="__lodash_placeholder__",i[u++]=r)}return i}function M(t){var n=-1,r=Array(t.size);return t.forEach(function(t){r[++n]=t}),r}function D(t){var n=-1,r=Array(t.size);return t.forEach(function(t){r[++n]=[t,t]}),r}function T(t){if(Wt.test(t)){for(var n=Rt.lastIndex=0;Rt.test(t);)++n;t=n}else t=tn(t);
-	return t}function $(t){return Wt.test(t)?t.match(Rt)||[]:t.split("")}var F,N=1/0,P=NaN,Z=[["ary",128],["bind",1],["bindKey",2],["curry",8],["curryRight",16],["flip",512],["partial",32],["partialRight",64],["rearg",256]],q=/\b__p\+='';/g,V=/\b(__p\+=)''\+/g,K=/(__e\(.*?\)|\b__t\))\+'';/g,G=/&(?:amp|lt|gt|quot|#39);/g,J=/[&<>"']/g,Y=RegExp(G.source),H=RegExp(J.source),Q=/<%-([\s\S]+?)%>/g,X=/<%([\s\S]+?)%>/g,tt=/<%=([\s\S]+?)%>/g,nt=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,rt=/^\w*$/,et=/^\./,ut=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g,it=/[\\^$.*+?()[\]{}|]/g,ot=RegExp(it.source),ft=/^\s+|\s+$/g,ct=/^\s+/,at=/\s+$/,lt=/\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,st=/\{\n\/\* \[wrapped with (.+)\] \*/,ht=/,? & /,pt=/[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g,_t=/\\(\\)?/g,vt=/\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g,gt=/\w*$/,dt=/^[-+]0x[0-9a-f]+$/i,yt=/^0b[01]+$/i,bt=/^\[object .+?Constructor\]$/,xt=/^0o[0-7]+$/i,jt=/^(?:0|[1-9]\d*)$/,wt=/[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g,mt=/($^)/,At=/['\n\r\u2028\u2029\\]/g,kt="[\\ufe0e\\ufe0f]?(?:[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]|\\ud83c[\\udffb-\\udfff])?(?:\\u200d(?:[^\\ud800-\\udfff]|(?:\\ud83c[\\udde6-\\uddff]){2}|[\\ud800-\\udbff][\\udc00-\\udfff])[\\ufe0e\\ufe0f]?(?:[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]|\\ud83c[\\udffb-\\udfff])?)*",Et="(?:[\\u2700-\\u27bf]|(?:\\ud83c[\\udde6-\\uddff]){2}|[\\ud800-\\udbff][\\udc00-\\udfff])"+kt,Ot="(?:[^\\ud800-\\udfff][\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]?|[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]|(?:\\ud83c[\\udde6-\\uddff]){2}|[\\ud800-\\udbff][\\udc00-\\udfff]|[\\ud800-\\udfff])",St=RegExp("['\u2019]","g"),It=RegExp("[\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0]","g"),Rt=RegExp("\\ud83c[\\udffb-\\udfff](?=\\ud83c[\\udffb-\\udfff])|"+Ot+kt,"g"),zt=RegExp(["[A-Z\\xc0-\\xd6\\xd8-\\xde]?[a-z\\xdf-\\xf6\\xf8-\\xff]+(?:['\u2019](?:d|ll|m|re|s|t|ve))?(?=[\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]|[A-Z\\xc0-\\xd6\\xd8-\\xde]|$)|(?:[A-Z\\xc0-\\xd6\\xd8-\\xde]|[^\\ud800-\\udfff\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000\\d+\\u2700-\\u27bfa-z\\xdf-\\xf6\\xf8-\\xffA-Z\\xc0-\\xd6\\xd8-\\xde])+(?:['\u2019](?:D|LL|M|RE|S|T|VE))?(?=[\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]|[A-Z\\xc0-\\xd6\\xd8-\\xde](?:[a-z\\xdf-\\xf6\\xf8-\\xff]|[^\\ud800-\\udfff\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000\\d+\\u2700-\\u27bfa-z\\xdf-\\xf6\\xf8-\\xffA-Z\\xc0-\\xd6\\xd8-\\xde])|$)|[A-Z\\xc0-\\xd6\\xd8-\\xde]?(?:[a-z\\xdf-\\xf6\\xf8-\\xff]|[^\\ud800-\\udfff\\xac\\xb1\\xd7\\xf7\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf\\u2000-\\u206f \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000\\d+\\u2700-\\u27bfa-z\\xdf-\\xf6\\xf8-\\xffA-Z\\xc0-\\xd6\\xd8-\\xde])+(?:['\u2019](?:d|ll|m|re|s|t|ve))?|[A-Z\\xc0-\\xd6\\xd8-\\xde]+(?:['\u2019](?:D|LL|M|RE|S|T|VE))?|\\d+",Et].join("|"),"g"),Wt=RegExp("[\\u200d\\ud800-\\udfff\\u0300-\\u036f\\ufe20-\\ufe23\\u20d0-\\u20f0\\ufe0e\\ufe0f]"),Bt=/[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/,Lt="Array Buffer DataView Date Error Float32Array Float64Array Function Int8Array Int16Array Int32Array Map Math Object Promise RegExp Set String Symbol TypeError Uint8Array Uint8ClampedArray Uint16Array Uint32Array WeakMap _ clearTimeout isFinite parseInt setTimeout".split(" "),Ut={};
-	Ut["[object Float32Array]"]=Ut["[object Float64Array]"]=Ut["[object Int8Array]"]=Ut["[object Int16Array]"]=Ut["[object Int32Array]"]=Ut["[object Uint8Array]"]=Ut["[object Uint8ClampedArray]"]=Ut["[object Uint16Array]"]=Ut["[object Uint32Array]"]=true,Ut["[object Arguments]"]=Ut["[object Array]"]=Ut["[object ArrayBuffer]"]=Ut["[object Boolean]"]=Ut["[object DataView]"]=Ut["[object Date]"]=Ut["[object Error]"]=Ut["[object Function]"]=Ut["[object Map]"]=Ut["[object Number]"]=Ut["[object Object]"]=Ut["[object RegExp]"]=Ut["[object Set]"]=Ut["[object String]"]=Ut["[object WeakMap]"]=false;
-	var Ct={};Ct["[object Arguments]"]=Ct["[object Array]"]=Ct["[object ArrayBuffer]"]=Ct["[object DataView]"]=Ct["[object Boolean]"]=Ct["[object Date]"]=Ct["[object Float32Array]"]=Ct["[object Float64Array]"]=Ct["[object Int8Array]"]=Ct["[object Int16Array]"]=Ct["[object Int32Array]"]=Ct["[object Map]"]=Ct["[object Number]"]=Ct["[object Object]"]=Ct["[object RegExp]"]=Ct["[object Set]"]=Ct["[object String]"]=Ct["[object Symbol]"]=Ct["[object Uint8Array]"]=Ct["[object Uint8ClampedArray]"]=Ct["[object Uint16Array]"]=Ct["[object Uint32Array]"]=true,
-	Ct["[object Error]"]=Ct["[object Function]"]=Ct["[object WeakMap]"]=false;var Mt,Dt={"\\":"\\","'":"'","\n":"n","\r":"r","\u2028":"u2028","\u2029":"u2029"},Tt=parseFloat,$t=parseInt,Ft=typeof global=="object"&&global&&global.Object===Object&&global,Nt=typeof self=="object"&&self&&self.Object===Object&&self,Pt=Ft||Nt||Function("return this")(),Zt=typeof exports=="object"&&exports&&!exports.nodeType&&exports,qt=Zt&&typeof module=="object"&&module&&!module.nodeType&&module,Vt=qt&&qt.exports===Zt,Kt=Vt&&Ft.h;
-	t:{try{Mt=Kt&&Kt.g("util");break t}catch(t){}Mt=void 0}var Gt=Mt&&Mt.isArrayBuffer,Jt=Mt&&Mt.isDate,Yt=Mt&&Mt.isMap,Ht=Mt&&Mt.isRegExp,Qt=Mt&&Mt.isSet,Xt=Mt&&Mt.isTypedArray,tn=j("length"),nn=w({"\xc0":"A","\xc1":"A","\xc2":"A","\xc3":"A","\xc4":"A","\xc5":"A","\xe0":"a","\xe1":"a","\xe2":"a","\xe3":"a","\xe4":"a","\xe5":"a","\xc7":"C","\xe7":"c","\xd0":"D","\xf0":"d","\xc8":"E","\xc9":"E","\xca":"E","\xcb":"E","\xe8":"e","\xe9":"e","\xea":"e","\xeb":"e","\xcc":"I","\xcd":"I","\xce":"I","\xcf":"I",
-	"\xec":"i","\xed":"i","\xee":"i","\xef":"i","\xd1":"N","\xf1":"n","\xd2":"O","\xd3":"O","\xd4":"O","\xd5":"O","\xd6":"O","\xd8":"O","\xf2":"o","\xf3":"o","\xf4":"o","\xf5":"o","\xf6":"o","\xf8":"o","\xd9":"U","\xda":"U","\xdb":"U","\xdc":"U","\xf9":"u","\xfa":"u","\xfb":"u","\xfc":"u","\xdd":"Y","\xfd":"y","\xff":"y","\xc6":"Ae","\xe6":"ae","\xde":"Th","\xfe":"th","\xdf":"ss","\u0100":"A","\u0102":"A","\u0104":"A","\u0101":"a","\u0103":"a","\u0105":"a","\u0106":"C","\u0108":"C","\u010a":"C","\u010c":"C",
-	"\u0107":"c","\u0109":"c","\u010b":"c","\u010d":"c","\u010e":"D","\u0110":"D","\u010f":"d","\u0111":"d","\u0112":"E","\u0114":"E","\u0116":"E","\u0118":"E","\u011a":"E","\u0113":"e","\u0115":"e","\u0117":"e","\u0119":"e","\u011b":"e","\u011c":"G","\u011e":"G","\u0120":"G","\u0122":"G","\u011d":"g","\u011f":"g","\u0121":"g","\u0123":"g","\u0124":"H","\u0126":"H","\u0125":"h","\u0127":"h","\u0128":"I","\u012a":"I","\u012c":"I","\u012e":"I","\u0130":"I","\u0129":"i","\u012b":"i","\u012d":"i","\u012f":"i",
-	"\u0131":"i","\u0134":"J","\u0135":"j","\u0136":"K","\u0137":"k","\u0138":"k","\u0139":"L","\u013b":"L","\u013d":"L","\u013f":"L","\u0141":"L","\u013a":"l","\u013c":"l","\u013e":"l","\u0140":"l","\u0142":"l","\u0143":"N","\u0145":"N","\u0147":"N","\u014a":"N","\u0144":"n","\u0146":"n","\u0148":"n","\u014b":"n","\u014c":"O","\u014e":"O","\u0150":"O","\u014d":"o","\u014f":"o","\u0151":"o","\u0154":"R","\u0156":"R","\u0158":"R","\u0155":"r","\u0157":"r","\u0159":"r","\u015a":"S","\u015c":"S","\u015e":"S",
-	"\u0160":"S","\u015b":"s","\u015d":"s","\u015f":"s","\u0161":"s","\u0162":"T","\u0164":"T","\u0166":"T","\u0163":"t","\u0165":"t","\u0167":"t","\u0168":"U","\u016a":"U","\u016c":"U","\u016e":"U","\u0170":"U","\u0172":"U","\u0169":"u","\u016b":"u","\u016d":"u","\u016f":"u","\u0171":"u","\u0173":"u","\u0174":"W","\u0175":"w","\u0176":"Y","\u0177":"y","\u0178":"Y","\u0179":"Z","\u017b":"Z","\u017d":"Z","\u017a":"z","\u017c":"z","\u017e":"z","\u0132":"IJ","\u0133":"ij","\u0152":"Oe","\u0153":"oe","\u0149":"'n",
-	"\u017f":"s"}),rn=w({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}),en=w({"&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&#39;":"'"}),un=function w(kt){function Et(t){return fi.call(t)}function Ot(t){if(vu(t)&&!nf(t)&&!(t instanceof Dt)){if(t instanceof Mt)return t;if(ui.call(t,"__wrapped__"))return De(t)}return new Mt(t)}function Rt(){}function Mt(t,n){this.__wrapped__=t,this.__actions__=[],this.__chain__=!!n,this.__index__=0,this.__values__=F}function Dt(t){this.__wrapped__=t,this.__actions__=[],
-	this.__dir__=1,this.__filtered__=false,this.__iteratees__=[],this.__takeCount__=4294967295,this.__views__=[]}function Ft(t){var n=-1,r=t?t.length:0;for(this.clear();++n<r;){var e=t[n];this.set(e[0],e[1])}}function Nt(t){var n=-1,r=t?t.length:0;for(this.clear();++n<r;){var e=t[n];this.set(e[0],e[1])}}function Zt(t){var n=-1,r=t?t.length:0;for(this.clear();++n<r;){var e=t[n];this.set(e[0],e[1])}}function qt(t){var n=-1,r=t?t.length:0;for(this.__data__=new Zt;++n<r;)this.add(t[n])}function Kt(t){this.size=(this.__data__=new Nt(t)).size;
-	}function tn(t,n){var r,e=nf(t),u=!e&&tf(t),i=!e&&!u&&ef(t),o=!e&&!u&&!i&&af(t),u=(e=e||u||i||o)?E(t.length,Hu):[],f=u.length;for(r in t)!n&&!ui.call(t,r)||e&&("length"==r||i&&("offset"==r||"parent"==r)||o&&("buffer"==r||"byteLength"==r||"byteOffset"==r)||me(r,f))||u.push(r);return u}function on(t){var n=t.length;return n?t[cr(0,n-1)]:F}function fn(t,n){return Le(Cr(t),dn(n,0,t.length))}function cn(t){return Le(Cr(t))}function an(t,n,r,e){return t===F||fu(t,ti[r])&&!ui.call(e,r)?n:t}function ln(t,n,r){
-	(r===F||fu(t[n],r))&&(r!==F||n in t)||vn(t,n,r)}function sn(t,n,r){var e=t[n];ui.call(t,n)&&fu(e,r)&&(r!==F||n in t)||vn(t,n,r)}function hn(t,n){for(var r=t.length;r--;)if(fu(t[r][0],n))return r;return-1}function pn(t,n,r,e){return to(t,function(t,u,i){n(e,t,r(t),i)}),e}function _n(t,n){return t&&Mr(n,Iu(n),t)}function vn(t,n,r){"__proto__"==n&&xi?xi(t,n,{configurable:true,enumerable:true,value:r,writable:true}):t[n]=r}function gn(t,n){for(var r=-1,e=null==t,u=n.length,i=Zu(u);++r<u;)i[r]=e?F:Ou(t,n[r]);
-	return i}function dn(t,n,r){return t===t&&(r!==F&&(t=t<=r?t:r),n!==F&&(t=t>=n?t:n)),t}function yn(t,n,r,e,i,o,f){var c;if(e&&(c=o?e(t,i,o,f):e(t)),c!==F)return c;if(!_u(t))return t;if(i=nf(t)){if(c=be(t),!n)return Cr(t,c)}else{var a=Et(t),l="[object Function]"==a||"[object GeneratorFunction]"==a;if(ef(t))return Rr(t,n);if("[object Object]"==a||"[object Arguments]"==a||l&&!o){if(c=xe(l?{}:t),!n)return Dr(t,_n(c,t))}else{if(!Ct[a])return o?t:{};c=je(t,a,yn,n)}}if(f||(f=new Kt),o=f.get(t))return o;f.set(t,c);
-	var s=i?F:(r?se:Iu)(t);return u(s||t,function(u,i){s&&(i=u,u=t[i]),sn(c,i,yn(u,n,r,e,i,t,f))}),c}function bn(t){var n=Iu(t);return function(r){return xn(r,t,n)}}function xn(t,n,r){var e=r.length;if(null==t)return!e;for(t=Ju(t);e--;){var u=r[e],i=n[u],o=t[u];if(o===F&&!(u in t)||!i(o))return false}return true}function jn(t,n,r){if(typeof t!="function")throw new Qu("Expected a function");return po(function(){t.apply(F,r)},n)}function wn(t,n,r,e){var u=-1,i=c,o=true,f=t.length,s=[],h=n.length;if(!f)return s;r&&(n=l(n,S(r))),
-	e?(i=a,o=false):200<=n.length&&(i=R,o=false,n=new qt(n));t:for(;++u<f;){var p=t[u],_=r?r(p):p,p=e||0!==p?p:0;if(o&&_===_){for(var v=h;v--;)if(n[v]===_)continue t;s.push(p)}else i(n,_,e)||s.push(p)}return s}function mn(t,n){var r=true;return to(t,function(t,e,u){return r=!!n(t,e,u)}),r}function An(t,n,r){for(var e=-1,u=t.length;++e<u;){var i=t[e],o=n(i);if(null!=o&&(f===F?o===o&&!bu(o):r(o,f)))var f=o,c=i}return c}function kn(t,n){var r=[];return to(t,function(t,e,u){n(t,e,u)&&r.push(t)}),r}function En(t,n,r,e,u){
-	var i=-1,o=t.length;for(r||(r=we),u||(u=[]);++i<o;){var f=t[i];0<n&&r(f)?1<n?En(f,n-1,r,e,u):s(u,f):e||(u[u.length]=f)}return u}function On(t,n){return t&&ro(t,n,Iu)}function Sn(t,n){return t&&eo(t,n,Iu)}function In(t,n){return f(n,function(n){return su(t[n])})}function Rn(t,n){n=ke(n,t)?[n]:Sr(n);for(var r=0,e=n.length;null!=t&&r<e;)t=t[Ue(n[r++])];return r&&r==e?t:F}function zn(t,n,r){return n=n(t),nf(t)?n:s(n,r(t))}function Wn(t,n){return t>n}function Bn(t,n){return null!=t&&ui.call(t,n)}function Ln(t,n){
-	return null!=t&&n in Ju(t)}function Un(t,n,r){for(var e=r?a:c,u=t[0].length,i=t.length,o=i,f=Zu(i),s=1/0,h=[];o--;){var p=t[o];o&&n&&(p=l(p,S(n))),s=Wi(p.length,s),f[o]=!r&&(n||120<=u&&120<=p.length)?new qt(o&&p):F}var p=t[0],_=-1,v=f[0];t:for(;++_<u&&h.length<s;){var g=p[_],d=n?n(g):g,g=r||0!==g?g:0;if(v?!R(v,d):!e(h,d,r)){for(o=i;--o;){var y=f[o];if(y?!R(y,d):!e(t[o],d,r))continue t}v&&v.push(d),h.push(g)}}return h}function Cn(t,n,r){var e={};return On(t,function(t,u,i){n(e,r(t),u,i)}),e}function Mn(t,n,e){
-	return ke(n,t)||(n=Sr(n),t=ze(t,n),n=Pe(n)),n=null==t?t:t[Ue(n)],null==n?F:r(n,t,e)}function Dn(t){return vu(t)&&"[object Arguments]"==fi.call(t)}function Tn(t){return vu(t)&&"[object ArrayBuffer]"==fi.call(t)}function $n(t){return vu(t)&&"[object Date]"==fi.call(t)}function Fn(t,n,r,e,u){if(t===n)n=true;else if(null==t||null==n||!_u(t)&&!vu(n))n=t!==t&&n!==n;else t:{var i=nf(t),o=nf(n),f="[object Array]",c="[object Array]";i||(f=Et(t),f="[object Arguments]"==f?"[object Object]":f),o||(c=Et(n),c="[object Arguments]"==c?"[object Object]":c);
-	var a="[object Object]"==f,o="[object Object]"==c;if((c=f==c)&&ef(t)){if(!ef(n)){n=false;break t}i=true,a=false}if(c&&!a)u||(u=new Kt),n=i||af(t)?ce(t,n,Fn,r,e,u):ae(t,n,f,Fn,r,e,u);else{if(!(2&e)&&(i=a&&ui.call(t,"__wrapped__"),f=o&&ui.call(n,"__wrapped__"),i||f)){t=i?t.value():t,n=f?n.value():n,u||(u=new Kt),n=Fn(t,n,r,e,u);break t}if(c)n:if(u||(u=new Kt),i=2&e,f=Iu(t),o=f.length,c=Iu(n).length,o==c||i){for(a=o;a--;){var l=f[a];if(!(i?l in n:ui.call(n,l))){n=false;break n}}if((c=u.get(t))&&u.get(n))n=c==n;else{
-	c=true,u.set(t,n),u.set(n,t);for(var s=i;++a<o;){var l=f[a],h=t[l],p=n[l];if(r)var _=i?r(p,h,l,n,t,u):r(h,p,l,t,n,u);if(_===F?h!==p&&!Fn(h,p,r,e,u):!_){c=false;break}s||(s="constructor"==l)}c&&!s&&(r=t.constructor,e=n.constructor,r!=e&&"constructor"in t&&"constructor"in n&&!(typeof r=="function"&&r instanceof r&&typeof e=="function"&&e instanceof e)&&(c=false)),u.delete(t),u.delete(n),n=c}}else n=false;else n=false}}return n}function Nn(t){return vu(t)&&"[object Map]"==Et(t)}function Pn(t,n,r,e){var u=r.length,i=u,o=!e;
-	if(null==t)return!i;for(t=Ju(t);u--;){var f=r[u];if(o&&f[2]?f[1]!==t[f[0]]:!(f[0]in t))return false}for(;++u<i;){var f=r[u],c=f[0],a=t[c],l=f[1];if(o&&f[2]){if(a===F&&!(c in t))return false}else{if(f=new Kt,e)var s=e(a,l,c,t,n,f);if(s===F?!Fn(l,a,e,3,f):!s)return false}}return true}function Zn(t){return!(!_u(t)||ri&&ri in t)&&(su(t)?ai:bt).test(Ce(t))}function qn(t){return _u(t)&&"[object RegExp]"==fi.call(t)}function Vn(t){return vu(t)&&"[object Set]"==Et(t)}function Kn(t){return vu(t)&&pu(t.length)&&!!Ut[fi.call(t)];
-	}function Gn(t){return typeof t=="function"?t:null==t?Mu:typeof t=="object"?nf(t)?Xn(t[0],t[1]):Qn(t):Fu(t)}function Jn(t){if(!Oe(t))return Ri(t);var n,r=[];for(n in Ju(t))ui.call(t,n)&&"constructor"!=n&&r.push(n);return r}function Yn(t,n){return t<n}function Hn(t,n){var r=-1,e=cu(t)?Zu(t.length):[];return to(t,function(t,u,i){e[++r]=n(t,u,i)}),e}function Qn(t){var n=ge(t);return 1==n.length&&n[0][2]?Se(n[0][0],n[0][1]):function(r){return r===t||Pn(r,t,n)}}function Xn(t,n){return ke(t)&&n===n&&!_u(n)?Se(Ue(t),n):function(r){
-	var e=Ou(r,t);return e===F&&e===n?Su(r,t):Fn(n,e,F,3)}}function tr(t,n,r,e,u){t!==n&&ro(n,function(i,o){if(_u(i)){u||(u=new Kt);var f=u,c=t[o],a=n[o],l=f.get(a);if(l)ln(t,o,l);else{var l=e?e(c,a,o+"",t,n,f):F,s=l===F;if(s){var h=nf(a),p=!h&&ef(a),_=!h&&!p&&af(a),l=a;h||p||_?nf(c)?l=c:au(c)?l=Cr(c):p?(s=false,l=Rr(a,true)):_?(s=false,l=Wr(a,true)):l=[]:du(a)||tf(a)?(l=c,tf(c)?l=ku(c):(!_u(c)||r&&su(c))&&(l=xe(a))):s=false}s&&(f.set(a,l),tr(l,a,r,e,f),f.delete(a)),ln(t,o,l)}}else f=e?e(t[o],i,o+"",t,n,u):F,f===F&&(f=i),
-	ln(t,o,f)},Ru)}function nr(t,n){var r=t.length;if(r)return n+=0>n?r:0,me(n,r)?t[n]:F}function rr(t,n,r){var e=-1;return n=l(n.length?n:[Mu],S(_e())),t=Hn(t,function(t){return{a:l(n,function(n){return n(t)}),b:++e,c:t}}),A(t,function(t,n){var e;t:{e=-1;for(var u=t.a,i=n.a,o=u.length,f=r.length;++e<o;){var c=Br(u[e],i[e]);if(c){e=e>=f?c:c*("desc"==r[e]?-1:1);break t}}e=t.b-n.b}return e})}function er(t,n){return t=Ju(t),ur(t,n,function(n,r){return r in t})}function ur(t,n,r){for(var e=-1,u=n.length,i={};++e<u;){
-	var o=n[e],f=t[o];r(f,o)&&vn(i,o,f)}return i}function ir(t){return function(n){return Rn(n,t)}}function or(t,n,r,e){var u=e?y:d,i=-1,o=n.length,f=t;for(t===n&&(n=Cr(n)),r&&(f=l(t,S(r)));++i<o;)for(var c=0,a=n[i],a=r?r(a):a;-1<(c=u(f,a,c,e));)f!==t&&yi.call(f,c,1),yi.call(t,c,1);return t}function fr(t,n){for(var r=t?n.length:0,e=r-1;r--;){var u=n[r];if(r==e||u!==i){var i=u;if(me(u))yi.call(t,u,1);else if(ke(u,t))delete t[Ue(u)];else{var u=Sr(u),o=ze(t,u);null!=o&&delete o[Ue(Pe(u))]}}}}function cr(t,n){
-	return t+ki(Ui()*(n-t+1))}function ar(t,n){var r="";if(!t||1>n||9007199254740991<n)return r;do n%2&&(r+=t),(n=ki(n/2))&&(t+=t);while(n);return r}function lr(t,n){return _o(Re(t,n,Mu),t+"")}function sr(t){return on(Wu(t))}function hr(t,n){var r=Wu(t);return Le(r,dn(n,0,r.length))}function pr(t,n,r,e){if(!_u(t))return t;n=ke(n,t)?[n]:Sr(n);for(var u=-1,i=n.length,o=i-1,f=t;null!=f&&++u<i;){var c=Ue(n[u]),a=r;if(u!=o){var l=f[c],a=e?e(l,c,f):F;a===F&&(a=_u(l)?l:me(n[u+1])?[]:{})}sn(f,c,a),f=f[c]}return t;
-	}function _r(t){return Le(Wu(t))}function vr(t,n,r){var e=-1,u=t.length;for(0>n&&(n=-n>u?0:u+n),r=r>u?u:r,0>r&&(r+=u),u=n>r?0:r-n>>>0,n>>>=0,r=Zu(u);++e<u;)r[e]=t[e+n];return r}function gr(t,n){var r;return to(t,function(t,e,u){return r=n(t,e,u),!r}),!!r}function dr(t,n,r){var e=0,u=t?t.length:e;if(typeof n=="number"&&n===n&&2147483647>=u){for(;e<u;){var i=e+u>>>1,o=t[i];null!==o&&!bu(o)&&(r?o<=n:o<n)?e=i+1:u=i}return u}return yr(t,n,Mu,r)}function yr(t,n,r,e){n=r(n);for(var u=0,i=t?t.length:0,o=n!==n,f=null===n,c=bu(n),a=n===F;u<i;){
-	var l=ki((u+i)/2),s=r(t[l]),h=s!==F,p=null===s,_=s===s,v=bu(s);(o?e||_:a?_&&(e||h):f?_&&h&&(e||!p):c?_&&h&&!p&&(e||!v):p||v?0:e?s<=n:s<n)?u=l+1:i=l}return Wi(i,4294967294)}function br(t,n){for(var r=-1,e=t.length,u=0,i=[];++r<e;){var o=t[r],f=n?n(o):o;if(!r||!fu(f,c)){var c=f;i[u++]=0===o?0:o}}return i}function xr(t){return typeof t=="number"?t:bu(t)?P:+t}function jr(t){if(typeof t=="string")return t;if(nf(t))return l(t,jr)+"";if(bu(t))return Qi?Qi.call(t):"";var n=t+"";return"0"==n&&1/t==-N?"-0":n;
-	}function wr(t,n,r){var e=-1,u=c,i=t.length,o=true,f=[],l=f;if(r)o=false,u=a;else if(200<=i){if(u=n?null:fo(t))return M(u);o=false,u=R,l=new qt}else l=n?[]:f;t:for(;++e<i;){var s=t[e],h=n?n(s):s,s=r||0!==s?s:0;if(o&&h===h){for(var p=l.length;p--;)if(l[p]===h)continue t;n&&l.push(h),f.push(s)}else u(l,h,r)||(l!==f&&l.push(h),f.push(s))}return f}function mr(t,n,r,e){for(var u=t.length,i=e?u:-1;(e?i--:++i<u)&&n(t[i],i,t););return r?vr(t,e?0:i,e?i+1:u):vr(t,e?i+1:0,e?u:i)}function Ar(t,n){var r=t;return r instanceof Dt&&(r=r.value()),
-	h(n,function(t,n){return n.func.apply(n.thisArg,s([t],n.args))},r)}function kr(t,n,r){for(var e=-1,u=t.length;++e<u;)var i=i?s(wn(i,t[e],n,r),wn(t[e],i,n,r)):t[e];return i&&i.length?wr(i,n,r):[]}function Er(t,n,r){for(var e=-1,u=t.length,i=n.length,o={};++e<u;)r(o,t[e],e<i?n[e]:F);return o}function Or(t){return au(t)?t:[]}function Sr(t){return nf(t)?t:vo(t)}function Ir(t,n,r){var e=t.length;return r=r===F?e:r,!n&&r>=e?t:vr(t,n,r)}function Rr(t,n){if(n)return t.slice();var r=t.length,r=pi?pi(r):new t.constructor(r);
-	return t.copy(r),r}function zr(t){var n=new t.constructor(t.byteLength);return new hi(n).set(new hi(t)),n}function Wr(t,n){return new t.constructor(n?zr(t.buffer):t.buffer,t.byteOffset,t.length)}function Br(t,n){if(t!==n){var r=t!==F,e=null===t,u=t===t,i=bu(t),o=n!==F,f=null===n,c=n===n,a=bu(n);if(!f&&!a&&!i&&t>n||i&&o&&c&&!f&&!a||e&&o&&c||!r&&c||!u)return 1;if(!e&&!i&&!a&&t<n||a&&r&&u&&!e&&!i||f&&r&&u||!o&&u||!c)return-1}return 0}function Lr(t,n,r,e){var u=-1,i=t.length,o=r.length,f=-1,c=n.length,a=zi(i-o,0),l=Zu(c+a);
-	for(e=!e;++f<c;)l[f]=n[f];for(;++u<o;)(e||u<i)&&(l[r[u]]=t[u]);for(;a--;)l[f++]=t[u++];return l}function Ur(t,n,r,e){var u=-1,i=t.length,o=-1,f=r.length,c=-1,a=n.length,l=zi(i-f,0),s=Zu(l+a);for(e=!e;++u<l;)s[u]=t[u];for(l=u;++c<a;)s[l+c]=n[c];for(;++o<f;)(e||u<i)&&(s[l+r[o]]=t[u++]);return s}function Cr(t,n){var r=-1,e=t.length;for(n||(n=Zu(e));++r<e;)n[r]=t[r];return n}function Mr(t,n,r,e){var u=!r;r||(r={});for(var i=-1,o=n.length;++i<o;){var f=n[i],c=e?e(r[f],t[f],f,r,t):F;c===F&&(c=t[f]),u?vn(r,f,c):sn(r,f,c);
-	}return r}function Dr(t,n){return Mr(t,ao(t),n)}function Tr(t,n){return function(r,u){var i=nf(r)?e:pn,o=n?n():{};return i(r,t,_e(u,2),o)}}function $r(t){return lr(function(n,r){var e=-1,u=r.length,i=1<u?r[u-1]:F,o=2<u?r[2]:F,i=3<t.length&&typeof i=="function"?(u--,i):F;for(o&&Ae(r[0],r[1],o)&&(i=3>u?F:i,u=1),n=Ju(n);++e<u;)(o=r[e])&&t(n,o,e,i);return n})}function Fr(t,n){return function(r,e){if(null==r)return r;if(!cu(r))return t(r,e);for(var u=r.length,i=n?u:-1,o=Ju(r);(n?i--:++i<u)&&false!==e(o[i],i,o););
-	return r}}function Nr(t){return function(n,r,e){var u=-1,i=Ju(n);e=e(n);for(var o=e.length;o--;){var f=e[t?o:++u];if(false===r(i[f],f,i))break}return n}}function Pr(t,n,r){function e(){return(this&&this!==Pt&&this instanceof e?i:t).apply(u?r:this,arguments)}var u=1&n,i=Vr(t);return e}function Zr(t){return function(n){n=Eu(n);var r=Wt.test(n)?$(n):F,e=r?r[0]:n.charAt(0);return n=r?Ir(r,1).join(""):n.slice(1),e[t]()+n}}function qr(t){return function(n){return h(Uu(Lu(n).replace(St,"")),t,"")}}function Vr(t){
-	return function(){var n=arguments;switch(n.length){case 0:return new t;case 1:return new t(n[0]);case 2:return new t(n[0],n[1]);case 3:return new t(n[0],n[1],n[2]);case 4:return new t(n[0],n[1],n[2],n[3]);case 5:return new t(n[0],n[1],n[2],n[3],n[4]);case 6:return new t(n[0],n[1],n[2],n[3],n[4],n[5]);case 7:return new t(n[0],n[1],n[2],n[3],n[4],n[5],n[6])}var r=Xi(t.prototype),n=t.apply(r,n);return _u(n)?n:r}}function Kr(t,n,e){function u(){for(var o=arguments.length,f=Zu(o),c=o,a=pe(u);c--;)f[c]=arguments[c];
-	return c=3>o&&f[0]!==a&&f[o-1]!==a?[]:C(f,a),o-=c.length,o<e?ue(t,n,Yr,u.placeholder,F,f,c,F,F,e-o):r(this&&this!==Pt&&this instanceof u?i:t,this,f)}var i=Vr(t);return u}function Gr(t){return function(n,r,e){var u=Ju(n);if(!cu(n)){var i=_e(r,3);n=Iu(n),r=function(t){return i(u[t],t,u)}}return r=t(n,r,e),-1<r?u[i?n[r]:r]:F}}function Jr(t){return le(function(n){var r=n.length,e=r,u=Mt.prototype.thru;for(t&&n.reverse();e--;){var i=n[e];if(typeof i!="function")throw new Qu("Expected a function");if(u&&!o&&"wrapper"==he(i))var o=new Mt([],true);
-	}for(e=o?e:r;++e<r;)var i=n[e],u=he(i),f="wrapper"==u?co(i):F,o=f&&Ee(f[0])&&424==f[1]&&!f[4].length&&1==f[9]?o[he(f[0])].apply(o,f[3]):1==i.length&&Ee(i)?o[u]():o.thru(i);return function(){var t=arguments,e=t[0];if(o&&1==t.length&&nf(e)&&200<=e.length)return o.plant(e).value();for(var u=0,t=r?n[u].apply(this,t):e;++u<r;)t=n[u].call(this,t);return t}})}function Yr(t,n,r,e,u,i,o,f,c,a){function l(){for(var d=arguments.length,y=Zu(d),b=d;b--;)y[b]=arguments[b];if(_){var x,j=pe(l),b=y.length;for(x=0;b--;)y[b]===j&&++x;
-	}if(e&&(y=Lr(y,e,u,_)),i&&(y=Ur(y,i,o,_)),d-=x,_&&d<a)return j=C(y,j),ue(t,n,Yr,l.placeholder,r,y,j,f,c,a-d);if(j=h?r:this,b=p?j[t]:t,d=y.length,f){x=y.length;for(var w=Wi(f.length,x),m=Cr(y);w--;){var A=f[w];y[w]=me(A,x)?m[A]:F}}else v&&1<d&&y.reverse();return s&&c<d&&(y.length=c),this&&this!==Pt&&this instanceof l&&(b=g||Vr(b)),b.apply(j,y)}var s=128&n,h=1&n,p=2&n,_=24&n,v=512&n,g=p?F:Vr(t);return l}function Hr(t,n){return function(r,e){return Cn(r,t,n(e))}}function Qr(t,n){return function(r,e){
-	var u;if(r===F&&e===F)return n;if(r!==F&&(u=r),e!==F){if(u===F)return e;typeof r=="string"||typeof e=="string"?(r=jr(r),e=jr(e)):(r=xr(r),e=xr(e)),u=t(r,e)}return u}}function Xr(t){return le(function(n){return n=l(n,S(_e())),lr(function(e){var u=this;return t(n,function(t){return r(t,u,e)})})})}function te(t,n){n=n===F?" ":jr(n);var r=n.length;return 2>r?r?ar(n,t):n:(r=ar(n,Ai(t/T(n))),Wt.test(n)?Ir($(r),0,t).join(""):r.slice(0,t))}function ne(t,n,e,u){function i(){for(var n=-1,c=arguments.length,a=-1,l=u.length,s=Zu(l+c),h=this&&this!==Pt&&this instanceof i?f:t;++a<l;)s[a]=u[a];
-	for(;c--;)s[a++]=arguments[++n];return r(h,o?e:this,s)}var o=1&n,f=Vr(t);return i}function re(t){return function(n,r,e){e&&typeof e!="number"&&Ae(n,r,e)&&(r=e=F),n=ju(n),r===F?(r=n,n=0):r=ju(r),e=e===F?n<r?1:-1:ju(e);var u=-1;r=zi(Ai((r-n)/(e||1)),0);for(var i=Zu(r);r--;)i[t?r:++u]=n,n+=e;return i}}function ee(t){return function(n,r){return typeof n=="string"&&typeof r=="string"||(n=Au(n),r=Au(r)),t(n,r)}}function ue(t,n,r,e,u,i,o,f,c,a){var l=8&n,s=l?o:F;o=l?F:o;var h=l?i:F;return i=l?F:i,n=(n|(l?32:64))&~(l?64:32),
-	4&n||(n&=-4),u=[t,n,u,h,s,i,o,f,c,a],r=r.apply(F,u),Ee(t)&&ho(r,u),r.placeholder=e,We(r,t,n)}function ie(t){var n=Gu[t];return function(t,r){if(t=Au(t),r=Wi(wu(r),292)){var e=(Eu(t)+"e").split("e"),e=n(e[0]+"e"+(+e[1]+r)),e=(Eu(e)+"e").split("e");return+(e[0]+"e"+(+e[1]-r))}return n(t)}}function oe(t){return function(n){var r=Et(n);return"[object Map]"==r?L(n):"[object Set]"==r?D(n):O(n,t(n))}}function fe(t,n,r,e,u,i,o,f){var c=2&n;if(!c&&typeof t!="function")throw new Qu("Expected a function");var a=e?e.length:0;
-	if(a||(n&=-97,e=u=F),o=o===F?o:zi(wu(o),0),f=f===F?f:wu(f),a-=u?u.length:0,64&n){var l=e,s=u;e=u=F}var h=c?F:co(t);return i=[t,n,r,e,u,l,s,i,o,f],h&&(r=i[1],t=h[1],n=r|t,e=128==t&&8==r||128==t&&256==r&&i[7].length<=h[8]||384==t&&h[7].length<=h[8]&&8==r,131>n||e)&&(1&t&&(i[2]=h[2],n|=1&r?0:4),(r=h[3])&&(e=i[3],i[3]=e?Lr(e,r,h[4]):r,i[4]=e?C(i[3],"__lodash_placeholder__"):h[4]),(r=h[5])&&(e=i[5],i[5]=e?Ur(e,r,h[6]):r,i[6]=e?C(i[5],"__lodash_placeholder__"):h[6]),(r=h[7])&&(i[7]=r),128&t&&(i[8]=null==i[8]?h[8]:Wi(i[8],h[8])),
-	null==i[9]&&(i[9]=h[9]),i[0]=h[0],i[1]=n),t=i[0],n=i[1],r=i[2],e=i[3],u=i[4],f=i[9]=null==i[9]?c?0:t.length:zi(i[9]-a,0),!f&&24&n&&(n&=-25),We((h?uo:ho)(n&&1!=n?8==n||16==n?Kr(t,n,f):32!=n&&33!=n||u.length?Yr.apply(F,i):ne(t,n,r,e):Pr(t,n,r),i),t,n)}function ce(t,n,r,e,u,i){var o=2&u,f=t.length,c=n.length;if(f!=c&&!(o&&c>f))return false;if((c=i.get(t))&&i.get(n))return c==n;var c=-1,a=true,l=1&u?new qt:F;for(i.set(t,n),i.set(n,t);++c<f;){var s=t[c],h=n[c];if(e)var p=o?e(h,s,c,n,t,i):e(s,h,c,t,n,i);if(p!==F){
-	if(p)continue;a=false;break}if(l){if(!_(n,function(t,n){if(!R(l,n)&&(s===t||r(s,t,e,u,i)))return l.push(n)})){a=false;break}}else if(s!==h&&!r(s,h,e,u,i)){a=false;break}}return i.delete(t),i.delete(n),a}function ae(t,n,r,e,u,i,o){switch(r){case"[object DataView]":if(t.byteLength!=n.byteLength||t.byteOffset!=n.byteOffset)break;t=t.buffer,n=n.buffer;case"[object ArrayBuffer]":if(t.byteLength!=n.byteLength||!e(new hi(t),new hi(n)))break;return true;case"[object Boolean]":case"[object Date]":case"[object Number]":
-	return fu(+t,+n);case"[object Error]":return t.name==n.name&&t.message==n.message;case"[object RegExp]":case"[object String]":return t==n+"";case"[object Map]":var f=L;case"[object Set]":if(f||(f=M),t.size!=n.size&&!(2&i))break;return(r=o.get(t))?r==n:(i|=1,o.set(t,n),n=ce(f(t),f(n),e,u,i,o),o.delete(t),n);case"[object Symbol]":if(Hi)return Hi.call(t)==Hi.call(n)}return false}function le(t){return _o(Re(t,F,Fe),t+"")}function se(t){return zn(t,Iu,ao)}function he(t){for(var n=t.name+"",r=Zi[n],e=ui.call(Zi,n)?r.length:0;e--;){
-	var u=r[e],i=u.func;if(null==i||i==t)return u.name}return n}function pe(t){return(ui.call(Ot,"placeholder")?Ot:t).placeholder}function _e(){var t=Ot.iteratee||Du,t=t===Du?Gn:t;return arguments.length?t(arguments[0],arguments[1]):t}function ve(t,n){var r=t.__data__,e=typeof n;return("string"==e||"number"==e||"symbol"==e||"boolean"==e?"__proto__"!==n:null===n)?r[typeof n=="string"?"string":"hash"]:r.map}function ge(t){for(var n=Iu(t),r=n.length;r--;){var e=n[r],u=t[e];n[r]=[e,u,u===u&&!_u(u)]}return n;
-	}function de(t,n){var r=null==t?F:t[n];return Zn(r)?r:F}function ye(t,n,r){n=ke(n,t)?[n]:Sr(n);for(var e=-1,u=n.length,i=false;++e<u;){var o=Ue(n[e]);if(!(i=null!=t&&r(t,o)))break;t=t[o]}return i||++e!=u?i:(u=t?t.length:0,!!u&&pu(u)&&me(o,u)&&(nf(t)||tf(t)))}function be(t){var n=t.length,r=t.constructor(n);return n&&"string"==typeof t[0]&&ui.call(t,"index")&&(r.index=t.index,r.input=t.input),r}function xe(t){return typeof t.constructor!="function"||Oe(t)?{}:Xi(_i(t))}function je(r,e,u,i){var o=r.constructor;
-	switch(e){case"[object ArrayBuffer]":return zr(r);case"[object Boolean]":case"[object Date]":return new o(+r);case"[object DataView]":return e=i?zr(r.buffer):r.buffer,new r.constructor(e,r.byteOffset,r.byteLength);case"[object Float32Array]":case"[object Float64Array]":case"[object Int8Array]":case"[object Int16Array]":case"[object Int32Array]":case"[object Uint8Array]":case"[object Uint8ClampedArray]":case"[object Uint16Array]":case"[object Uint32Array]":return Wr(r,i);case"[object Map]":return e=i?u(L(r),true):L(r),
-	h(e,t,new r.constructor);case"[object Number]":case"[object String]":return new o(r);case"[object RegExp]":return e=new r.constructor(r.source,gt.exec(r)),e.lastIndex=r.lastIndex,e;case"[object Set]":return e=i?u(M(r),true):M(r),h(e,n,new r.constructor);case"[object Symbol]":return Hi?Ju(Hi.call(r)):{}}}function we(t){return nf(t)||tf(t)||!!(bi&&t&&t[bi])}function me(t,n){return n=null==n?9007199254740991:n,!!n&&(typeof t=="number"||jt.test(t))&&-1<t&&0==t%1&&t<n}function Ae(t,n,r){if(!_u(r))return false;
-	var e=typeof n;return!!("number"==e?cu(r)&&me(n,r.length):"string"==e&&n in r)&&fu(r[n],t)}function ke(t,n){if(nf(t))return false;var r=typeof t;return!("number"!=r&&"symbol"!=r&&"boolean"!=r&&null!=t&&!bu(t))||(rt.test(t)||!nt.test(t)||null!=n&&t in Ju(n))}function Ee(t){var n=he(t),r=Ot[n];return typeof r=="function"&&n in Dt.prototype&&(t===r||(n=co(r),!!n&&t===n[0]))}function Oe(t){var n=t&&t.constructor;return t===(typeof n=="function"&&n.prototype||ti)}function Se(t,n){return function(r){return null!=r&&(r[t]===n&&(n!==F||t in Ju(r)));
-	}}function Ie(t,n,r,e,u,i){return _u(t)&&_u(n)&&(i.set(n,t),tr(t,n,F,Ie,i),i.delete(n)),t}function Re(t,n,e){return n=zi(n===F?t.length-1:n,0),function(){for(var u=arguments,i=-1,o=zi(u.length-n,0),f=Zu(o);++i<o;)f[i]=u[n+i];for(i=-1,o=Zu(n+1);++i<n;)o[i]=u[i];return o[n]=e(f),r(t,this,o)}}function ze(t,n){return 1==n.length?t:Rn(t,vr(n,0,-1))}function We(t,n,r){var e=n+"";n=_o;var u,i=Me;return u=(u=e.match(st))?u[1].split(ht):[],r=i(u,r),(i=r.length)&&(u=i-1,r[u]=(1<i?"& ":"")+r[u],r=r.join(2<i?", ":" "),
-	e=e.replace(lt,"{\n/* [wrapped with "+r+"] */\n")),n(t,e)}function Be(t){var n=0,r=0;return function(){var e=Bi(),u=16-(e-r);if(r=e,0<u){if(500<=++n)return arguments[0]}else n=0;return t.apply(F,arguments)}}function Le(t,n){var r=-1,e=t.length,u=e-1;for(n=n===F?e:n;++r<n;){var e=cr(r,u),i=t[e];t[e]=t[r],t[r]=i}return t.length=n,t}function Ue(t){if(typeof t=="string"||bu(t))return t;var n=t+"";return"0"==n&&1/t==-N?"-0":n}function Ce(t){if(null!=t){try{return ei.call(t)}catch(t){}return t+""}return"";
-	}function Me(t,n){return u(Z,function(r){var e="_."+r[0];n&r[1]&&!c(t,e)&&t.push(e)}),t.sort()}function De(t){if(t instanceof Dt)return t.clone();var n=new Mt(t.__wrapped__,t.__chain__);return n.__actions__=Cr(t.__actions__),n.__index__=t.__index__,n.__values__=t.__values__,n}function Te(t,n,r){var e=t?t.length:0;return e?(r=null==r?0:wu(r),0>r&&(r=zi(e+r,0)),g(t,_e(n,3),r)):-1}function $e(t,n,r){var e=t?t.length:0;if(!e)return-1;var u=e-1;return r!==F&&(u=wu(r),u=0>r?zi(e+u,0):Wi(u,e-1)),g(t,_e(n,3),u,true);
-	}function Fe(t){return t&&t.length?En(t,1):[]}function Ne(t){return t&&t.length?t[0]:F}function Pe(t){var n=t?t.length:0;return n?t[n-1]:F}function Ze(t,n){return t&&t.length&&n&&n.length?or(t,n):t}function qe(t){return t?Ci.call(t):t}function Ve(t){if(!t||!t.length)return[];var n=0;return t=f(t,function(t){if(au(t))return n=zi(t.length,n),true}),E(n,function(n){return l(t,j(n))})}function Ke(t,n){if(!t||!t.length)return[];var e=Ve(t);return null==n?e:l(e,function(t){return r(n,F,t)})}function Ge(t){
-	return t=Ot(t),t.__chain__=true,t}function Je(t,n){return n(t)}function Ye(){return this}function He(t,n){return(nf(t)?u:to)(t,_e(n,3))}function Qe(t,n){return(nf(t)?i:no)(t,_e(n,3))}function Xe(t,n){return(nf(t)?l:Hn)(t,_e(n,3))}function tu(t,n,r){return n=r?F:n,n=t&&null==n?t.length:n,fe(t,128,F,F,F,F,n)}function nu(t,n){var r;if(typeof n!="function")throw new Qu("Expected a function");return t=wu(t),function(){return 0<--t&&(r=n.apply(this,arguments)),1>=t&&(n=F),r}}function ru(t,n,r){return n=r?F:n,
-	t=fe(t,8,F,F,F,F,F,n),t.placeholder=ru.placeholder,t}function eu(t,n,r){return n=r?F:n,t=fe(t,16,F,F,F,F,F,n),t.placeholder=eu.placeholder,t}function uu(t,n,r){function e(n){var r=c,e=a;return c=a=F,_=n,s=t.apply(e,r)}function u(t){var r=t-p;return t-=_,p===F||r>=n||0>r||g&&t>=l}function i(){var t=Po();if(u(t))return o(t);var r,e=po;r=t-_,t=n-(t-p),r=g?Wi(t,l-r):t,h=e(i,r)}function o(t){return h=F,d&&c?e(t):(c=a=F,s)}function f(){var t=Po(),r=u(t);if(c=arguments,a=this,p=t,r){if(h===F)return _=t=p,
-	h=po(i,n),v?e(t):s;if(g)return h=po(i,n),e(p)}return h===F&&(h=po(i,n)),s}var c,a,l,s,h,p,_=0,v=false,g=false,d=true;if(typeof t!="function")throw new Qu("Expected a function");return n=Au(n)||0,_u(r)&&(v=!!r.leading,l=(g="maxWait"in r)?zi(Au(r.maxWait)||0,n):l,d="trailing"in r?!!r.trailing:d),f.cancel=function(){h!==F&&oo(h),_=0,c=p=a=h=F},f.flush=function(){return h===F?s:o(Po())},f}function iu(t,n){function r(){var e=arguments,u=n?n.apply(this,e):e[0],i=r.cache;return i.has(u)?i.get(u):(e=t.apply(this,e),
-	r.cache=i.set(u,e)||i,e)}if(typeof t!="function"||n&&typeof n!="function")throw new Qu("Expected a function");return r.cache=new(iu.Cache||Zt),r}function ou(t){if(typeof t!="function")throw new Qu("Expected a function");return function(){var n=arguments;switch(n.length){case 0:return!t.call(this);case 1:return!t.call(this,n[0]);case 2:return!t.call(this,n[0],n[1]);case 3:return!t.call(this,n[0],n[1],n[2])}return!t.apply(this,n)}}function fu(t,n){return t===n||t!==t&&n!==n}function cu(t){return null!=t&&pu(t.length)&&!su(t);
-	}function au(t){return vu(t)&&cu(t)}function lu(t){return!!vu(t)&&("[object Error]"==fi.call(t)||typeof t.message=="string"&&typeof t.name=="string")}function su(t){return t=_u(t)?fi.call(t):"","[object Function]"==t||"[object GeneratorFunction]"==t||"[object Proxy]"==t}function hu(t){return typeof t=="number"&&t==wu(t)}function pu(t){return typeof t=="number"&&-1<t&&0==t%1&&9007199254740991>=t}function _u(t){var n=typeof t;return null!=t&&("object"==n||"function"==n)}function vu(t){return null!=t&&typeof t=="object";
-	}function gu(t){return typeof t=="number"||vu(t)&&"[object Number]"==fi.call(t)}function du(t){return!(!vu(t)||"[object Object]"!=fi.call(t))&&(t=_i(t),null===t||(t=ui.call(t,"constructor")&&t.constructor,typeof t=="function"&&t instanceof t&&ei.call(t)==oi))}function yu(t){return typeof t=="string"||!nf(t)&&vu(t)&&"[object String]"==fi.call(t)}function bu(t){return typeof t=="symbol"||vu(t)&&"[object Symbol]"==fi.call(t)}function xu(t){if(!t)return[];if(cu(t))return yu(t)?$(t):Cr(t);if(vi&&t[vi]){t=t[vi]();
-	for(var n,r=[];!(n=t.next()).done;)r.push(n.value);return r}return n=Et(t),("[object Map]"==n?L:"[object Set]"==n?M:Wu)(t)}function ju(t){return t?(t=Au(t),t===N||t===-N?1.7976931348623157e308*(0>t?-1:1):t===t?t:0):0===t?t:0}function wu(t){t=ju(t);var n=t%1;return t===t?n?t-n:t:0}function mu(t){return t?dn(wu(t),0,4294967295):0}function Au(t){if(typeof t=="number")return t;if(bu(t))return P;if(_u(t)&&(t=typeof t.valueOf=="function"?t.valueOf():t,t=_u(t)?t+"":t),typeof t!="string")return 0===t?t:+t;
-	t=t.replace(ft,"");var n=yt.test(t);return n||xt.test(t)?$t(t.slice(2),n?2:8):dt.test(t)?P:+t}function ku(t){return Mr(t,Ru(t))}function Eu(t){return null==t?"":jr(t)}function Ou(t,n,r){return t=null==t?F:Rn(t,n),t===F?r:t}function Su(t,n){return null!=t&&ye(t,n,Ln)}function Iu(t){return cu(t)?tn(t):Jn(t)}function Ru(t){if(cu(t))t=tn(t,true);else if(_u(t)){var n,r=Oe(t),e=[];for(n in t)("constructor"!=n||!r&&ui.call(t,n))&&e.push(n);t=e}else{if(n=[],null!=t)for(r in Ju(t))n.push(r);t=n}return t}function zu(t,n){
-	return null==t?{}:ur(t,zn(t,Ru,lo),_e(n))}function Wu(t){return t?I(t,Iu(t)):[]}function Bu(t){return Uf(Eu(t).toLowerCase())}function Lu(t){return(t=Eu(t))&&t.replace(wt,nn).replace(It,"")}function Uu(t,n,r){return t=Eu(t),n=r?F:n,n===F?Bt.test(t)?t.match(zt)||[]:t.match(pt)||[]:t.match(n)||[]}function Cu(t){return function(){return t}}function Mu(t){return t}function Du(t){return Gn(typeof t=="function"?t:yn(t,true))}function Tu(t,n,r){var e=Iu(n),i=In(n,e);null!=r||_u(n)&&(i.length||!e.length)||(r=n,
-	n=t,t=this,i=In(n,Iu(n)));var o=!(_u(r)&&"chain"in r&&!r.chain),f=su(t);return u(i,function(r){var e=n[r];t[r]=e,f&&(t.prototype[r]=function(){var n=this.__chain__;if(o||n){var r=t(this.__wrapped__);return(r.__actions__=Cr(this.__actions__)).push({func:e,args:arguments,thisArg:t}),r.__chain__=n,r}return e.apply(t,s([this.value()],arguments))})}),t}function $u(){}function Fu(t){return ke(t)?j(Ue(t)):ir(t)}function Nu(){return[]}function Pu(){return false}kt=kt?un.defaults(Pt.Object(),kt,un.pick(Pt,Lt)):Pt;
-	var Zu=kt.Array,qu=kt.Date,Vu=kt.Error,Ku=kt.Function,Gu=kt.Math,Ju=kt.Object,Yu=kt.RegExp,Hu=kt.String,Qu=kt.TypeError,Xu=Zu.prototype,ti=Ju.prototype,ni=kt["__core-js_shared__"],ri=function(){var t=/[^.]+$/.exec(ni&&ni.keys&&ni.keys.IE_PROTO||"");return t?"Symbol(src)_1."+t:""}(),ei=Ku.prototype.toString,ui=ti.hasOwnProperty,ii=0,oi=ei.call(Ju),fi=ti.toString,ci=Pt._,ai=Yu("^"+ei.call(ui).replace(it,"\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g,"$1.*?")+"$"),li=Vt?kt.Buffer:F,si=kt.Symbol,hi=kt.Uint8Array,pi=li?li.f:F,_i=U(Ju.getPrototypeOf,Ju),vi=si?si.iterator:F,gi=Ju.create,di=ti.propertyIsEnumerable,yi=Xu.splice,bi=si?si.isConcatSpreadable:F,xi=function(){
-	try{var t=de(Ju,"defineProperty");return t({},"",{}),t}catch(t){}}(),ji=kt.clearTimeout!==Pt.clearTimeout&&kt.clearTimeout,wi=qu&&qu.now!==Pt.Date.now&&qu.now,mi=kt.setTimeout!==Pt.setTimeout&&kt.setTimeout,Ai=Gu.ceil,ki=Gu.floor,Ei=Ju.getOwnPropertySymbols,Oi=li?li.isBuffer:F,Si=kt.isFinite,Ii=Xu.join,Ri=U(Ju.keys,Ju),zi=Gu.max,Wi=Gu.min,Bi=qu.now,Li=kt.parseInt,Ui=Gu.random,Ci=Xu.reverse,Mi=de(kt,"DataView"),Di=de(kt,"Map"),Ti=de(kt,"Promise"),$i=de(kt,"Set"),Fi=de(kt,"WeakMap"),Ni=de(Ju,"create"),Pi=Fi&&new Fi,Zi={},qi=Ce(Mi),Vi=Ce(Di),Ki=Ce(Ti),Gi=Ce($i),Ji=Ce(Fi),Yi=si?si.prototype:F,Hi=Yi?Yi.valueOf:F,Qi=Yi?Yi.toString:F,Xi=function(){
-	function t(){}return function(n){return _u(n)?gi?gi(n):(t.prototype=n,n=new t,t.prototype=F,n):{}}}();Ot.templateSettings={escape:Q,evaluate:X,interpolate:tt,variable:"",imports:{_:Ot}},Ot.prototype=Rt.prototype,Ot.prototype.constructor=Ot,Mt.prototype=Xi(Rt.prototype),Mt.prototype.constructor=Mt,Dt.prototype=Xi(Rt.prototype),Dt.prototype.constructor=Dt,Ft.prototype.clear=function(){this.__data__=Ni?Ni(null):{},this.size=0},Ft.prototype.delete=function(t){return t=this.has(t)&&delete this.__data__[t],
-	this.size-=t?1:0,t},Ft.prototype.get=function(t){var n=this.__data__;return Ni?(t=n[t],"__lodash_hash_undefined__"===t?F:t):ui.call(n,t)?n[t]:F},Ft.prototype.has=function(t){var n=this.__data__;return Ni?n[t]!==F:ui.call(n,t)},Ft.prototype.set=function(t,n){var r=this.__data__;return this.size+=this.has(t)?0:1,r[t]=Ni&&n===F?"__lodash_hash_undefined__":n,this},Nt.prototype.clear=function(){this.__data__=[],this.size=0},Nt.prototype.delete=function(t){var n=this.__data__;return t=hn(n,t),!(0>t)&&(t==n.length-1?n.pop():yi.call(n,t,1),
-	--this.size,true)},Nt.prototype.get=function(t){var n=this.__data__;return t=hn(n,t),0>t?F:n[t][1]},Nt.prototype.has=function(t){return-1<hn(this.__data__,t)},Nt.prototype.set=function(t,n){var r=this.__data__,e=hn(r,t);return 0>e?(++this.size,r.push([t,n])):r[e][1]=n,this},Zt.prototype.clear=function(){this.size=0,this.__data__={hash:new Ft,map:new(Di||Nt),string:new Ft}},Zt.prototype.delete=function(t){return t=ve(this,t).delete(t),this.size-=t?1:0,t},Zt.prototype.get=function(t){return ve(this,t).get(t);
-	},Zt.prototype.has=function(t){return ve(this,t).has(t)},Zt.prototype.set=function(t,n){var r=ve(this,t),e=r.size;return r.set(t,n),this.size+=r.size==e?0:1,this},qt.prototype.add=qt.prototype.push=function(t){return this.__data__.set(t,"__lodash_hash_undefined__"),this},qt.prototype.has=function(t){return this.__data__.has(t)},Kt.prototype.clear=function(){this.__data__=new Nt,this.size=0},Kt.prototype.delete=function(t){var n=this.__data__;return t=n.delete(t),this.size=n.size,t},Kt.prototype.get=function(t){
-	return this.__data__.get(t)},Kt.prototype.has=function(t){return this.__data__.has(t)},Kt.prototype.set=function(t,n){var r=this.__data__;if(r instanceof Nt){var e=r.__data__;if(!Di||199>e.length)return e.push([t,n]),this.size=++r.size,this;r=this.__data__=new Zt(e)}return r.set(t,n),this.size=r.size,this};var to=Fr(On),no=Fr(Sn,true),ro=Nr(),eo=Nr(true),uo=Pi?function(t,n){return Pi.set(t,n),t}:Mu,io=xi?function(t,n){return xi(t,"toString",{configurable:true,enumerable:false,value:Cu(n),writable:true})}:Mu,oo=ji||function(t){
-	return Pt.clearTimeout(t)},fo=$i&&1/M(new $i([,-0]))[1]==N?function(t){return new $i(t)}:$u,co=Pi?function(t){return Pi.get(t)}:$u,ao=Ei?U(Ei,Ju):Nu,lo=Ei?function(t){for(var n=[];t;)s(n,ao(t)),t=_i(t);return n}:Nu;(Mi&&"[object DataView]"!=Et(new Mi(new ArrayBuffer(1)))||Di&&"[object Map]"!=Et(new Di)||Ti&&"[object Promise]"!=Et(Ti.resolve())||$i&&"[object Set]"!=Et(new $i)||Fi&&"[object WeakMap]"!=Et(new Fi))&&(Et=function(t){var n=fi.call(t);if(t=(t="[object Object]"==n?t.constructor:F)?Ce(t):F)switch(t){
-	case qi:return"[object DataView]";case Vi:return"[object Map]";case Ki:return"[object Promise]";case Gi:return"[object Set]";case Ji:return"[object WeakMap]"}return n});var so=ni?su:Pu,ho=Be(uo),po=mi||function(t,n){return Pt.setTimeout(t,n)},_o=Be(io),vo=function(t){t=iu(t,function(t){return 500===n.size&&n.clear(),t});var n=t.cache;return t}(function(t){t=Eu(t);var n=[];return et.test(t)&&n.push(""),t.replace(ut,function(t,r,e,u){n.push(e?u.replace(_t,"$1"):r||t)}),n}),go=lr(function(t,n){return au(t)?wn(t,En(n,1,au,true)):[];
-	}),yo=lr(function(t,n){var r=Pe(n);return au(r)&&(r=F),au(t)?wn(t,En(n,1,au,true),_e(r,2)):[]}),bo=lr(function(t,n){var r=Pe(n);return au(r)&&(r=F),au(t)?wn(t,En(n,1,au,true),F,r):[]}),xo=lr(function(t){var n=l(t,Or);return n.length&&n[0]===t[0]?Un(n):[]}),jo=lr(function(t){var n=Pe(t),r=l(t,Or);return n===Pe(r)?n=F:r.pop(),r.length&&r[0]===t[0]?Un(r,_e(n,2)):[]}),wo=lr(function(t){var n=Pe(t),r=l(t,Or);return n===Pe(r)?n=F:r.pop(),r.length&&r[0]===t[0]?Un(r,F,n):[]}),mo=lr(Ze),Ao=le(function(t,n){var r=t?t.length:0,e=gn(t,n);
-	return fr(t,l(n,function(t){return me(t,r)?+t:t}).sort(Br)),e}),ko=lr(function(t){return wr(En(t,1,au,true))}),Eo=lr(function(t){var n=Pe(t);return au(n)&&(n=F),wr(En(t,1,au,true),_e(n,2))}),Oo=lr(function(t){var n=Pe(t);return au(n)&&(n=F),wr(En(t,1,au,true),F,n)}),So=lr(function(t,n){return au(t)?wn(t,n):[]}),Io=lr(function(t){return kr(f(t,au))}),Ro=lr(function(t){var n=Pe(t);return au(n)&&(n=F),kr(f(t,au),_e(n,2))}),zo=lr(function(t){var n=Pe(t);return au(n)&&(n=F),kr(f(t,au),F,n)}),Wo=lr(Ve),Bo=lr(function(t){
-	var n=t.length,n=1<n?t[n-1]:F,n=typeof n=="function"?(t.pop(),n):F;return Ke(t,n)}),Lo=le(function(t){function n(n){return gn(n,t)}var r=t.length,e=r?t[0]:0,u=this.__wrapped__;return!(1<r||this.__actions__.length)&&u instanceof Dt&&me(e)?(u=u.slice(e,+e+(r?1:0)),u.__actions__.push({func:Je,args:[n],thisArg:F}),new Mt(u,this.__chain__).thru(function(t){return r&&!t.length&&t.push(F),t})):this.thru(n)}),Uo=Tr(function(t,n,r){ui.call(t,r)?++t[r]:vn(t,r,1)}),Co=Gr(Te),Mo=Gr($e),Do=Tr(function(t,n,r){
-	ui.call(t,r)?t[r].push(n):vn(t,r,[n])}),To=lr(function(t,n,e){var u=-1,i=typeof n=="function",o=ke(n),f=cu(t)?Zu(t.length):[];return to(t,function(t){var c=i?n:o&&null!=t?t[n]:F;f[++u]=c?r(c,t,e):Mn(t,n,e)}),f}),$o=Tr(function(t,n,r){vn(t,r,n)}),Fo=Tr(function(t,n,r){t[r?0:1].push(n)},function(){return[[],[]]}),No=lr(function(t,n){if(null==t)return[];var r=n.length;return 1<r&&Ae(t,n[0],n[1])?n=[]:2<r&&Ae(n[0],n[1],n[2])&&(n=[n[0]]),rr(t,En(n,1),[])}),Po=wi||function(){return Pt.Date.now()},Zo=lr(function(t,n,r){
-	var e=1;if(r.length)var u=C(r,pe(Zo)),e=32|e;return fe(t,e,n,r,u)}),qo=lr(function(t,n,r){var e=3;if(r.length)var u=C(r,pe(qo)),e=32|e;return fe(n,e,t,r,u)}),Vo=lr(function(t,n){return jn(t,1,n)}),Ko=lr(function(t,n,r){return jn(t,Au(n)||0,r)});iu.Cache=Zt;var Go=lr(function(t,n){n=1==n.length&&nf(n[0])?l(n[0],S(_e())):l(En(n,1),S(_e()));var e=n.length;return lr(function(u){for(var i=-1,o=Wi(u.length,e);++i<o;)u[i]=n[i].call(this,u[i]);return r(t,this,u)})}),Jo=lr(function(t,n){return fe(t,32,F,n,C(n,pe(Jo)));
-	}),Yo=lr(function(t,n){return fe(t,64,F,n,C(n,pe(Yo)))}),Ho=le(function(t,n){return fe(t,256,F,F,F,n)}),Qo=ee(Wn),Xo=ee(function(t,n){return t>=n}),tf=Dn(function(){return arguments}())?Dn:function(t){return vu(t)&&ui.call(t,"callee")&&!di.call(t,"callee")},nf=Zu.isArray,rf=Gt?S(Gt):Tn,ef=Oi||Pu,uf=Jt?S(Jt):$n,of=Yt?S(Yt):Nn,ff=Ht?S(Ht):qn,cf=Qt?S(Qt):Vn,af=Xt?S(Xt):Kn,lf=ee(Yn),sf=ee(function(t,n){return t<=n}),hf=$r(function(t,n){if(Oe(n)||cu(n))Mr(n,Iu(n),t);else for(var r in n)ui.call(n,r)&&sn(t,r,n[r]);
-	}),pf=$r(function(t,n){Mr(n,Ru(n),t)}),_f=$r(function(t,n,r,e){Mr(n,Ru(n),t,e)}),vf=$r(function(t,n,r,e){Mr(n,Iu(n),t,e)}),gf=le(gn),df=lr(function(t){return t.push(F,an),r(_f,F,t)}),yf=lr(function(t){return t.push(F,Ie),r(mf,F,t)}),bf=Hr(function(t,n,r){t[n]=r},Cu(Mu)),xf=Hr(function(t,n,r){ui.call(t,n)?t[n].push(r):t[n]=[r]},_e),jf=lr(Mn),wf=$r(function(t,n,r){tr(t,n,r)}),mf=$r(function(t,n,r,e){tr(t,n,r,e)}),Af=le(function(t,n){return null==t?{}:(n=l(n,Ue),er(t,wn(zn(t,Ru,lo),n)))}),kf=le(function(t,n){
-	return null==t?{}:er(t,l(n,Ue))}),Ef=oe(Iu),Of=oe(Ru),Sf=qr(function(t,n,r){return n=n.toLowerCase(),t+(r?Bu(n):n)}),If=qr(function(t,n,r){return t+(r?"-":"")+n.toLowerCase()}),Rf=qr(function(t,n,r){return t+(r?" ":"")+n.toLowerCase()}),zf=Zr("toLowerCase"),Wf=qr(function(t,n,r){return t+(r?"_":"")+n.toLowerCase()}),Bf=qr(function(t,n,r){return t+(r?" ":"")+Uf(n)}),Lf=qr(function(t,n,r){return t+(r?" ":"")+n.toUpperCase()}),Uf=Zr("toUpperCase"),Cf=lr(function(t,n){try{return r(t,F,n)}catch(t){return lu(t)?t:new Vu(t);
-	}}),Mf=le(function(t,n){return u(n,function(n){n=Ue(n),vn(t,n,Zo(t[n],t))}),t}),Df=Jr(),Tf=Jr(true),$f=lr(function(t,n){return function(r){return Mn(r,t,n)}}),Ff=lr(function(t,n){return function(r){return Mn(t,r,n)}}),Nf=Xr(l),Pf=Xr(o),Zf=Xr(_),qf=re(),Vf=re(true),Kf=Qr(function(t,n){return t+n},0),Gf=ie("ceil"),Jf=Qr(function(t,n){return t/n},1),Yf=ie("floor"),Hf=Qr(function(t,n){return t*n},1),Qf=ie("round"),Xf=Qr(function(t,n){return t-n},0);return Ot.after=function(t,n){if(typeof n!="function")throw new Qu("Expected a function");
-	return t=wu(t),function(){if(1>--t)return n.apply(this,arguments)}},Ot.ary=tu,Ot.assign=hf,Ot.assignIn=pf,Ot.assignInWith=_f,Ot.assignWith=vf,Ot.at=gf,Ot.before=nu,Ot.bind=Zo,Ot.bindAll=Mf,Ot.bindKey=qo,Ot.castArray=function(){if(!arguments.length)return[];var t=arguments[0];return nf(t)?t:[t]},Ot.chain=Ge,Ot.chunk=function(t,n,r){if(n=(r?Ae(t,n,r):n===F)?1:zi(wu(n),0),r=t?t.length:0,!r||1>n)return[];for(var e=0,u=0,i=Zu(Ai(r/n));e<r;)i[u++]=vr(t,e,e+=n);return i},Ot.compact=function(t){for(var n=-1,r=t?t.length:0,e=0,u=[];++n<r;){
-	var i=t[n];i&&(u[e++]=i)}return u},Ot.concat=function(){var t=arguments.length;if(!t)return[];for(var n=Zu(t-1),r=arguments[0];t--;)n[t-1]=arguments[t];return s(nf(r)?Cr(r):[r],En(n,1))},Ot.cond=function(t){var n=t?t.length:0,e=_e();return t=n?l(t,function(t){if("function"!=typeof t[1])throw new Qu("Expected a function");return[e(t[0]),t[1]]}):[],lr(function(e){for(var u=-1;++u<n;){var i=t[u];if(r(i[0],this,e))return r(i[1],this,e)}})},Ot.conforms=function(t){return bn(yn(t,true))},Ot.constant=Cu,Ot.countBy=Uo,
-	Ot.create=function(t,n){var r=Xi(t);return n?_n(r,n):r},Ot.curry=ru,Ot.curryRight=eu,Ot.debounce=uu,Ot.defaults=df,Ot.defaultsDeep=yf,Ot.defer=Vo,Ot.delay=Ko,Ot.difference=go,Ot.differenceBy=yo,Ot.differenceWith=bo,Ot.drop=function(t,n,r){var e=t?t.length:0;return e?(n=r||n===F?1:wu(n),vr(t,0>n?0:n,e)):[]},Ot.dropRight=function(t,n,r){var e=t?t.length:0;return e?(n=r||n===F?1:wu(n),n=e-n,vr(t,0,0>n?0:n)):[]},Ot.dropRightWhile=function(t,n){return t&&t.length?mr(t,_e(n,3),true,true):[]},Ot.dropWhile=function(t,n){
-	return t&&t.length?mr(t,_e(n,3),true):[]},Ot.fill=function(t,n,r,e){var u=t?t.length:0;if(!u)return[];for(r&&typeof r!="number"&&Ae(t,n,r)&&(r=0,e=u),u=t.length,r=wu(r),0>r&&(r=-r>u?0:u+r),e=e===F||e>u?u:wu(e),0>e&&(e+=u),e=r>e?0:mu(e);r<e;)t[r++]=n;return t},Ot.filter=function(t,n){return(nf(t)?f:kn)(t,_e(n,3))},Ot.flatMap=function(t,n){return En(Xe(t,n),1)},Ot.flatMapDeep=function(t,n){return En(Xe(t,n),N)},Ot.flatMapDepth=function(t,n,r){return r=r===F?1:wu(r),En(Xe(t,n),r)},Ot.flatten=Fe,Ot.flattenDeep=function(t){
-	return t&&t.length?En(t,N):[]},Ot.flattenDepth=function(t,n){return t&&t.length?(n=n===F?1:wu(n),En(t,n)):[]},Ot.flip=function(t){return fe(t,512)},Ot.flow=Df,Ot.flowRight=Tf,Ot.fromPairs=function(t){for(var n=-1,r=t?t.length:0,e={};++n<r;){var u=t[n];e[u[0]]=u[1]}return e},Ot.functions=function(t){return null==t?[]:In(t,Iu(t))},Ot.functionsIn=function(t){return null==t?[]:In(t,Ru(t))},Ot.groupBy=Do,Ot.initial=function(t){return t&&t.length?vr(t,0,-1):[]},Ot.intersection=xo,Ot.intersectionBy=jo,Ot.intersectionWith=wo,
-	Ot.invert=bf,Ot.invertBy=xf,Ot.invokeMap=To,Ot.iteratee=Du,Ot.keyBy=$o,Ot.keys=Iu,Ot.keysIn=Ru,Ot.map=Xe,Ot.mapKeys=function(t,n){var r={};return n=_e(n,3),On(t,function(t,e,u){vn(r,n(t,e,u),t)}),r},Ot.mapValues=function(t,n){var r={};return n=_e(n,3),On(t,function(t,e,u){vn(r,e,n(t,e,u))}),r},Ot.matches=function(t){return Qn(yn(t,true))},Ot.matchesProperty=function(t,n){return Xn(t,yn(n,true))},Ot.memoize=iu,Ot.merge=wf,Ot.mergeWith=mf,Ot.method=$f,Ot.methodOf=Ff,Ot.mixin=Tu,Ot.negate=ou,Ot.nthArg=function(t){
-	return t=wu(t),lr(function(n){return nr(n,t)})},Ot.omit=Af,Ot.omitBy=function(t,n){return zu(t,ou(_e(n)))},Ot.once=function(t){return nu(2,t)},Ot.orderBy=function(t,n,r,e){return null==t?[]:(nf(n)||(n=null==n?[]:[n]),r=e?F:r,nf(r)||(r=null==r?[]:[r]),rr(t,n,r))},Ot.over=Nf,Ot.overArgs=Go,Ot.overEvery=Pf,Ot.overSome=Zf,Ot.partial=Jo,Ot.partialRight=Yo,Ot.partition=Fo,Ot.pick=kf,Ot.pickBy=zu,Ot.property=Fu,Ot.propertyOf=function(t){return function(n){return null==t?F:Rn(t,n)}},Ot.pull=mo,Ot.pullAll=Ze,
-	Ot.pullAllBy=function(t,n,r){return t&&t.length&&n&&n.length?or(t,n,_e(r,2)):t},Ot.pullAllWith=function(t,n,r){return t&&t.length&&n&&n.length?or(t,n,F,r):t},Ot.pullAt=Ao,Ot.range=qf,Ot.rangeRight=Vf,Ot.rearg=Ho,Ot.reject=function(t,n){return(nf(t)?f:kn)(t,ou(_e(n,3)))},Ot.remove=function(t,n){var r=[];if(!t||!t.length)return r;var e=-1,u=[],i=t.length;for(n=_e(n,3);++e<i;){var o=t[e];n(o,e,t)&&(r.push(o),u.push(e))}return fr(t,u),r},Ot.rest=function(t,n){if(typeof t!="function")throw new Qu("Expected a function");
-	return n=n===F?n:wu(n),lr(t,n)},Ot.reverse=qe,Ot.sampleSize=function(t,n,r){return n=(r?Ae(t,n,r):n===F)?1:wu(n),(nf(t)?fn:hr)(t,n)},Ot.set=function(t,n,r){return null==t?t:pr(t,n,r)},Ot.setWith=function(t,n,r,e){return e=typeof e=="function"?e:F,null==t?t:pr(t,n,r,e)},Ot.shuffle=function(t){return(nf(t)?cn:_r)(t)},Ot.slice=function(t,n,r){var e=t?t.length:0;return e?(r&&typeof r!="number"&&Ae(t,n,r)?(n=0,r=e):(n=null==n?0:wu(n),r=r===F?e:wu(r)),vr(t,n,r)):[]},Ot.sortBy=No,Ot.sortedUniq=function(t){
-	return t&&t.length?br(t):[]},Ot.sortedUniqBy=function(t,n){return t&&t.length?br(t,_e(n,2)):[]},Ot.split=function(t,n,r){return r&&typeof r!="number"&&Ae(t,n,r)&&(n=r=F),r=r===F?4294967295:r>>>0,r?(t=Eu(t))&&(typeof n=="string"||null!=n&&!ff(n))&&(n=jr(n),!n&&Wt.test(t))?Ir($(t),0,r):t.split(n,r):[]},Ot.spread=function(t,n){if(typeof t!="function")throw new Qu("Expected a function");return n=n===F?0:zi(wu(n),0),lr(function(e){var u=e[n];return e=Ir(e,0,n),u&&s(e,u),r(t,this,e)})},Ot.tail=function(t){
-	var n=t?t.length:0;return n?vr(t,1,n):[]},Ot.take=function(t,n,r){return t&&t.length?(n=r||n===F?1:wu(n),vr(t,0,0>n?0:n)):[]},Ot.takeRight=function(t,n,r){var e=t?t.length:0;return e?(n=r||n===F?1:wu(n),n=e-n,vr(t,0>n?0:n,e)):[]},Ot.takeRightWhile=function(t,n){return t&&t.length?mr(t,_e(n,3),false,true):[]},Ot.takeWhile=function(t,n){return t&&t.length?mr(t,_e(n,3)):[]},Ot.tap=function(t,n){return n(t),t},Ot.throttle=function(t,n,r){var e=true,u=true;if(typeof t!="function")throw new Qu("Expected a function");
-	return _u(r)&&(e="leading"in r?!!r.leading:e,u="trailing"in r?!!r.trailing:u),uu(t,n,{leading:e,maxWait:n,trailing:u})},Ot.thru=Je,Ot.toArray=xu,Ot.toPairs=Ef,Ot.toPairsIn=Of,Ot.toPath=function(t){return nf(t)?l(t,Ue):bu(t)?[t]:Cr(vo(t))},Ot.toPlainObject=ku,Ot.transform=function(t,n,r){var e=nf(t),i=e||ef(t)||af(t);if(n=_e(n,4),null==r){var o=t&&t.constructor;r=i?e?new o:[]:_u(t)&&su(o)?Xi(_i(t)):{}}return(i?u:On)(t,function(t,e,u){return n(r,t,e,u)}),r},Ot.unary=function(t){return tu(t,1)},Ot.union=ko,
-	Ot.unionBy=Eo,Ot.unionWith=Oo,Ot.uniq=function(t){return t&&t.length?wr(t):[]},Ot.uniqBy=function(t,n){return t&&t.length?wr(t,_e(n,2)):[]},Ot.uniqWith=function(t,n){return t&&t.length?wr(t,F,n):[]},Ot.unset=function(t,n){var r;if(null==t)r=true;else{r=t;var e=n,e=ke(e,r)?[e]:Sr(e);r=ze(r,e),e=Ue(Pe(e)),r=!(null!=r&&ui.call(r,e))||delete r[e]}return r},Ot.unzip=Ve,Ot.unzipWith=Ke,Ot.update=function(t,n,r){return null==t?t:pr(t,n,(typeof r=="function"?r:Mu)(Rn(t,n)),void 0)},Ot.updateWith=function(t,n,r,e){
-	return e=typeof e=="function"?e:F,null!=t&&(t=pr(t,n,(typeof r=="function"?r:Mu)(Rn(t,n)),e)),t},Ot.values=Wu,Ot.valuesIn=function(t){return null==t?[]:I(t,Ru(t))},Ot.without=So,Ot.words=Uu,Ot.wrap=function(t,n){return n=null==n?Mu:n,Jo(n,t)},Ot.xor=Io,Ot.xorBy=Ro,Ot.xorWith=zo,Ot.zip=Wo,Ot.zipObject=function(t,n){return Er(t||[],n||[],sn)},Ot.zipObjectDeep=function(t,n){return Er(t||[],n||[],pr)},Ot.zipWith=Bo,Ot.entries=Ef,Ot.entriesIn=Of,Ot.extend=pf,Ot.extendWith=_f,Tu(Ot,Ot),Ot.add=Kf,Ot.attempt=Cf,
-	Ot.camelCase=Sf,Ot.capitalize=Bu,Ot.ceil=Gf,Ot.clamp=function(t,n,r){return r===F&&(r=n,n=F),r!==F&&(r=Au(r),r=r===r?r:0),n!==F&&(n=Au(n),n=n===n?n:0),dn(Au(t),n,r)},Ot.clone=function(t){return yn(t,false,true)},Ot.cloneDeep=function(t){return yn(t,true,true)},Ot.cloneDeepWith=function(t,n){return yn(t,true,true,n)},Ot.cloneWith=function(t,n){return yn(t,false,true,n)},Ot.conformsTo=function(t,n){return null==n||xn(t,n,Iu(n))},Ot.deburr=Lu,Ot.defaultTo=function(t,n){return null==t||t!==t?n:t},Ot.divide=Jf,Ot.endsWith=function(t,n,r){
-	t=Eu(t),n=jr(n);var e=t.length,e=r=r===F?e:dn(wu(r),0,e);return r-=n.length,0<=r&&t.slice(r,e)==n},Ot.eq=fu,Ot.escape=function(t){return(t=Eu(t))&&H.test(t)?t.replace(J,rn):t},Ot.escapeRegExp=function(t){return(t=Eu(t))&&ot.test(t)?t.replace(it,"\\$&"):t},Ot.every=function(t,n,r){var e=nf(t)?o:mn;return r&&Ae(t,n,r)&&(n=F),e(t,_e(n,3))},Ot.find=Co,Ot.findIndex=Te,Ot.findKey=function(t,n){return v(t,_e(n,3),On)},Ot.findLast=Mo,Ot.findLastIndex=$e,Ot.findLastKey=function(t,n){return v(t,_e(n,3),Sn);
-	},Ot.floor=Yf,Ot.forEach=He,Ot.forEachRight=Qe,Ot.forIn=function(t,n){return null==t?t:ro(t,_e(n,3),Ru)},Ot.forInRight=function(t,n){return null==t?t:eo(t,_e(n,3),Ru)},Ot.forOwn=function(t,n){return t&&On(t,_e(n,3))},Ot.forOwnRight=function(t,n){return t&&Sn(t,_e(n,3))},Ot.get=Ou,Ot.gt=Qo,Ot.gte=Xo,Ot.has=function(t,n){return null!=t&&ye(t,n,Bn)},Ot.hasIn=Su,Ot.head=Ne,Ot.identity=Mu,Ot.includes=function(t,n,r,e){return t=cu(t)?t:Wu(t),r=r&&!e?wu(r):0,e=t.length,0>r&&(r=zi(e+r,0)),yu(t)?r<=e&&-1<t.indexOf(n,r):!!e&&-1<d(t,n,r);
-	},Ot.indexOf=function(t,n,r){var e=t?t.length:0;return e?(r=null==r?0:wu(r),0>r&&(r=zi(e+r,0)),d(t,n,r)):-1},Ot.inRange=function(t,n,r){return n=ju(n),r===F?(r=n,n=0):r=ju(r),t=Au(t),t>=Wi(n,r)&&t<zi(n,r)},Ot.invoke=jf,Ot.isArguments=tf,Ot.isArray=nf,Ot.isArrayBuffer=rf,Ot.isArrayLike=cu,Ot.isArrayLikeObject=au,Ot.isBoolean=function(t){return true===t||false===t||vu(t)&&"[object Boolean]"==fi.call(t)},Ot.isBuffer=ef,Ot.isDate=uf,Ot.isElement=function(t){return null!=t&&1===t.nodeType&&vu(t)&&!du(t)},Ot.isEmpty=function(t){
-	if(cu(t)&&(nf(t)||typeof t=="string"||typeof t.splice=="function"||ef(t)||af(t)||tf(t)))return!t.length;var n=Et(t);if("[object Map]"==n||"[object Set]"==n)return!t.size;if(Oe(t))return!Jn(t).length;for(var r in t)if(ui.call(t,r))return false;return true},Ot.isEqual=function(t,n){return Fn(t,n)},Ot.isEqualWith=function(t,n,r){var e=(r=typeof r=="function"?r:F)?r(t,n):F;return e===F?Fn(t,n,r):!!e},Ot.isError=lu,Ot.isFinite=function(t){return typeof t=="number"&&Si(t)},Ot.isFunction=su,Ot.isInteger=hu,Ot.isLength=pu,
-	Ot.isMap=of,Ot.isMatch=function(t,n){return t===n||Pn(t,n,ge(n))},Ot.isMatchWith=function(t,n,r){return r=typeof r=="function"?r:F,Pn(t,n,ge(n),r)},Ot.isNaN=function(t){return gu(t)&&t!=+t},Ot.isNative=function(t){if(so(t))throw new Vu("Unsupported core-js use. Try https://github.com/es-shims.");return Zn(t)},Ot.isNil=function(t){return null==t},Ot.isNull=function(t){return null===t},Ot.isNumber=gu,Ot.isObject=_u,Ot.isObjectLike=vu,Ot.isPlainObject=du,Ot.isRegExp=ff,Ot.isSafeInteger=function(t){return hu(t)&&-9007199254740991<=t&&9007199254740991>=t;
-	},Ot.isSet=cf,Ot.isString=yu,Ot.isSymbol=bu,Ot.isTypedArray=af,Ot.isUndefined=function(t){return t===F},Ot.isWeakMap=function(t){return vu(t)&&"[object WeakMap]"==Et(t)},Ot.isWeakSet=function(t){return vu(t)&&"[object WeakSet]"==fi.call(t)},Ot.join=function(t,n){return t?Ii.call(t,n):""},Ot.kebabCase=If,Ot.last=Pe,Ot.lastIndexOf=function(t,n,r){var e=t?t.length:0;if(!e)return-1;var u=e;if(r!==F&&(u=wu(r),u=0>u?zi(e+u,0):Wi(u,e-1)),n===n){for(r=u+1;r--&&t[r]!==n;);t=r}else t=g(t,b,u,true);return t},
-	Ot.lowerCase=Rf,Ot.lowerFirst=zf,Ot.lt=lf,Ot.lte=sf,Ot.max=function(t){return t&&t.length?An(t,Mu,Wn):F},Ot.maxBy=function(t,n){return t&&t.length?An(t,_e(n,2),Wn):F},Ot.mean=function(t){return x(t,Mu)},Ot.meanBy=function(t,n){return x(t,_e(n,2))},Ot.min=function(t){return t&&t.length?An(t,Mu,Yn):F},Ot.minBy=function(t,n){return t&&t.length?An(t,_e(n,2),Yn):F},Ot.stubArray=Nu,Ot.stubFalse=Pu,Ot.stubObject=function(){return{}},Ot.stubString=function(){return""},Ot.stubTrue=function(){return true},Ot.multiply=Hf,
-	Ot.nth=function(t,n){return t&&t.length?nr(t,wu(n)):F},Ot.noConflict=function(){return Pt._===this&&(Pt._=ci),this},Ot.noop=$u,Ot.now=Po,Ot.pad=function(t,n,r){t=Eu(t);var e=(n=wu(n))?T(t):0;return!n||e>=n?t:(n=(n-e)/2,te(ki(n),r)+t+te(Ai(n),r))},Ot.padEnd=function(t,n,r){t=Eu(t);var e=(n=wu(n))?T(t):0;return n&&e<n?t+te(n-e,r):t},Ot.padStart=function(t,n,r){t=Eu(t);var e=(n=wu(n))?T(t):0;return n&&e<n?te(n-e,r)+t:t},Ot.parseInt=function(t,n,r){return r||null==n?n=0:n&&(n=+n),Li(Eu(t).replace(ct,""),n||0);
-	},Ot.random=function(t,n,r){if(r&&typeof r!="boolean"&&Ae(t,n,r)&&(n=r=F),r===F&&(typeof n=="boolean"?(r=n,n=F):typeof t=="boolean"&&(r=t,t=F)),t===F&&n===F?(t=0,n=1):(t=ju(t),n===F?(n=t,t=0):n=ju(n)),t>n){var e=t;t=n,n=e}return r||t%1||n%1?(r=Ui(),Wi(t+r*(n-t+Tt("1e-"+((r+"").length-1))),n)):cr(t,n)},Ot.reduce=function(t,n,r){var e=nf(t)?h:m,u=3>arguments.length;return e(t,_e(n,4),r,u,to)},Ot.reduceRight=function(t,n,r){var e=nf(t)?p:m,u=3>arguments.length;return e(t,_e(n,4),r,u,no)},Ot.repeat=function(t,n,r){
-	return n=(r?Ae(t,n,r):n===F)?1:wu(n),ar(Eu(t),n)},Ot.replace=function(){var t=arguments,n=Eu(t[0]);return 3>t.length?n:n.replace(t[1],t[2])},Ot.result=function(t,n,r){n=ke(n,t)?[n]:Sr(n);var e=-1,u=n.length;for(u||(t=F,u=1);++e<u;){var i=null==t?F:t[Ue(n[e])];i===F&&(e=u,i=r),t=su(i)?i.call(t):i}return t},Ot.round=Qf,Ot.runInContext=w,Ot.sample=function(t){return(nf(t)?on:sr)(t)},Ot.size=function(t){if(null==t)return 0;if(cu(t))return yu(t)?T(t):t.length;var n=Et(t);return"[object Map]"==n||"[object Set]"==n?t.size:Jn(t).length;
-	},Ot.snakeCase=Wf,Ot.some=function(t,n,r){var e=nf(t)?_:gr;return r&&Ae(t,n,r)&&(n=F),e(t,_e(n,3))},Ot.sortedIndex=function(t,n){return dr(t,n)},Ot.sortedIndexBy=function(t,n,r){return yr(t,n,_e(r,2))},Ot.sortedIndexOf=function(t,n){var r=t?t.length:0;if(r){var e=dr(t,n);if(e<r&&fu(t[e],n))return e}return-1},Ot.sortedLastIndex=function(t,n){return dr(t,n,true)},Ot.sortedLastIndexBy=function(t,n,r){return yr(t,n,_e(r,2),true)},Ot.sortedLastIndexOf=function(t,n){if(t&&t.length){var r=dr(t,n,true)-1;if(fu(t[r],n))return r;
-	}return-1},Ot.startCase=Bf,Ot.startsWith=function(t,n,r){return t=Eu(t),r=dn(wu(r),0,t.length),n=jr(n),t.slice(r,r+n.length)==n},Ot.subtract=Xf,Ot.sum=function(t){return t&&t.length?k(t,Mu):0},Ot.sumBy=function(t,n){return t&&t.length?k(t,_e(n,2)):0},Ot.template=function(t,n,r){var e=Ot.templateSettings;r&&Ae(t,n,r)&&(n=F),t=Eu(t),n=_f({},n,e,an),r=_f({},n.imports,e.imports,an);var u,i,o=Iu(r),f=I(r,o),c=0;r=n.interpolate||mt;var a="__p+='";r=Yu((n.escape||mt).source+"|"+r.source+"|"+(r===tt?vt:mt).source+"|"+(n.evaluate||mt).source+"|$","g");
-	var l="sourceURL"in n?"//# sourceURL="+n.sourceURL+"\n":"";if(t.replace(r,function(n,r,e,o,f,l){return e||(e=o),a+=t.slice(c,l).replace(At,B),r&&(u=true,a+="'+__e("+r+")+'"),f&&(i=true,a+="';"+f+";\n__p+='"),e&&(a+="'+((__t=("+e+"))==null?'':__t)+'"),c=l+n.length,n}),a+="';",(n=n.variable)||(a="with(obj){"+a+"}"),a=(i?a.replace(q,""):a).replace(V,"$1").replace(K,"$1;"),a="function("+(n||"obj")+"){"+(n?"":"obj||(obj={});")+"var __t,__p=''"+(u?",__e=_.escape":"")+(i?",__j=Array.prototype.join;function print(){__p+=__j.call(arguments,'')}":";")+a+"return __p}",
-	n=Cf(function(){return Ku(o,l+"return "+a).apply(F,f)}),n.source=a,lu(n))throw n;return n},Ot.times=function(t,n){if(t=wu(t),1>t||9007199254740991<t)return[];var r=4294967295,e=Wi(t,4294967295);for(n=_e(n),t-=4294967295,e=E(e,n);++r<t;)n(r);return e},Ot.toFinite=ju,Ot.toInteger=wu,Ot.toLength=mu,Ot.toLower=function(t){return Eu(t).toLowerCase()},Ot.toNumber=Au,Ot.toSafeInteger=function(t){return dn(wu(t),-9007199254740991,9007199254740991)},Ot.toString=Eu,Ot.toUpper=function(t){return Eu(t).toUpperCase();
-	},Ot.trim=function(t,n,r){return(t=Eu(t))&&(r||n===F)?t.replace(ft,""):t&&(n=jr(n))?(t=$(t),r=$(n),n=z(t,r),r=W(t,r)+1,Ir(t,n,r).join("")):t},Ot.trimEnd=function(t,n,r){return(t=Eu(t))&&(r||n===F)?t.replace(at,""):t&&(n=jr(n))?(t=$(t),n=W(t,$(n))+1,Ir(t,0,n).join("")):t},Ot.trimStart=function(t,n,r){return(t=Eu(t))&&(r||n===F)?t.replace(ct,""):t&&(n=jr(n))?(t=$(t),n=z(t,$(n)),Ir(t,n).join("")):t},Ot.truncate=function(t,n){var r=30,e="...";if(_u(n))var u="separator"in n?n.separator:u,r="length"in n?wu(n.length):r,e="omission"in n?jr(n.omission):e;
-	t=Eu(t);var i=t.length;if(Wt.test(t))var o=$(t),i=o.length;if(r>=i)return t;if(i=r-T(e),1>i)return e;if(r=o?Ir(o,0,i).join(""):t.slice(0,i),u===F)return r+e;if(o&&(i+=r.length-i),ff(u)){if(t.slice(i).search(u)){var f=r;for(u.global||(u=Yu(u.source,Eu(gt.exec(u))+"g")),u.lastIndex=0;o=u.exec(f);)var c=o.index;r=r.slice(0,c===F?i:c)}}else t.indexOf(jr(u),i)!=i&&(u=r.lastIndexOf(u),-1<u&&(r=r.slice(0,u)));return r+e},Ot.unescape=function(t){return(t=Eu(t))&&Y.test(t)?t.replace(G,en):t},Ot.uniqueId=function(t){
-	var n=++ii;return Eu(t)+n},Ot.upperCase=Lf,Ot.upperFirst=Uf,Ot.each=He,Ot.eachRight=Qe,Ot.first=Ne,Tu(Ot,function(){var t={};return On(Ot,function(n,r){ui.call(Ot.prototype,r)||(t[r]=n)}),t}(),{chain:false}),Ot.VERSION="4.16.4",u("bind bindKey curry curryRight partial partialRight".split(" "),function(t){Ot[t].placeholder=Ot}),u(["drop","take"],function(t,n){Dt.prototype[t]=function(r){var e=this.__filtered__;if(e&&!n)return new Dt(this);r=r===F?1:zi(wu(r),0);var u=this.clone();return e?u.__takeCount__=Wi(r,u.__takeCount__):u.__views__.push({
-	size:Wi(r,4294967295),type:t+(0>u.__dir__?"Right":"")}),u},Dt.prototype[t+"Right"]=function(n){return this.reverse()[t](n).reverse()}}),u(["filter","map","takeWhile"],function(t,n){var r=n+1,e=1==r||3==r;Dt.prototype[t]=function(t){var n=this.clone();return n.__iteratees__.push({iteratee:_e(t,3),type:r}),n.__filtered__=n.__filtered__||e,n}}),u(["head","last"],function(t,n){var r="take"+(n?"Right":"");Dt.prototype[t]=function(){return this[r](1).value()[0]}}),u(["initial","tail"],function(t,n){var r="drop"+(n?"":"Right");
-	Dt.prototype[t]=function(){return this.__filtered__?new Dt(this):this[r](1)}}),Dt.prototype.compact=function(){return this.filter(Mu)},Dt.prototype.find=function(t){return this.filter(t).head()},Dt.prototype.findLast=function(t){return this.reverse().find(t)},Dt.prototype.invokeMap=lr(function(t,n){return typeof t=="function"?new Dt(this):this.map(function(r){return Mn(r,t,n)})}),Dt.prototype.reject=function(t){return this.filter(ou(_e(t)))},Dt.prototype.slice=function(t,n){t=wu(t);var r=this;return r.__filtered__&&(0<t||0>n)?new Dt(r):(0>t?r=r.takeRight(-t):t&&(r=r.drop(t)),
-	n!==F&&(n=wu(n),r=0>n?r.dropRight(-n):r.take(n-t)),r)},Dt.prototype.takeRightWhile=function(t){return this.reverse().takeWhile(t).reverse()},Dt.prototype.toArray=function(){return this.take(4294967295)},On(Dt.prototype,function(t,n){var r=/^(?:filter|find|map|reject)|While$/.test(n),e=/^(?:head|last)$/.test(n),u=Ot[e?"take"+("last"==n?"Right":""):n],i=e||/^find/.test(n);u&&(Ot.prototype[n]=function(){function n(t){return t=u.apply(Ot,s([t],f)),e&&h?t[0]:t}var o=this.__wrapped__,f=e?[1]:arguments,c=o instanceof Dt,a=f[0],l=c||nf(o);
-	l&&r&&typeof a=="function"&&1!=a.length&&(c=l=false);var h=this.__chain__,p=!!this.__actions__.length,a=i&&!h,c=c&&!p;return!i&&l?(o=c?o:new Dt(this),o=t.apply(o,f),o.__actions__.push({func:Je,args:[n],thisArg:F}),new Mt(o,h)):a&&c?t.apply(this,f):(o=this.thru(n),a?e?o.value()[0]:o.value():o)})}),u("pop push shift sort splice unshift".split(" "),function(t){var n=Xu[t],r=/^(?:push|sort|unshift)$/.test(t)?"tap":"thru",e=/^(?:pop|shift)$/.test(t);Ot.prototype[t]=function(){var t=arguments;if(e&&!this.__chain__){
-	var u=this.value();return n.apply(nf(u)?u:[],t)}return this[r](function(r){return n.apply(nf(r)?r:[],t)})}}),On(Dt.prototype,function(t,n){var r=Ot[n];if(r){var e=r.name+"";(Zi[e]||(Zi[e]=[])).push({name:n,func:r})}}),Zi[Yr(F,2).name]=[{name:"wrapper",func:F}],Dt.prototype.clone=function(){var t=new Dt(this.__wrapped__);return t.__actions__=Cr(this.__actions__),t.__dir__=this.__dir__,t.__filtered__=this.__filtered__,t.__iteratees__=Cr(this.__iteratees__),t.__takeCount__=this.__takeCount__,t.__views__=Cr(this.__views__),
-	t},Dt.prototype.reverse=function(){if(this.__filtered__){var t=new Dt(this);t.__dir__=-1,t.__filtered__=true}else t=this.clone(),t.__dir__*=-1;return t},Dt.prototype.value=function(){var t,n=this.__wrapped__.value(),r=this.__dir__,e=nf(n),u=0>r,i=e?n.length:0;t=i;for(var o=this.__views__,f=0,c=-1,a=o.length;++c<a;){var l=o[c],s=l.size;switch(l.type){case"drop":f+=s;break;case"dropRight":t-=s;break;case"take":t=Wi(t,f+s);break;case"takeRight":f=zi(f,t-s)}}if(t={start:f,end:t},o=t.start,f=t.end,t=f-o,
-	u=u?f:o-1,o=this.__iteratees__,f=o.length,c=0,a=Wi(t,this.__takeCount__),!e||200>i||i==t&&a==t)return Ar(n,this.__actions__);e=[];t:for(;t--&&c<a;){for(u+=r,i=-1,l=n[u];++i<f;){var h=o[i],s=h.type,h=(0,h.iteratee)(l);if(2==s)l=h;else if(!h){if(1==s)continue t;break t}}e[c++]=l}return e},Ot.prototype.at=Lo,Ot.prototype.chain=function(){return Ge(this)},Ot.prototype.commit=function(){return new Mt(this.value(),this.__chain__)},Ot.prototype.next=function(){this.__values__===F&&(this.__values__=xu(this.value()));
-	var t=this.__index__>=this.__values__.length;return{done:t,value:t?F:this.__values__[this.__index__++]}},Ot.prototype.plant=function(t){for(var n,r=this;r instanceof Rt;){var e=De(r);e.__index__=0,e.__values__=F,n?u.__wrapped__=e:n=e;var u=e,r=r.__wrapped__}return u.__wrapped__=t,n},Ot.prototype.reverse=function(){var t=this.__wrapped__;return t instanceof Dt?(this.__actions__.length&&(t=new Dt(this)),t=t.reverse(),t.__actions__.push({func:Je,args:[qe],thisArg:F}),new Mt(t,this.__chain__)):this.thru(qe);
-	},Ot.prototype.toJSON=Ot.prototype.valueOf=Ot.prototype.value=function(){return Ar(this.__wrapped__,this.__actions__)},Ot.prototype.first=Ot.prototype.head,vi&&(Ot.prototype[vi]=Ye),Ot}(); true?(Pt._=un, !(__WEBPACK_AMD_DEFINE_RESULT__ = function(){return un}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))):qt?((qt.exports=un)._=un,Zt._=un):Pt._=un}).call(this);
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(/*! ./../webpack/buildin/module.js */ 291)(module)))
-
-/***/ },
-/* 439 */
-/*!**************************!*\
-  !*** ./NamedCounters.js ***!
-  \**************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _react = __webpack_require__(/*! react */ 1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
-	
-	var _fp = __webpack_require__(/*! lodash/fp */ 437);
-	
-	var _Counter = __webpack_require__(/*! ./Counter */ 434);
-	
-	var _Counter2 = _interopRequireDefault(_Counter);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var NamedCounter = function NamedCounter(_ref) {
-	    var scope = _ref.scope;
-	    var name = _ref.name;
-	    var handleXClick = _ref.handleXClick;
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        name,
-	        " ",
-	        _react2.default.createElement(_Counter2.default, { scope: scope }),
-	        " ",
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: handleXClick },
-	            "x"
-	        )
-	    );
-	};
-	NamedCounter = (0, _lean.connectLean)({
-	    // name and id are the scoped part of the state. Pick those up.
-	    mapState: (0, _fp.pick)(["name", "id"]),
-	    handlers: {
-	        handleXClick: function handleXClick(e, _1, _2, props) {
-	            e.preventDefault();
-	            props.onRemove(props.id);
-	        }
-	    }
-	})(NamedCounter);
-	
-	var NamedCounters = function NamedCounters(_ref2) {
-	    var counters = _ref2.counters;
-	    var handleNameChange = _ref2.handleNameChange;
-	    var newName = _ref2.newName;
-	    var addCounter = _ref2.addCounter;
-	    var removeCounter = _ref2.removeCounter;
-	    var scope = _ref2.scope;
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement("input", { onChange: handleNameChange, value: newName }),
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: addCounter, disabled: !newName },
-	            "add"
-	        ),
-	        Object.keys(counters).sort().map(function (counterId) {
-	            return _react2.default.createElement(NamedCounter, { key: counterId, scope: [scope, "counters", counterId], onRemove: removeCounter });
-	        })
-	    );
-	};
-	NamedCounters = (0, _lean.connectLean)({
-	    scope: "namedCounters",
-	    getInitialState: function getInitialState() {
-	        return {
-	            nextCounterId: 1,
-	            newName: "",
-	            counters: {}
-	        };
-	    },
-	
-	    handlers: {
-	        handleNameChange: function handleNameChange(e) {
-	            e.preventDefault();
-	            return { newName: e.target.value };
-	        },
-	        addCounter: function addCounter(e, _1, _2, props) {
-	            e.preventDefault();
-	
-	            return {
-	                newName: "",
-	                nextCounterId: function nextCounterId(i) {
-	                    return i + 1;
-	                },
-	                counters: _defineProperty({}, props.nextCounterId, {
-	                    id: props.nextCounterId,
-	                    name: props.newName
-	                })
-	            };
-	        },
-	        removeCounter: function removeCounter(counterId) {
-	            // Lean Redux works beautifully with curried functions. Such as
-	            // lodash/fp or Ramda. Without currying this would look like this:
-	            //     {counters: counters => omit(counterId, counters)}
-	            return { counters: (0, _fp.omit)(counterId) };
-	        }
-	    }
-	
-	})(NamedCounters);
-	
-	exports.default = NamedCounters;
-
-/***/ },
-/* 440 */
+/* 459 */
 /*!**********************************!*\
-  !*** ./MultipleNamedCounters.js ***!
+  !*** ../~/updeep/dist/ifElse.js ***!
   \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	var _update = __webpack_require__(/*! ./update */ 460);
 	
-	var _react2 = _interopRequireDefault(_react);
+	var _update2 = _interopRequireDefault(_update);
 	
-	var _NamedCounters = __webpack_require__(/*! ./NamedCounters */ 439);
+	var _wrap = __webpack_require__(/*! ./wrap */ 461);
 	
-	var _NamedCounters2 = _interopRequireDefault(_NamedCounters);
+	var _wrap2 = _interopRequireDefault(_wrap);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var MultipleNamedCounters = function MultipleNamedCounters() {
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement(
-	            "h3",
-	            null,
-	            "First"
-	        ),
-	        _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(_NamedCounters2.default, { scope: "multipleNamedCounters" })
-	        ),
-	        _react2.default.createElement(
-	            "h3",
-	            null,
-	            "Second"
-	        ),
-	        _react2.default.createElement(
-	            "p",
-	            null,
-	            "We can deeply scope this too."
-	        ),
-	        _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(_NamedCounters2.default, { scope: ["multi", "deep", "example"] })
-	        )
-	    );
-	};
+	function updateIfElse(predicate, trueUpdates, falseUpdates, object) {
+	  var test = typeof predicate === 'function' ? predicate(object) : predicate;
 	
-	exports.default = MultipleNamedCounters;
+	  var updates = test ? trueUpdates : falseUpdates;
+	
+	  return (0, _update2.default)(updates, object);
+	}
+	
+	exports.default = (0, _wrap2.default)(updateIfElse);
 
 /***/ },
-/* 441 */
-/*!******************!*\
-  !*** ./Async.js ***!
-  \******************/
+/* 460 */
+/*!**********************************!*\
+  !*** ../~/updeep/dist/update.js ***!
+  \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _react2 = _interopRequireDefault(_react);
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	var _wrap = __webpack_require__(/*! ./wrap */ 461);
+	
+	var _wrap2 = _interopRequireDefault(_wrap);
+	
+	var _isPlainObject = __webpack_require__(/*! lodash/isPlainObject */ 174);
+	
+	var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var Async = function Async(_ref) {
-	    var fetchAsync = _ref.fetchAsync;
-	    var data = _ref.data;
-	    var status = _ref.status;
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement(
-	            "p",
-	            null,
-	            "status: ",
-	            status
-	        ),
-	        _react2.default.createElement(
-	            "p",
-	            null,
-	            "data: ",
-	            data
-	        ),
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: fetchAsync },
-	            "fetch"
-	        )
-	    );
-	};
-	Async = (0, _lean.connectLean)({
-	    scope: "async",
-	    getInitialState: function getInitialState() {
-	        return {
-	            status: "waiting",
-	            data: "nodata"
-	        };
-	    },
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
-	    handlers: {
-	        setData: function setData(data) {
-	            return { data: data };
-	        },
-	        fetchAsync: function fetchAsync(e) {
-	            e.preventDefault();
+	function isEmpty(object) {
+	  return !Object.keys(object).length;
+	}
 	
-	            // Like redux-thunk. You can send multiple updates over time using
-	            // the update function. If you need to get the updated version of
-	            // the component props you can use the getProps function
-	            return (0, _lean.thunk)(function (update, getProps) {
-	                update({ status: "fetching" });
-	                setTimeout(function () {
-	                    update({ status: "done" });
-	                    getProps().setData("async fetched data!");
-	                }, 2000);
-	            });
-	        }
+	function reduce(object, callback, initialValue) {
+	  return Object.keys(object).reduce(function (acc, key) {
+	    return callback(acc, object[key], key);
+	  }, initialValue);
+	}
+	
+	function resolveUpdates(updates, object) {
+	  return reduce(updates, function (acc, value, key) {
+	    var updatedValue = value;
+	
+	    if (!Array.isArray(value) && value !== null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
+	      updatedValue = update(value, object[key]); // eslint-disable-line no-use-before-define
+	    } else if (typeof value === 'function') {
+	      updatedValue = value(object[key]);
 	    }
 	
-	})(Async);
+	    if (object[key] !== updatedValue) {
+	      acc[key] = updatedValue; // eslint-disable-line no-param-reassign
+	    }
 	
-	exports.default = Async;
+	    return acc;
+	  }, {});
+	}
+	
+	function updateArray(updates, object) {
+	  var newArray = [].concat(_toConsumableArray(object));
+	
+	  Object.keys(updates).forEach(function (key) {
+	    newArray[key] = updates[key];
+	  });
+	
+	  return newArray;
+	}
+	
+	/**
+	 * Recursively update an object or array.
+	 *
+	 * Can update with values:
+	 * update({ foo: 3 }, { foo: 1, bar: 2 });
+	 * // => { foo: 3, bar: 2 }
+	 *
+	 * Or with a function:
+	 * update({ foo: x => (x + 1) }, { foo: 2 });
+	 * // => { foo: 3 }
+	 *
+	 * @function
+	 * @name update
+	 * @param {Object|Function} updates
+	 * @param {Object|Array}    object to update
+	 * @return {Object|Array}   new object with modifications
+	 */
+	function update(updates, object) {
+	  if (typeof updates === 'function') {
+	    for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	      args[_key - 2] = arguments[_key];
+	    }
+	
+	    return updates.apply(undefined, [object].concat(args));
+	  }
+	
+	  if (!(0, _isPlainObject2.default)(updates)) {
+	    return updates;
+	  }
+	
+	  var defaultedObject = typeof object === 'undefined' || object === null ? {} : object;
+	
+	  var resolvedUpdates = resolveUpdates(updates, defaultedObject);
+	
+	  if (isEmpty(resolvedUpdates)) {
+	    return defaultedObject;
+	  }
+	
+	  if (Array.isArray(defaultedObject)) {
+	    return updateArray(resolvedUpdates, defaultedObject);
+	  }
+	
+	  return _extends({}, defaultedObject, resolvedUpdates);
+	}
+	
+	exports.default = (0, _wrap2.default)(update, 2);
 
 /***/ },
-/* 442 */
+/* 461 */
+/*!********************************!*\
+  !*** ../~/updeep/dist/wrap.js ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = wrap;
+	
+	var _curry = __webpack_require__(/*! ./util/curry */ 457);
+	
+	var _curry2 = _interopRequireDefault(_curry);
+	
+	var _freeze = __webpack_require__(/*! ./freeze */ 448);
+	
+	var _freeze2 = _interopRequireDefault(_freeze);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function wrap(func) {
+	  var length = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : func.length;
+	
+	  return (0, _curry2.default)(function () {
+	    return (0, _freeze2.default)(func.apply(undefined, arguments));
+	  }, length);
+	}
+
+/***/ },
+/* 462 */
+/*!*******************************!*\
+  !*** ../~/updeep/dist/map.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _update = __webpack_require__(/*! ./update */ 460);
+	
+	var _update2 = _interopRequireDefault(_update);
+	
+	var _wrap = __webpack_require__(/*! ./wrap */ 461);
+	
+	var _wrap2 = _interopRequireDefault(_wrap);
+	
+	var _forEach = __webpack_require__(/*! lodash/forEach */ 463);
+	
+	var _forEach2 = _interopRequireDefault(_forEach);
+	
+	var _map = __webpack_require__(/*! lodash/map */ 464);
+	
+	var _map2 = _interopRequireDefault(_map);
+	
+	var _mapValues = __webpack_require__(/*! lodash/mapValues */ 415);
+	
+	var _mapValues2 = _interopRequireDefault(_mapValues);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function shallowEqual(object, otherObject) {
+	  var equal = true;
+	  (0, _forEach2.default)(otherObject, function (value, key) {
+	    if (value !== object[key]) {
+	      equal = false;
+	
+	      // exit early
+	      return false;
+	    }
+	  });
+	
+	  return equal;
+	}
+	
+	function map(iteratee, object) {
+	  var updater = typeof iteratee === 'function' ? iteratee : (0, _update2.default)(iteratee);
+	
+	  var mapper = Array.isArray(object) ? _map2.default : _mapValues2.default;
+	
+	  var newObject = mapper(object, updater);
+	  var equal = shallowEqual(object, newObject);
+	
+	  return equal ? object : newObject;
+	}
+	
+	exports.default = (0, _wrap2.default)(map);
+
+/***/ },
+/* 463 */
+/*!******************************!*\
+  !*** ../~/lodash/forEach.js ***!
+  \******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var arrayEach = __webpack_require__(/*! ./_arrayEach */ 264),
+	    baseEach = __webpack_require__(/*! ./_baseEach */ 454),
+	    baseIteratee = __webpack_require__(/*! ./_baseIteratee */ 364),
+	    isArray = __webpack_require__(/*! ./isArray */ 251);
+	
+	/**
+	 * Iterates over elements of `collection` and invokes `iteratee` for each element.
+	 * The iteratee is invoked with three arguments: (value, index|key, collection).
+	 * Iteratee functions may exit iteration early by explicitly returning `false`.
+	 *
+	 * **Note:** As with other "Collections" methods, objects with a "length"
+	 * property are iterated like arrays. To avoid this behavior use `_.forIn`
+	 * or `_.forOwn` for object iteration.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @alias each
+	 * @category Collection
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @returns {Array|Object} Returns `collection`.
+	 * @see _.forEachRight
+	 * @example
+	 *
+	 * _.forEach([1, 2], function(value) {
+	 *   console.log(value);
+	 * });
+	 * // => Logs `1` then `2`.
+	 *
+	 * _.forEach({ 'a': 1, 'b': 2 }, function(value, key) {
+	 *   console.log(key);
+	 * });
+	 * // => Logs 'a' then 'b' (iteration order is not guaranteed).
+	 */
+	function forEach(collection, iteratee) {
+	  var func = isArray(collection) ? arrayEach : baseEach;
+	  return func(collection, baseIteratee(iteratee, 3));
+	}
+	
+	module.exports = forEach;
+
+
+/***/ },
+/* 464 */
 /*!**************************!*\
-  !*** ./AsyncAdvanced.js ***!
+  !*** ../~/lodash/map.js ***!
   \**************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	var arrayMap = __webpack_require__(/*! ./_arrayMap */ 389),
+	    baseIteratee = __webpack_require__(/*! ./_baseIteratee */ 364),
+	    baseMap = __webpack_require__(/*! ./_baseMap */ 465),
+	    isArray = __webpack_require__(/*! ./isArray */ 251);
+	
+	/**
+	 * Creates an array of values by running each element in `collection` thru
+	 * `iteratee`. The iteratee is invoked with three arguments:
+	 * (value, index|key, collection).
+	 *
+	 * Many lodash methods are guarded to work as iteratees for methods like
+	 * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
+	 *
+	 * The guarded methods are:
+	 * `ary`, `chunk`, `curry`, `curryRight`, `drop`, `dropRight`, `every`,
+	 * `fill`, `invert`, `parseInt`, `random`, `range`, `rangeRight`, `repeat`,
+	 * `sampleSize`, `slice`, `some`, `sortBy`, `split`, `take`, `takeRight`,
+	 * `template`, `trim`, `trimEnd`, `trimStart`, and `words`
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Collection
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} [iteratee=_.identity] The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 * @example
+	 *
+	 * function square(n) {
+	 *   return n * n;
+	 * }
+	 *
+	 * _.map([4, 8], square);
+	 * // => [16, 64]
+	 *
+	 * _.map({ 'a': 4, 'b': 8 }, square);
+	 * // => [16, 64] (iteration order is not guaranteed)
+	 *
+	 * var users = [
+	 *   { 'user': 'barney' },
+	 *   { 'user': 'fred' }
+	 * ];
+	 *
+	 * // The `_.property` iteratee shorthand.
+	 * _.map(users, 'user');
+	 * // => ['barney', 'fred']
+	 */
+	function map(collection, iteratee) {
+	  var func = isArray(collection) ? arrayMap : baseMap;
+	  return func(collection, baseIteratee(iteratee, 3));
+	}
+	
+	module.exports = map;
+
+
+/***/ },
+/* 465 */
+/*!*******************************!*\
+  !*** ../~/lodash/_baseMap.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var baseEach = __webpack_require__(/*! ./_baseEach */ 454),
+	    isArrayLike = __webpack_require__(/*! ./isArrayLike */ 301);
+	
+	/**
+	 * The base implementation of `_.map` without support for iteratee shorthands.
+	 *
+	 * @private
+	 * @param {Array|Object} collection The collection to iterate over.
+	 * @param {Function} iteratee The function invoked per iteration.
+	 * @returns {Array} Returns the new mapped array.
+	 */
+	function baseMap(collection, iteratee) {
+	  var index = -1,
+	      result = isArrayLike(collection) ? Array(collection.length) : [];
+	
+	  baseEach(collection, function(value, key, collection) {
+	    result[++index] = iteratee(value, key, collection);
+	  });
+	  return result;
+	}
+	
+	module.exports = baseMap;
+
+
+/***/ },
+/* 466 */
+/*!********************************!*\
+  !*** ../~/updeep/dist/omit.js ***!
+  \********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _omit2 = __webpack_require__(/*! lodash/omit */ 467);
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	var _omit3 = _interopRequireDefault(_omit2);
 	
-	var _react2 = _interopRequireDefault(_react);
+	var _wrap = __webpack_require__(/*! ./wrap */ 461);
 	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	var _wrap2 = _interopRequireDefault(_wrap);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	function omit(predicate, collection) {
+	  return (0, _omit3.default)(collection, predicate);
+	}
 	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var AsyncAdvanced = function (_React$Component) {
-	    _inherits(AsyncAdvanced, _React$Component);
-	
-	    function AsyncAdvanced() {
-	        _classCallCheck(this, AsyncAdvanced);
-	
-	        return _possibleConstructorReturn(this, (AsyncAdvanced.__proto__ || Object.getPrototypeOf(AsyncAdvanced)).apply(this, arguments));
-	    }
-	
-	    _createClass(AsyncAdvanced, [{
-	        key: "componentWillUnmount",
-	        value: function componentWillUnmount() {
-	            // Cancel request on unmount
-	            this.props.cancel();
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            var _props = this.props;
-	            var fetchAsync = _props.fetchAsync;
-	            var data = _props.data;
-	            var status = _props.status;
-	            var cancel = _props.cancel;
-	
-	            return _react2.default.createElement(
-	                "div",
-	                null,
-	                _react2.default.createElement(
-	                    "p",
-	                    null,
-	                    "status: ",
-	                    status
-	                ),
-	                _react2.default.createElement(
-	                    "p",
-	                    null,
-	                    "data: ",
-	                    data
-	                ),
-	                _react2.default.createElement(
-	                    "button",
-	                    { onClick: fetchAsync },
-	                    "fetch"
-	                ),
-	                _react2.default.createElement(
-	                    "button",
-	                    { onClick: cancel },
-	                    "cancel"
-	                )
-	            );
-	        }
-	    }]);
-	
-	    return AsyncAdvanced;
-	}(_react2.default.Component);
-	
-	AsyncAdvanced = (0, _lean.connectLean)({
-	    scope: "asyncAdvanced",
-	    getInitialState: function getInitialState() {
-	        return {
-	            status: "waiting",
-	            data: "nodata"
-	        };
-	    },
-	    handlers: function handlers() {
-	        // If handlers is a function it will excuted once for each component
-	        // instance. You may keep some component specific data here which is
-	        // not ok for redux state. Such as xhr-objects, promises etc.
-	        var timer = null;
-	
-	        return {
-	            setData: function setData(data) {
-	                return { data: data };
-	            },
-	            cancel: function cancel(e) {
-	                e.preventDefault();
-	                clearTimeout(timer);
-	                return { status: "canceled" };
-	            },
-	            fetchAsync: function fetchAsync(e) {
-	                e.preventDefault();
-	                return (0, _lean.thunk)(function (update, getProps) {
-	                    update({ status: "fetching" });
-	                    timer = setTimeout(function () {
-	                        update({ status: "done" });
-	                        getProps().setData("async fetched data!");
-	                    }, 3000);
-	                });
-	            }
-	        };
-	    }
-	})(AsyncAdvanced);
-	
-	exports.default = AsyncAdvanced;
+	exports.default = (0, _wrap2.default)(omit);
 
 /***/ },
-/* 443 */
-/*!**********************!*\
-  !*** ./RandomGif.js ***!
-  \**********************/
+/* 467 */
+/*!***************************!*\
+  !*** ../~/lodash/omit.js ***!
+  \***************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	var arrayMap = __webpack_require__(/*! ./_arrayMap */ 389),
+	    baseDifference = __webpack_require__(/*! ./_baseDifference */ 468),
+	    basePick = __webpack_require__(/*! ./_basePick */ 421),
+	    flatRest = __webpack_require__(/*! ./_flatRest */ 399),
+	    getAllKeysIn = __webpack_require__(/*! ./_getAllKeysIn */ 430),
+	    toKey = __webpack_require__(/*! ./_toKey */ 391);
 	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	/**
+	 * The opposite of `_.pick`; this method creates an object composed of the
+	 * own and inherited enumerable string keyed properties of `object` that are
+	 * not omitted.
+	 *
+	 * @static
+	 * @since 0.1.0
+	 * @memberOf _
+	 * @category Object
+	 * @param {Object} object The source object.
+	 * @param {...(string|string[])} [props] The property identifiers to omit.
+	 * @returns {Object} Returns the new object.
+	 * @example
+	 *
+	 * var object = { 'a': 1, 'b': '2', 'c': 3 };
+	 *
+	 * _.omit(object, ['a', 'c']);
+	 * // => { 'b': '2' }
+	 */
+	var omit = flatRest(function(object, props) {
+	  if (object == null) {
+	    return {};
+	  }
+	  props = arrayMap(props, toKey);
+	  return basePick(object, baseDifference(getAllKeysIn(object), props));
 	});
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	module.exports = omit;
+
+
+/***/ },
+/* 468 */
+/*!**************************************!*\
+  !*** ../~/lodash/_baseDifference.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var SetCache = __webpack_require__(/*! ./_SetCache */ 370),
+	    arrayIncludes = __webpack_require__(/*! ./_arrayIncludes */ 265),
+	    arrayIncludesWith = __webpack_require__(/*! ./_arrayIncludesWith */ 469),
+	    arrayMap = __webpack_require__(/*! ./_arrayMap */ 389),
+	    baseUnary = __webpack_require__(/*! ./_baseUnary */ 296),
+	    cacheHas = __webpack_require__(/*! ./_cacheHas */ 374);
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	/** Used as the size to enable large array optimizations. */
+	var LARGE_ARRAY_SIZE = 200;
 	
-	var _react2 = _interopRequireDefault(_react);
+	/**
+	 * The base implementation of methods like `_.difference` without support
+	 * for excluding multiple arrays or iteratee shorthands.
+	 *
+	 * @private
+	 * @param {Array} array The array to inspect.
+	 * @param {Array} values The values to exclude.
+	 * @param {Function} [iteratee] The iteratee invoked per element.
+	 * @param {Function} [comparator] The comparator invoked per element.
+	 * @returns {Array} Returns the new array of filtered values.
+	 */
+	function baseDifference(array, values, iteratee, comparator) {
+	  var index = -1,
+	      includes = arrayIncludes,
+	      isCommon = true,
+	      length = array.length,
+	      result = [],
+	      valuesLength = values.length;
 	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	  if (!length) {
+	    return result;
+	  }
+	  if (iteratee) {
+	    values = arrayMap(values, baseUnary(iteratee));
+	  }
+	  if (comparator) {
+	    includes = arrayIncludesWith;
+	    isCommon = false;
+	  }
+	  else if (values.length >= LARGE_ARRAY_SIZE) {
+	    includes = cacheHas;
+	    isCommon = false;
+	    values = new SetCache(values);
+	  }
+	  outer:
+	  while (++index < length) {
+	    var value = array[index],
+	        computed = iteratee ? iteratee(value) : value;
+	
+	    value = (comparator || value !== 0) ? value : 0;
+	    if (isCommon && computed === computed) {
+	      var valuesIndex = valuesLength;
+	      while (valuesIndex--) {
+	        if (values[valuesIndex] === computed) {
+	          continue outer;
+	        }
+	      }
+	      result.push(value);
+	    }
+	    else if (!includes(values, computed, comparator)) {
+	      result.push(value);
+	    }
+	  }
+	  return result;
+	}
+	
+	module.exports = baseDifference;
+
+
+/***/ },
+/* 469 */
+/*!*****************************************!*\
+  !*** ../~/lodash/_arrayIncludesWith.js ***!
+  \*****************************************/
+/***/ function(module, exports) {
+
+	/**
+	 * This function is like `arrayIncludes` except that it accepts a comparator.
+	 *
+	 * @private
+	 * @param {Array} [array] The array to inspect.
+	 * @param {*} target The value to search for.
+	 * @param {Function} comparator The comparator invoked per element.
+	 * @returns {boolean} Returns `true` if `target` is found, else `false`.
+	 */
+	function arrayIncludesWith(array, value, comparator) {
+	  var index = -1,
+	      length = array ? array.length : 0;
+	
+	  while (++index < length) {
+	    if (comparator(value, array[index])) {
+	      return true;
+	    }
+	  }
+	  return false;
+	}
+	
+	module.exports = arrayIncludesWith;
+
+
+/***/ },
+/* 470 */
+/*!**********************************!*\
+  !*** ../~/updeep/dist/omitBy.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _omitBy2 = __webpack_require__(/*! lodash/omitBy */ 471);
+	
+	var _omitBy3 = _interopRequireDefault(_omitBy2);
+	
+	var _wrap = __webpack_require__(/*! ./wrap */ 461);
+	
+	var _wrap2 = _interopRequireDefault(_wrap);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	function omitBy(predicate, collection) {
+	  return (0, _omitBy3.default)(collection, predicate);
+	}
 	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var RandomGif = function (_React$PureComponent) {
-	    _inherits(RandomGif, _React$PureComponent);
-	
-	    function RandomGif() {
-	        _classCallCheck(this, RandomGif);
-	
-	        return _possibleConstructorReturn(this, (RandomGif.__proto__ || Object.getPrototypeOf(RandomGif)).apply(this, arguments));
-	    }
-	
-	    _createClass(RandomGif, [{
-	        key: "componentDidMount",
-	        value: function componentDidMount() {
-	            this.props.fetchGif();
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            var _props = this.props;
-	            var tag = _props.tag;
-	            var status = _props.status;
-	            var url = _props.url;
-	            var fetchGif = _props.fetchGif;
-	
-	            return _react2.default.createElement(
-	                "div",
-	                null,
-	                _react2.default.createElement(
-	                    "h4",
-	                    null,
-	                    tag
-	                ),
-	                url && status !== "fetching" && _react2.default.createElement("img", { src: url }),
-	                _react2.default.createElement("br", null),
-	                _react2.default.createElement(
-	                    "button",
-	                    { onClick: fetchGif, disabled: status === "fetching" },
-	                    status === "fetching" ? "loading..." : "Next!"
-	                )
-	            );
-	        }
-	    }]);
-	
-	    return RandomGif;
-	}(_react2.default.PureComponent);
-	
-	RandomGif = (0, _lean.connectLean)({
-	    scope: "singleRandomGif",
-	    getInitialState: function getInitialState() {
-	        return {
-	            status: "waiting",
-	            url: null
-	        };
-	    },
-	
-	    handlers: {
-	        setUrl: function setUrl(url) {
-	            return { url: url };
-	        },
-	        fetchGif: function fetchGif() {
-	
-	            return (0, _lean.thunk)(function (update, getProps) {
-	                update({ status: "fetching" });
-	
-	                fetch("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" + getProps().tag).then(function (res) {
-	                    return res.json();
-	                }).then(function (json) {
-	                    update({
-	                        status: "ok",
-	                        url: json.data.fixed_height_small_url
-	                    });
-	                });
-	            });
-	        }
-	    }
-	
-	})(RandomGif);
-	
-	exports.default = RandomGif;
+	exports.default = (0, _wrap2.default)(omitBy);
 
 /***/ },
-/* 444 */
-/*!**************************!*\
-  !*** ./RandomGifPair.js ***!
-  \**************************/
+/* 471 */
+/*!*****************************!*\
+  !*** ../~/lodash/omitBy.js ***!
+  \*****************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	var baseIteratee = __webpack_require__(/*! ./_baseIteratee */ 364),
+	    negate = __webpack_require__(/*! ./negate */ 456),
+	    pickBy = __webpack_require__(/*! ./pickBy */ 429);
+	
+	/**
+	 * The opposite of `_.pickBy`; this method creates an object composed of
+	 * the own and inherited enumerable string keyed properties of `object` that
+	 * `predicate` doesn't return truthy for. The predicate is invoked with two
+	 * arguments: (value, key).
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.0.0
+	 * @category Object
+	 * @param {Object} object The source object.
+	 * @param {Function} [predicate=_.identity] The function invoked per property.
+	 * @returns {Object} Returns the new object.
+	 * @example
+	 *
+	 * var object = { 'a': 1, 'b': '2', 'c': 3 };
+	 *
+	 * _.omitBy(object, _.isNumber);
+	 * // => { 'b': '2' }
+	 */
+	function omitBy(object, predicate) {
+	  return pickBy(object, negate(baseIteratee(predicate)));
+	}
+	
+	module.exports = omitBy;
+
+
+/***/ },
+/* 472 */
+/*!**********************************!*\
+  !*** ../~/updeep/dist/reject.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	var _reject2 = __webpack_require__(/*! lodash/reject */ 451);
 	
-	var _react2 = _interopRequireDefault(_react);
+	var _reject3 = _interopRequireDefault(_reject2);
 	
-	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	var _wrap = __webpack_require__(/*! ./wrap */ 461);
 	
-	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	var _wrap2 = _interopRequireDefault(_wrap);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var RandomGifPair = function RandomGifPair(_ref) {
-	    var scope = _ref.scope;
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(_RandomGif2.default, { scope: [scope, "first"], tag: "cats" })
-	        ),
-	        _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(_RandomGif2.default, { scope: [scope, "second"], tag: "cars" })
-	        )
-	    );
-	};
+	function reject(predicate, collection) {
+	  var result = (0, _reject3.default)(collection, predicate);
+	  var equal = collection.length === result.length;
 	
-	exports.default = RandomGifPair;
+	  return equal ? collection : result;
+	}
+	
+	exports.default = (0, _wrap2.default)(reject);
 
 /***/ },
-/* 445 */
-/*!**************************!*\
-  !*** ./RandomGifList.js ***!
-  \**************************/
+/* 473 */
+/*!************************************!*\
+  !*** ../~/updeep/dist/updateIn.js ***!
+  \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	
-	var _react = __webpack_require__(/*! react */ 1);
+	var _curry = __webpack_require__(/*! ./util/curry */ 457);
 	
-	var _react2 = _interopRequireDefault(_react);
+	var _curry2 = _interopRequireDefault(_curry);
 	
-	var _lean = __webpack_require__(/*! ../src/lean */ 209);
+	var _update2 = __webpack_require__(/*! ./update */ 460);
 	
-	var _RandomGif = __webpack_require__(/*! ./RandomGif */ 443);
+	var _update3 = _interopRequireDefault(_update2);
 	
-	var _RandomGif2 = _interopRequireDefault(_RandomGif);
+	var _map = __webpack_require__(/*! ./map */ 462);
+	
+	var _map2 = _interopRequireDefault(_map);
+	
+	var _splitPath = __webpack_require__(/*! ./util/splitPath */ 450);
+	
+	var _splitPath2 = _interopRequireDefault(_splitPath);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	var RandomGifWithTag = (0, _lean.connectLean)({
-	    mapState: function mapState(state) {
-	        return { tag: state.tag };
-	    }
-	})(_RandomGif2.default);
+	var wildcard = '*';
 	
-	var RandomGifList = function RandomGifList(_ref) {
-	    var gifs = _ref.gifs;
-	    var handleTagChange = _ref.handleTagChange;
-	    var newTag = _ref.newTag;
-	    var addGif = _ref.addGif;
-	    var scope = _ref.scope;
-	    return _react2.default.createElement(
-	        "div",
-	        null,
-	        _react2.default.createElement("input", { onChange: handleTagChange, value: newTag }),
-	        _react2.default.createElement(
-	            "button",
-	            { onClick: addGif, disabled: !newTag },
-	            "add"
-	        ),
-	        Object.keys(gifs).sort().map(function (id) {
-	            return _react2.default.createElement(RandomGifWithTag, { key: id, scope: [scope, "gifs", id] });
-	        })
-	    );
-	};
-	RandomGifList = (0, _lean.connectLean)({
-	    getInitialState: function getInitialState() {
-	        return {
-	            nextId: 1,
-	            newTag: "ghost",
-	            gifs: {}
-	        };
-	    },
+	function reducePath(acc, key) {
+	  if (key === wildcard) {
+	    return function (value) {
+	      return Object.prototype.hasOwnProperty.call(value, wildcard) ?
+	      // If we actually have wildcard as a property, update that
+	      (0, _update3.default)(_defineProperty({}, wildcard, acc), value) :
+	      // Otherwise map over all properties
+	      (0, _map2.default)(acc, value);
+	    };
+	  }
 	
-	    handlers: {
-	        handleTagChange: function handleTagChange(e) {
-	            e.preventDefault();
-	            return { newTag: e.target.value };
-	        },
-	        addGif: function addGif(e, _1, _2, props) {
-	            e.preventDefault();
+	  return _defineProperty({}, key, acc);
+	}
 	
-	            return {
-	                newTag: "",
-	                nextId: function nextId(i) {
-	                    return i + 1;
-	                },
-	                gifs: _defineProperty({}, props.nextId, {
-	                    id: props.nextId,
-	                    tag: props.newTag
-	                })
-	            };
-	        }
-	    }
+	function updateIn(path, value, object) {
+	  var parts = (0, _splitPath2.default)(path);
+	  var updates = parts.reduceRight(reducePath, value);
 	
-	})(RandomGifList);
+	  return (0, _update3.default)(updates, object);
+	}
 	
-	exports.default = RandomGifList;
+	exports.default = (0, _curry2.default)(updateIn);
+
+/***/ },
+/* 474 */
+/*!***************************************!*\
+  !*** ../~/updeep/dist/withDefault.js ***!
+  \***************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _update = __webpack_require__(/*! ./update */ 460);
+	
+	var _update2 = _interopRequireDefault(_update);
+	
+	var _curry = __webpack_require__(/*! ./util/curry */ 457);
+	
+	var _curry2 = _interopRequireDefault(_curry);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function withDefault(defaultValue, updates, object) {
+	  if (typeof object === 'undefined') {
+	    return (0, _update2.default)(updates, defaultValue);
+	  }
+	
+	  return (0, _update2.default)(updates, object);
+	}
+	
+	exports.default = (0, _curry2.default)(withDefault);
 
 /***/ }
 /******/ ]);
