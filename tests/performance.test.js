@@ -177,39 +177,26 @@ describe("performance", () => {
         expect(mapSpy).toHaveBeenCalledTimes(mapCount);
     });
 
-    test("support map state creator for advanced performance patterns", () => {
+    test("scope idendity change does not trigger render", () => {
         const store = createStore(leanReducer);
         const spy = jest.fn();
-        let handler = null;
 
         class Hello extends React.PureComponent {
             render() {
-                handler = this.props.setName;
-                return <div>Hello {name}</div>;
+                spy();
+                return <div>Hello</div>;
             }
         }
 
         Hello = connectLean({
-            scope: "ascope",
-            getInitialState() {
-                return {name: "initial"};
-            },
-            mapState() {
-                spy();
-                return (state, props) => {
-                    return {name: props.parentName};
-                };
-            },
-            setName() {
-                this.setState({name: "from handler"});
-            },
+            scope: ["foo", "bar"],
         })(Hello);
 
         const {setProps} = render(store, Hello);
-        // Trigger some changes
-        handler();
-        setProps({parentName: "from parent"});
-        expect(spy).toHaveBeenCalledTimes(1);
+
+        const renderCount = spy.mock.calls.length;
+        setProps({scope: ["foo", "bar"]});
+        expect(spy).toHaveBeenCalledTimes(renderCount);
     });
 
 });
