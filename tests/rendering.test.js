@@ -60,6 +60,26 @@ describe("renders", () => {
         expect(component.toJSON()).toMatchSnapshot();
     });
 
+    test("other props from defaults", () => {
+        const store = createStore(leanReducer);
+        let Hello = ({otherProp}) => {
+            return <div>Hello other {otherProp}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            defaultProps: {
+                otherProp: "default prop",
+            },
+            getInitialState() {
+                return {name: "from initial"};
+            },
+        })(Hello);
+
+        const {component} = render(store, Hello);
+        expect(component.toJSON()).toMatchSnapshot();
+    });
+
 
     test("from mapState()", () => {
         const store = createStore(leanReducer);
