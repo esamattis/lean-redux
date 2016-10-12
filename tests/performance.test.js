@@ -40,4 +40,37 @@ describe("performance", () => {
         expect(renderSpy).toHaveBeenCalledTimes(renderCount);
     });
 
+    test("mapState is not called if state does not change", () => {
+        const store = createStore(leanReducer);
+        const mapSpy = jest.fn();
+        let handler = null;
+
+        class Hello extends React.PureComponent {
+
+            render() {
+                handler = this.props.setName;
+                mapSpy();
+                return <div>Hello {name}</div>;
+            }
+        }
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "same value"};
+            },
+            mapState() {
+                mapSpy();
+                return {name: "hard coded"};
+            },
+            setName() {
+                this.setState({name: "same value"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        const mapCount = mapSpy.mock.calls.length;
+        handler();
+        expect(mapSpy).toHaveBeenCalledTimes(mapCount);
+    });
 });
