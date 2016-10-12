@@ -80,5 +80,29 @@ describe("scope", () => {
         expect(store.getState()).toMatchSnapshot();
     });
 
+    test("can be a deeply nested array which is flattened", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: [["foo", "bar"], ["going"], [["deeper"]]],
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        handler();
+        expect(store.getState()).toMatchSnapshot();
+    });
+
 });
 
