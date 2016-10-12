@@ -75,6 +75,8 @@ export function connectLean(_options=plain) {
         const finalPropsCache = createCache();
         const scopedStateCache = createCache();
         const propsCache = createCache();
+        const scopeCache = createCache();
+
         let mappedState = null;
 
         if (typeof getInitialState === "function") {
@@ -82,7 +84,6 @@ export function connectLean(_options=plain) {
         }
 
         var boundHandlersCache = null;
-        var scopeCache = {}; // Just something which is never equals with real scopes
 
         mapState = typeof mapState === "function"
             ? mapState
@@ -94,23 +95,16 @@ export function connectLean(_options=plain) {
         var setStateCallbacks = [];
         return (fullState, ownProps) => {
             scope = ownProps.scope || scope;
-
-            var generateHandlers = false;
-            var props = propsCache({...defaultProps, ...ownProps, scope});
-
             if (Array.isArray(scope)) {
                 scope = flattenDeep(scope);
             }
+            scope = scopeCache(scope);
 
-            if (!isEqual(scopeCache, scope)) {
-                scopeCache = scope;
-                generateHandlers = true;
-            }
-
+            var props = propsCache({...defaultProps, ...ownProps, scope});
             var scopedState = fullState || plain;
 
-            if (!isEmpty(scopeCache)) {
-                scopedState = {...getOr(plain, disableLodashPath(scopeCache), fullState), scope: scopeCache};
+            if (!isEmpty(scope)) {
+                scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
             }
 
             scopedState = scopedStateCache({...initialState, ...scopedState});
@@ -135,15 +129,15 @@ export function connectLean(_options=plain) {
                 break;
             }
 
-            if (generateHandlers) {
+            if (scopeCache.changed) {
 
                 const bindDispatch = (handler, handlerName) => {
                     var type = "LEAN_UPDATE";
 
-                    if (Array.isArray(scopeCache)) {
-                        type += "/" + scopeCache.join(".");
-                    } else if (typeof scopeCache === "string") {
-                        type += "/" + scopeCache;
+                    if (Array.isArray(scope)) {
+                        type += "/" + scope.join(".");
+                    } else if (typeof scope === "string") {
+                        type += "/" + scope;
                     }
 
                     type += "/" + handlerName;
@@ -158,7 +152,7 @@ export function connectLean(_options=plain) {
                                 initialState,
                                 props: ownProps,
                                 update,
-                                scope: scopeCache,
+                                scope,
                             });
                         },
                     };
@@ -186,7 +180,7 @@ export function connectLean(_options=plain) {
             // checks for idendities we must return the previous idendity of
             // this object when we know there's no changes to avoid the wrapped
             // component from rendering.
-            return finalPropsCache({...props, ...mappedState, ...boundHandlersCache, scope: scopeCache});
+            return finalPropsCache({...props, ...mappedState, ...boundHandlersCache, scope});
         };
 
     }, {
