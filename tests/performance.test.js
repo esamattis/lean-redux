@@ -49,7 +49,6 @@ describe("performance", () => {
 
             render() {
                 handler = this.props.setName;
-                mapSpy();
                 return <div>Hello {name}</div>;
             }
         }
