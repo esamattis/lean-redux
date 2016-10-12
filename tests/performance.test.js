@@ -13,15 +13,6 @@ describe("performance", () => {
         let handler = null;
 
         class Hello extends React.PureComponent {
-
-            componentWillReceiveProps(nextProps) {
-                console.log("componentWillReceiveProps");
-                for (let key in this.props) {
-                    if (nextProps[key] !== this.props[key]) {
-                        console.log(this.props.amount, "prop changed", key);
-                    }
-                }
-            }
             render() {
                 console.log("render");
                 handler = this.props.setName;
@@ -48,4 +39,5 @@ describe("performance", () => {
         handler();
         expect(renderSpy).toHaveBeenCalledTimes(renderCount);
     });
+
 });
