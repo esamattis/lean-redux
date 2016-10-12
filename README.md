@@ -1,7 +1,7 @@
 
 # Lean Redux [![Build Status](https://secure.travis-ci.org/epeli/lean-redux.png?branch=master)](http://travis-ci.org/epeli/lean-redux)
 
-[Redux](http://redux.js.org/) state like local state.
+[Redux](http://redux.js.org/) state like local component state.
 
 ## Design goals
 
