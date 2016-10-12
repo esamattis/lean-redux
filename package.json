@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "eslint src/ examples/*.js && jest",
-    "build": "mkdir -p lib && babel src --ignore __test__ --out-dir lib",
+    "build": "mkdir -p lib && babel src --out-dir lib",
     "prepublish": "npm run build"
   },
   "repository": {
