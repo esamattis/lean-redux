@@ -42,6 +42,24 @@ describe("renders", () => {
         expect(component.toJSON()).toMatchSnapshot();
     });
 
+    test("other props from parent", () => {
+        const store = createStore(leanReducer);
+        let Hello = ({otherProp}) => {
+            return <div>Hello other {otherProp}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+        })(Hello);
+
+        const {component, setProps} = render(store, Hello);
+        setProps({otherProp: "from parent"});
+        expect(component.toJSON()).toMatchSnapshot();
+    });
+
 
     test("from mapState()", () => {
         const store = createStore(leanReducer);

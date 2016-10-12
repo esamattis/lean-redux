@@ -18,3 +18,10 @@ exports[`renders not from map props which collide with state 1`] = `
   from initial
 </div>
 `;
+
+exports[`renders other props from parent 1`] = `
+<div>
+  Hello other 
+  from parent
+</div>
+`;
