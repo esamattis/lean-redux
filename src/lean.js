@@ -4,7 +4,6 @@ import updateIn from "lodash/fp/update";
 import mapValues from "lodash/fp/mapValues";
 import pick from "lodash/fp/pick";
 import flattenDeep from "lodash/fp/flattenDeep";
-import isEqual from "lodash/fp/isEqual";
 import isEmpty from "lodash/fp/isEmpty";
 import pickBy from "lodash/fp/pickBy";
 
@@ -47,11 +46,11 @@ export function update(...args) {
     };
 }
 
-function createCache({isEqual = shallowEqual} = plain) {
-    var cache = plain;
+function createCache({isEqual = shallowEqual, initial = plain} = plain) {
+    var cache = initial;
 
     const update =  o => {
-        if (isEqual(o, cache)) {
+        if (cache && isEqual(o, cache)) {
             update.changed = false;
             return cache;
         }
@@ -71,19 +70,21 @@ export function connectLean(_options=plain) {
     return connectAdvanced(dispatch => {
         var {scope, defaultProps, mapState, getInitialState, ...handlers} = _options;
         handlers = pickFunctions(handlers);
+
         let initialState = plain;
-        const finalPropsCache = createCache();
+        let boundHandlers = null;
+        let finalProps = null;
+
         const scopedStateCache = createCache();
+        const mappedStateCache = createCache({initial: null});
         const propsCache = createCache();
         const scopeCache = createCache();
 
-        let mappedState = null;
 
         if (typeof getInitialState === "function") {
             initialState = getInitialState();
         }
 
-        var boundHandlersCache = null;
 
         mapState = typeof mapState === "function"
             ? mapState
@@ -100,7 +101,7 @@ export function connectLean(_options=plain) {
             }
             scope = scopeCache(scope);
 
-            var props = propsCache({...defaultProps, ...ownProps, scope});
+            const props = propsCache({...defaultProps, ...ownProps, scope});
             var scopedState = fullState || plain;
 
             if (!isEmpty(scope)) {
@@ -117,14 +118,14 @@ export function connectLean(_options=plain) {
 
             while (true) {
                 const mapStateUsesProps = mapState.length > 1;
-                if (mappedState === null || scopedStateCache.changed || (propsCache.changed && mapStateUsesProps)) {
-                    const newMappedState =  mapState(scopedState, props);
-                    if (typeof newMappedState === "function") {
+                if (mappedStateCache.get() === null || scopedStateCache.changed || (propsCache.changed && mapStateUsesProps)) {
+                    const mappedState =  mapState(scopedState, props);
+                    if (typeof mappedState === "function") {
                         // Map state was a map state creator. Update mapState and redo this.
-                        mapState = newMappedState;
+                        mapState = mappedState;
                         continue;
                     }
-                    mappedState = newMappedState;
+                    mappedStateCache(mappedState);
                 }
                 break;
             }
@@ -162,7 +163,7 @@ export function connectLean(_options=plain) {
 
                         Object.assign(
                             handlerContext,
-                            boundHandlersCache,
+                            boundHandlers,
                             methods
                         );
 
@@ -170,17 +171,18 @@ export function connectLean(_options=plain) {
                     };
                 };
 
-                boundHandlersCache = mapValuesWithKey(bindDispatch, handlers);
+                boundHandlers = mapValuesWithKey(bindDispatch, handlers);
             }
 
 
-            // Props to be passed to the wrapped component
-            //
             // The caching may seem really weird by but because connectAdvanced
             // checks for idendities we must return the previous idendity of
             // this object when we know there's no changes to avoid the wrapped
             // component from rendering.
-            return finalPropsCache({...props, ...mappedState, ...boundHandlersCache, scope});
+            if (finalProps === null || propsCache.changed || mappedStateCache.changed || scopeCache.changed) {
+                finalProps = {...props, ...mappedStateCache.get(), ...boundHandlers, scope};
+            }
+            return finalProps;
         };
 
     }, {
