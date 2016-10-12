@@ -1,0 +1,6 @@
+exports[`test renders from initial state 1`] = `
+<div>
+  Hello 
+  esa
+</div>
+`;
