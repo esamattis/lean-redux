@@ -1,3 +1,10 @@
+exports[`test props from parent don't override state 1`] = `
+<div>
+  Hello 
+  esa
+</div>
+`;
+
 exports[`test renders from initial state 1`] = `
 <div>
   Hello 
