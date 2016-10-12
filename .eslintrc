@@ -23,6 +23,7 @@
   "globals": {
     "Promise": true,
     "jest": true,
+    "describe": true,
     "test": true,
     "expect": true
   },
