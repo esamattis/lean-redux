@@ -3,13 +3,23 @@ import {Provider} from "react-redux";
 import renderer from "react-test-renderer";
 
 export const render = (store, Component) => {
-    const Main = () => {
-        return (
-            <Provider store={store}>
-                <Component />
-            </Provider>
-        );
-    };
+    const res = {};
+    class Main extends React.Component {
+        render() {
 
-    return renderer.create(<Main />);
+            if (!res.setProps) {
+                // eslint-disable-next-line react/jsx-no-bind
+                res.setProps = this.setState.bind(this);
+            }
+
+            return (
+                <Provider store={store}>
+                    <Component {...this.state} />
+                </Provider>
+            );
+        }
+    }
+
+    res.component =  renderer.create(<Main />);
+    return res;
 };
