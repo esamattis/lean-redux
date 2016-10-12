@@ -14,7 +14,6 @@ describe("performance", () => {
 
         class Hello extends React.PureComponent {
             render() {
-                console.log("render");
                 handler = this.props.setName;
                 renderSpy();
                 return <div>Hello {name}</div>;
@@ -76,12 +75,10 @@ describe("performance", () => {
     test("mapState is called if parent props change when it's using them", () => {
         const store = createStore(leanReducer);
         const mapSpy = jest.fn();
-        let handler = null;
 
         class Hello extends React.PureComponent {
 
             render() {
-                handler = this.props.setName;
                 return <div>Hello {name}</div>;
             }
         }
