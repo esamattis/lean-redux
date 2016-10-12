@@ -47,6 +47,23 @@ export function update(...args) {
     };
 }
 
+function createCache({isEqual = shallowEqual} = plain) {
+    var cache = plain;
+
+    const update =  o => {
+        if (isEqual(o, cache)) {
+            update.changed = false;
+            return cache;
+        }
+
+        update.changed = true;
+        return cache = o;
+    };
+    update.changed = true;
+    update.get = () => cache;
+
+    return update;
+}
 
 const plain = {};
 
@@ -55,7 +72,9 @@ export function connectLean(_options=plain) {
         var {scope, defaultProps, mapState, getInitialState, ...handlers} = _options;
         handlers = pickFunctions(handlers);
         let initialState = plain;
-        let finalPropsCache = null;
+        const finalPropsCache = createCache();
+        const scopedStateCache = createCache();
+        let mappedState = null;
 
         if (typeof getInitialState === "function") {
             initialState = getInitialState();
@@ -93,7 +112,7 @@ export function connectLean(_options=plain) {
                 scopedState = {...getOr(plain, disableLodashPath(scopeCache), fullState), scope: scopeCache};
             }
 
-            scopedState = {...initialState, ...scopedState};
+            scopedState = scopedStateCache({...initialState, ...scopedState});
             handlerContext.state = scopedState;
             handlerContext.props = props;
             if (!isEmpty(setStateCallbacks)) {
@@ -101,16 +120,17 @@ export function connectLean(_options=plain) {
                 setStateCallbacks = [];
             }
 
-            // Implement React Redux style advanced performance pattern where
-            // the mapState can create the mapState function itself
-            let mappedState =  mapState(scopedState, props);
-            if (typeof mappedState === "function") {
-                // map state generated a new mapState function. Save it
-                mapState = mappedState;
-                // and use it to map the state
+            if (mappedState === null || scopedState.changed) {
+                // Implement React Redux style advanced performance pattern where
+                // the mapState can create the mapState function itself
                 mappedState =  mapState(scopedState, props);
+                if (typeof mappedState === "function") {
+                    // map state generated a new mapState function. Save it
+                    mapState = mappedState;
+                    // and use it to map the state
+                    mappedState =  mapState(scopedState, props);
+                }
             }
-
 
             if (generateHandlers) {
 
@@ -158,17 +178,12 @@ export function connectLean(_options=plain) {
 
 
             // Props to be passed to the wrapped component
-            let finalProps = {...props, ...mappedState, ...boundHandlersCache, scope: scopeCache};
-
-            // This may seem really weird by but because connectAdvanced checks
-            // for idendities we must return the previous idendity of this
-            // object when we know there's no changes to avoid the wrapped
+            //
+            // The caching may seem really weird by but because connectAdvanced
+            // checks for idendities we must return the previous idendity of
+            // this object when we know there's no changes to avoid the wrapped
             // component from rendering.
-            if (shallowEqual(finalPropsCache, finalProps)) {
-                return finalPropsCache;
-            }
-
-            return finalPropsCache = finalProps;
+            return finalPropsCache({...props, ...mappedState, ...boundHandlersCache, scope: scopeCache});
         };
 
     }, {
