@@ -121,10 +121,18 @@ export function connectLean(_options=plain) {
                 setStateCallbacks = [];
             }
 
-            const mapStateUsesProps = mapState.length > 1;
-
-            if (mappedState === null || scopedStateCache.changed || (propsCache.changed && mapStateUsesProps)) {
-                mappedState =  mapState(scopedState, props);
+            while (true) {
+                const mapStateUsesProps = mapState.length > 1;
+                if (mappedState === null || scopedStateCache.changed || (propsCache.changed && mapStateUsesProps)) {
+                    const newMappedState =  mapState(scopedState, props);
+                    if (typeof newMappedState === "function") {
+                        // Map state was a map state creator. Update mapState and redo this.
+                        mapState = newMappedState;
+                        continue;
+                    }
+                    mappedState = newMappedState;
+                }
+                break;
             }
 
             if (generateHandlers) {
