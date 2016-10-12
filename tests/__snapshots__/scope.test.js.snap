@@ -1,3 +1,17 @@
+exports[`scope can be a deeply nested array which is flattened 1`] = `
+Object {
+  "foo": Object {
+    "bar": Object {
+      "going": Object {
+        "deeper": Object {
+          "name": "from handler",
+        },
+      },
+    },
+  },
+}
+`;
+
 exports[`scope can be an array 1`] = `
 Object {
   "foo": Object {
