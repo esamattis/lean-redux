@@ -121,16 +121,10 @@ export function connectLean(_options=plain) {
                 setStateCallbacks = [];
             }
 
-            if (mappedState === null || scopedStateCache.changed || propsCache.changed) {
-                // Implement React Redux style advanced performance pattern where
-                // the mapState can create the mapState function itself
+            const mapStateUsesProps = mapState.length > 1;
+
+            if (mappedState === null || scopedStateCache.changed || (propsCache.changed && mapStateUsesProps)) {
                 mappedState =  mapState(scopedState, props);
-                if (typeof mappedState === "function") {
-                    // map state generated a new mapState function. Save it
-                    mapState = mappedState;
-                    // and use it to map the state
-                    mappedState =  mapState(scopedState, props);
-                }
             }
 
             if (generateHandlers) {
