@@ -28,6 +28,7 @@
     "expect": true
   },
   "rules": {
+    "no-constant-condition": 0,
     "semi": [1, "always"],
     "comma-dangle": [1, "always-multiline"],
     "no-restricted-globals": [2, "self", "Text"],
