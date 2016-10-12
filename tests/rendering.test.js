@@ -40,3 +40,24 @@ test("props from parent don't override state", () => {
     setProps({name: "from parent"});
     expect(component.toJSON()).toMatchSnapshot();
 });
+
+
+test("mapState can override state", () => {
+    const store = createStore(leanReducer);
+    let Hello = ({name}) => {
+        return <div>Hello {name}</div>;
+    };
+
+    Hello = connectLean({
+        scope: "ascope",
+        mapState() {
+            return {name: "from map state"};
+        },
+        getInitialState() {
+            return {name: "esa"};
+        },
+    })(Hello);
+
+    const {component} = render(store, Hello);
+    expect(component.toJSON()).toMatchSnapshot();
+});
