@@ -130,7 +130,7 @@ export function connectLean(_options=plain) {
                 break;
             }
 
-            if (scopeCache.changed) {
+            if (scopeCache.changed || boundHandlers === null) {
 
                 const bindDispatch = (handler, handlerName) => {
                     var type = "LEAN_UPDATE";
