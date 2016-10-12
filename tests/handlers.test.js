@@ -32,5 +32,35 @@ describe("handler context", () => {
         handler();
         expect(spy).toHaveBeenLastCalledWith("from initial");
     });
+
+    test("state is not overridden by map state", () => {
+        const spy = jest.fn();
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            mapState() {
+                return {name: "from mapState"};
+            },
+            setName() {
+                spy(this.state.name);
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        handler();
+        expect(spy).toHaveBeenLastCalledWith("from initial");
+    });
+
 });
 
