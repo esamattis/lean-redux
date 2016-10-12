@@ -1,25 +1,11 @@
 import React from "react";
 import {connectLean} from "../src/lean";
 
-class Counter extends React.PureComponent {
-
-    componentWillReceiveProps(nextProps) {
-        for (let key in this.props) {
-            if (nextProps[key] !== this.props[key]) {
-                console.log(this.props.amount, "prop changed", key);
-            }
-        }
-    }
-
-    render() {
-        const {count, inc, amount} = this.props;
-        return (
-            <span>
-                {count} <button onClick={inc}>+{amount}</button>
-            </span>
-        );
-    }
-}
+var Counter = ({count, inc, amount}) => (
+    <span>
+        {count} <button onClick={inc}>+{amount}</button>
+    </span>
+);
 
 Counter = connectLean({
     // This scopes the counter under "singleCounter" key in the state. If this
