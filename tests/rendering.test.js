@@ -100,4 +100,28 @@ describe("renders", () => {
         const {component} = render(store, Hello);
         expect(component.toJSON()).toMatchSnapshot();
     });
+
+    test("from state change", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        const {component} = render(store, Hello);
+        handler();
+        expect(component.toJSON()).toMatchSnapshot();
+    });
 });
