@@ -8,6 +8,9 @@ import isEqual from "lodash/fp/isEqual";
 import isEmpty from "lodash/fp/isEmpty";
 import pickBy from "lodash/fp/pickBy";
 
+// XXX: This probably not a public API. Should change to something stable.
+import shallowEqual from "react-redux/lib/utils/shallowEqual";
+
 const mapValuesWithKey = mapValues.convert({cap: false});
 const pickFunctions = pickBy(v => typeof v === "function");
 
@@ -52,6 +55,7 @@ export function connectLean(_options=plain) {
         var {scope, defaultProps, mapState, getInitialState, ...handlers} = _options;
         handlers = pickFunctions(handlers);
         let initialState = plain;
+        let finalPropsCache = null;
 
         if (typeof getInitialState === "function") {
             initialState = getInitialState();
@@ -152,7 +156,19 @@ export function connectLean(_options=plain) {
                 boundHandlersCache = mapValuesWithKey(bindDispatch, handlers);
             }
 
-            return {...props, ...mappedState, ...boundHandlersCache, scope: scopeCache};
+
+            // Props to be passed to the wrapped component
+            let finalProps = {...props, ...mappedState, ...boundHandlersCache, scope: scopeCache};
+
+            // This may seem really weird by but because connectAdvanced checks
+            // for idendities we must return the previous idendity of this
+            // object when we know there's no changes to avoid the wrapped
+            // component from rendering.
+            if (shallowEqual(finalPropsCache, finalProps)) {
+                return finalPropsCache;
+            }
+
+            return finalPropsCache = finalProps;
         };
 
     }, {
