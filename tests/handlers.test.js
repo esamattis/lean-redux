@@ -118,5 +118,35 @@ describe("handler context", () => {
         handler();
         expect(spy).toHaveBeenLastCalledWith("default prop");
     });
+
+    test("default props can be overridden from parent", () => {
+        const spy = jest.fn();
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            defaultProps: {
+                aProp: "default prop",
+            },
+            setName() {
+                spy(this.props.aProp);
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        const {setProps} = render(store, Hello);
+        setProps({aProp: "from parent"});
+        handler();
+        expect(spy).toHaveBeenLastCalledWith("from parent");
+    });
 });
 
