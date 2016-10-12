@@ -39,6 +39,33 @@ describe("performance", () => {
         expect(renderSpy).toHaveBeenCalledTimes(renderCount);
     });
 
+    test("handlers don't get regenerated on state changes", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        class Hello extends React.PureComponent {
+            render() {
+                handler = this.props.setName;
+                return <div>Hello {name}</div>;
+            }
+        }
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        const prevHandler = handler;
+        handler();
+        expect(prevHandler).toBe(handler);
+    });
+
     test("mapState is not called if state does not change", () => {
         const store = createStore(leanReducer);
         const mapSpy = jest.fn();
