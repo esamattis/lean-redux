@@ -205,7 +205,7 @@ describe("performance", () => {
             },
         })(Hello);
 
-        const {component, setProps} = render(store, Hello);
+        const {setProps} = render(store, Hello);
         // Trigger some changes
         handler();
         setProps({parentName: "from parent"});
