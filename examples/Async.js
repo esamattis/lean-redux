@@ -1,6 +1,6 @@
 
 import React from "react";
-import {connectLean, thunk} from "../src/lean";
+import {connectLean} from "../src/lean";
 
 class Async extends React.Component {
     componentWillUnmount() {
