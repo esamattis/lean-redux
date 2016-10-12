@@ -1,3 +1,10 @@
+exports[`test mapState can override state 1`] = `
+<div>
+  Hello 
+  from map state
+</div>
+`;
+
 exports[`test props from parent don't override state 1`] = `
 <div>
   Hello 
