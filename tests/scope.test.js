@@ -31,5 +31,29 @@ describe("scope", () => {
         expect(store.getState()).toMatchSnapshot();
     });
 
+    test("can be overridden from the parent", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        const {setProps} = render(store, Hello);
+        setProps({scope: "parentScope"});
+        handler();
+        expect(store.getState()).toMatchSnapshot();
+    });
 });
 
