@@ -1,20 +1,20 @@
-exports[`test mapState can override state 1`] = `
+exports[`renders from initial state 1`] = `
+<div>
+  Hello 
+  from initial
+</div>
+`;
+
+exports[`renders from mapState() 1`] = `
 <div>
   Hello 
   from map state
 </div>
 `;
 
-exports[`test props from parent don't override state 1`] = `
+exports[`renders not from map props which collide with state 1`] = `
 <div>
   Hello 
-  esa
-</div>
-`;
-
-exports[`test renders from initial state 1`] = `
-<div>
-  Hello 
-  esa
+  from initial
 </div>
 `;
