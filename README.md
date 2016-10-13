@@ -19,6 +19,7 @@
 - Good performance
   - Lean Redux is build on top of the new `connectAdvanced()` primitive of
     React Redux 5.0 and implements the same optimizations as `connect()`
+  - Handlers are automatically bound to avoid some [pure render anti-patterns](https://medium.com/@esamatti/react-js-pure-render-performance-anti-pattern-fb88c101332f)
 
 
 ## Example
