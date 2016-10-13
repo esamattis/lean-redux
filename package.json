@@ -1,7 +1,7 @@
 {
   "name": "lean-redux",
-  "version": "2.0.0",
   "description": "Redux state like local component state",
+  "version": "2.0.1",
   "main": "lib/index.js",
   "scripts": {
     "test": "eslint src/ examples/*.js && jest",
