@@ -16,6 +16,7 @@
     "url": "https://github.com/epeli/lean-redux/issues"
   },
   "files": [
+    "index.js",
     "lib"
   ],
   "author": "Esa-Matti Suuronen",
