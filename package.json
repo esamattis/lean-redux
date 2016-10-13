@@ -1,6 +1,6 @@
 {
   "name": "lean-redux",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Redux without the boilerplate",
   "main": "lib/index.js",
   "scripts": {
