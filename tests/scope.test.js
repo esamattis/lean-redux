@@ -127,5 +127,34 @@ describe("scope", () => {
         handler();
         expect(store.getState()).toMatchSnapshot();
     });
+
+    test("function gets props", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: props => {
+                return ["fromfn", props.fromParent];
+            },
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        const {setProps} = render(store, Hello);
+        setProps({fromParent: "parentProp"});
+
+        handler();
+        expect(store.getState()).toMatchSnapshot();
+    });
+
 });
 

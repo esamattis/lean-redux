@@ -66,45 +66,44 @@ function createCache({isEqual = shallowEqual, initial = plain} = plain) {
 
 const plain = {};
 
-export function connectLean(_options=plain) {
+export function connectLean(options=plain) {
     return connectAdvanced(dispatch => {
-        var {scope, defaultProps, mapState, getInitialState, ...handlers} = _options;
-        handlers = pickFunctions(handlers);
-
-        let initialState = plain;
-        let boundHandlers = null;
-        let finalProps = null;
-
         const scopedStateCache = createCache();
         const mappedStateCache = createCache({initial: null});
         const propsCache = createCache();
         const scopeCache = createCache();
 
+        var boundHandlers = null;
+        var finalProps = null;
+        var setStateCallbacks = [];
+        const handlerContext = {};
+        const handlers = pickFunctions(options);
 
-        if (typeof getInitialState === "function") {
-            initialState = getInitialState();
-        }
+        const initialState = typeof options.getInitialState === "function"
+            ? options.getInitialState()
+            : plain;
 
-
-        mapState = typeof mapState === "function"
-            ? mapState
+        var mapState = typeof options.mapState === "function"
+            ? options.mapState
             : pick(Object.keys(initialState));
 
 
-        const handlerContext = {};
-
-        var setStateCallbacks = [];
         return (fullState, ownProps) => {
-            scope = ownProps.scope || scope;
-            if (typeof scope === "function") {
-                scope = scope();
+            var scope = options.scope;
+
+            if (typeof options.scope === "function") {
+                scope = options.scope(ownProps);
+            } else if (ownProps.scope) {
+                scope = ownProps.scope;
             }
+
             if (Array.isArray(scope)) {
                 scope = flattenDeep(scope);
             }
+
             scope = scopeCache(scope);
 
-            const props = propsCache({...defaultProps, ...ownProps, scope});
+            const props = propsCache({...options.defaultProps, ...ownProps, scope});
             var scopedState = fullState || plain;
 
             if (!isEmpty(scope)) {
