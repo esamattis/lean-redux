@@ -12,6 +12,14 @@ Object {
 }
 `;
 
+exports[`scope can be a function 1`] = `
+Object {
+  "fromfn": Object {
+    "name": "from handler",
+  },
+}
+`;
+
 exports[`scope can be an array 1`] = `
 Object {
   "foo": Object {

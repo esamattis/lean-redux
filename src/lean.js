@@ -96,6 +96,9 @@ export function connectLean(_options=plain) {
         var setStateCallbacks = [];
         return (fullState, ownProps) => {
             scope = ownProps.scope || scope;
+            if (typeof scope === "function") {
+                scope = scope();
+            }
             if (Array.isArray(scope)) {
                 scope = flattenDeep(scope);
             }
