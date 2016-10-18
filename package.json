@@ -2,7 +2,7 @@
   "name": "lean-redux",
   "description": "Redux state like local component state",
   "version": "2.0.2",
-  "main": "lib/index.js",
+  "main": "lib/lean.js",
   "scripts": {
     "test": "eslint src/ examples/*.js && jest",
     "build": "mkdir -p lib && babel src --out-dir lib",
