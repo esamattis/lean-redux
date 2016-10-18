@@ -96,9 +96,11 @@ does not modify the component but returns a new one.
 
 #### `options`
 
-- `scope: string|Array` Scope the component to a part of the Redux state. Deep
-  scopes can be defined with arrays.  If `scope` is passed as a prop from the
-  parent component it will override the value defined here.
+- `scope: string|Array|Function` Scope the component to a part of the Redux
+  state. Deep scopes can be defined with arrays. If a function it should return
+  the final scope. Parent component props are passed to the function.  If
+  `scope` is passed as a prop from the parent component it will override the
+  value defined here unless it's a function.
 - `getInitialState(): Object` Create default values for the scoped state. Like
   React component `getInitialState()` this is executed only once when the
   component is mounted.
