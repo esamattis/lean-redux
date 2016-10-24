@@ -3,7 +3,7 @@
 
 [Redux](http://redux.js.org/) state like local component state.
 
-## Design goals
+## Design
 
 
 - Basic Redux state access and updating should be simple as it is with the
