@@ -6,12 +6,14 @@ import pick from "lodash/fp/pick";
 import flattenDeep from "lodash/fp/flattenDeep";
 import isEmpty from "lodash/fp/isEmpty";
 import pickBy from "lodash/fp/pickBy";
+import omit from "lodash/fp/omit";
 
 // XXX: This probably not a public API. Should change to something stable.
 import shallowEqual from "react-redux/lib/utils/shallowEqual";
 
 const mapValuesWithKey = mapValues.convert({cap: false});
 const pickFunctions = pickBy(v => typeof v === "function");
+const omitReservedMethods = omit(["mapState", "getInitialState"]);
 
 export function composeReducers(...reducers) {
     return (state=null, action) => {
@@ -182,7 +184,7 @@ export function connectLean(options=plain) {
             // this object when we know there's no changes to avoid the wrapped
             // component from rendering.
             if (finalProps === null || propsCache.changed || mappedStateCache.changed || scopeCache.changed) {
-                finalProps = {...props, ...mappedStateCache.get(), ...boundHandlers, scope};
+                finalProps = {...props, ...mappedStateCache.get(), ...omitReservedMethods(boundHandlers), scope};
             }
             return finalProps;
         };

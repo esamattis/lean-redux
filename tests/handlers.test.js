@@ -173,5 +173,35 @@ describe("handler context", () => {
         handler();
         expect(spy).toHaveBeenLastCalledWith({name: "from initial"});
     });
+
+    ["getInitialState", "mapState", "setState"].forEach(method => {
+        test(`should not pass ${method} as a handler`, () => {
+            const spy = jest.fn();
+            const store = createStore(leanReducer);
+            let handler = null;
+
+            let Hello = props => {
+                spy(props[method]);
+                return <div>Hello {props.name}</div>;
+            };
+
+            Hello = connectLean({
+                scope: "ascope",
+                getInitialState() {
+                    return {name: "from initial"};
+                },
+                mapState() {
+                    return {name: "from map state"};
+                },
+                aHandler() {
+                    spy(this.getInitialState());
+                },
+            })(Hello);
+
+            render(store, Hello);
+            expect(spy).toHaveBeenLastCalledWith(undefined);
+        });
+    });
+
 });
 
