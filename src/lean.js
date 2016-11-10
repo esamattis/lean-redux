@@ -169,7 +169,7 @@ export function connectLean(options=plain) {
                             methods
                         );
 
-                        handler.apply(handlerContext, args);
+                        return handler.apply(handlerContext, args);
                     };
                 };
 

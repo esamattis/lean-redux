@@ -148,5 +148,30 @@ describe("handler context", () => {
         handler();
         expect(spy).toHaveBeenLastCalledWith("from parent");
     });
+
+    test("getInitialState can be called from the handler", () => {
+        const spy = jest.fn();
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, aHandler}) => {
+            handler = aHandler;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            aHandler() {
+                spy(this.getInitialState());
+            },
+        })(Hello);
+
+        render(store, Hello);
+        handler();
+        expect(spy).toHaveBeenLastCalledWith({name: "from initial"});
+    });
 });
 
