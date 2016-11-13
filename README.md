@@ -8,12 +8,12 @@
 
 - Basic Redux state access and updating should be simple as it is with the
   component local state
-  - No need to create action types, reducers or even action creators
-  - Nearly the same API with React Components!
-- Redux state can be scoped to the components
+  - No need to manually create action types or reducers
+  - The same API with React Components! Use `this.setState()` to update Redux state
+- Redux state is be scoped to the components
   - Component cannot interfere with parts of the state that do not belong to it
 - Play well with other tools in the Redux community
-  - Time travel debuggers, Redux Form etc. work well with Lean Redux
+  - Time travel debuggers, state serialization tools, Redux Form etc. work well with Lean Redux
   - You can drop this into your existing project and start using it only for
     parts of the app
 - Good performance
