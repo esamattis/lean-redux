@@ -1,6 +1,6 @@
 import {connectAdvanced} from "react-redux";
 import getOr from "lodash/fp/getOr";
-import updateIn from "lodash/fp/update";
+import updateWith from "lodash/fp/updateWith";
 import mapValues from "lodash/fp/mapValues";
 import pick from "lodash/fp/pick";
 import flattenDeep from "lodash/fp/flattenDeep";
@@ -216,7 +216,7 @@ export function leanReducer(state, action) {
 
 
     if (!isEmpty(scope)) {
-        return updateIn(disableLodashPath(scope), doUpdate,state);
+        return updateWith(Object, disableLodashPath(scope), doUpdate,state);
     }
 
     return doUpdate(state);

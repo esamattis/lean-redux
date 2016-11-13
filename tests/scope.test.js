@@ -156,5 +156,28 @@ describe("scope", () => {
         expect(store.getState()).toMatchSnapshot();
     });
 
+    test("creates objects for missing path values", () => {
+        const store = createStore(leanReducer);
+        let handler = null;
+
+        let Hello = ({name, setName}) => {
+            handler = setName;
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: ["ascope", 10],
+            getInitialState() {
+                return {name: "from initial"};
+            },
+            setName() {
+                this.setState({name: "from handler"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        handler();
+        expect(store.getState()).toMatchSnapshot();
+    });
 });
 
