@@ -109,7 +109,7 @@ export function connectLean(options=plain) {
             var scopedState = fullState || plain;
 
             if (!isEmpty(scope)) {
-                scopedState = {...getOr(plain, disableLodashPath(scope), fullState), scope};
+                scopedState = {...getOr(plain, disableLodashPath(scope), fullState)};
             }
 
             scopedState = scopedStateCache({...initialState, ...scopedState});

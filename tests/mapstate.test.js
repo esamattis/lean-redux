@@ -20,6 +20,7 @@ describe("map state", () => {
                 return {name: "from initial"};
             },
             mapState(state) {
+                expect(state).toMatchSnapshot();
                 spy(state.name);
             },
         })(Hello);

@@ -1,0 +1,5 @@
+exports[`map state gets initial state 1`] = `
+Object {
+  "name": "from initial",
+}
+`;
