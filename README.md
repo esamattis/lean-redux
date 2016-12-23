@@ -125,3 +125,4 @@ The context, `this`, in the handlers is like in the React Components.
 - `this.setState(function|object nextState, [function callback])` Function to
   update the scoped Redux state. The API is exactly the same with the React
   Component [`setState()`](https://facebook.github.io/react/docs/component-api.html#setstate).
+- `this.dispatch: Function` Redux store dispatch

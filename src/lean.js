@@ -115,6 +115,8 @@ export function connectLean(options=plain) {
             scopedState = scopedStateCache({...initialState, ...scopedState});
             handlerContext.state = scopedState;
             handlerContext.props = props;
+            handlerContext.dispatch = dispatch;
+
             if (!isEmpty(setStateCallbacks)) {
                 setStateCallbacks.forEach(cb => cb());
                 setStateCallbacks = [];
