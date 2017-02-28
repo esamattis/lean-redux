@@ -75,19 +75,21 @@ export function connectLean(options=plain) {
         const propsCache = createCache();
         const scopeCache = createCache();
 
+        var initialState = null;
         var boundHandlers = null;
         var finalProps = null;
         var setStateCallbacks = [];
         const handlerContext = {};
         const handlers = pickFunctions(options);
 
-        const initialState = typeof options.getInitialState === "function"
-            ? options.getInitialState()
-            : plain;
-
         var mapState = typeof options.mapState === "function"
             ? options.mapState
-            : pick(Object.keys(initialState));
+            : state => {
+                if (initialState === null) {
+                    return plain;
+                }
+                return pick(Object.keys(initialState), state);
+            };
 
 
         return (fullState, ownProps) => {
@@ -112,10 +114,15 @@ export function connectLean(options=plain) {
                 scopedState = {...getOr(plain, disableLodashPath(scope), fullState)};
             }
 
-            scopedState = scopedStateCache({...initialState, ...scopedState});
-            handlerContext.state = scopedState;
             handlerContext.props = props;
             handlerContext.dispatch = dispatch;
+
+            if (initialState === null && typeof options.getInitialState === "function") {
+                initialState = options.getInitialState.call(handlerContext);
+            }
+
+            scopedState = scopedStateCache({...initialState, ...scopedState});
+            handlerContext.state = scopedState;
 
             if (!isEmpty(setStateCallbacks)) {
                 setStateCallbacks.forEach(cb => cb());

@@ -203,5 +203,30 @@ describe("handler context", () => {
         });
     });
 
-});
+    test("can access props from getInitialState", () => {
+        const spy = jest.fn();
+        const store = createStore(leanReducer);
 
+        let Hello = ({name}) => {
+            return <div>Hello {name}</div>;
+        };
+
+        Hello = connectLean({
+            scope: "ascope",
+            getInitialState() {
+                spy(this.props.foo);
+                return {name: "from initial"};
+            },
+        })(Hello);
+
+        const Wrap = () => (
+            <div>
+                <Hello foo="bar" />
+            </div>
+        );
+
+        render(store, Wrap);
+        expect(spy).toHaveBeenLastCalledWith("bar");
+    });
+
+});
