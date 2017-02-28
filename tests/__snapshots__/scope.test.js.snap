@@ -1,3 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
 exports[`scope can be a deeply nested array which is flattened 1`] = `
 Object {
   "foo": Object {
