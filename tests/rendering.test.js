@@ -6,7 +6,6 @@ import {leanReducer, connectLean} from "../src/lean";
 import {render} from "./helpers";
 
 describe("renders", () => {
-
     test("from initial state", () => {
         const store = createStore(leanReducer);
         let Hello = ({name}) => {
@@ -79,7 +78,6 @@ describe("renders", () => {
         const {component} = render(store, Hello);
         expect(component.toJSON()).toMatchSnapshot();
     });
-
 
     test("from mapState()", () => {
         const store = createStore(leanReducer);

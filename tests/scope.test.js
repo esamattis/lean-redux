@@ -6,7 +6,6 @@ import {leanReducer, connectLean} from "../src/lean";
 import {render} from "./helpers";
 
 describe("scope", () => {
-
     test("is used to set the location in redux state", () => {
         const store = createStore(leanReducer);
         let handler = null;
@@ -180,4 +179,3 @@ describe("scope", () => {
         expect(store.getState()).toMatchSnapshot();
     });
 });
-

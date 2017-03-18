@@ -6,7 +6,6 @@ import {leanReducer, connectLean} from "../src/lean";
 import {render} from "./helpers";
 
 describe("performance", () => {
-
     test("component does not render if the mapped state does not change", () => {
         const store = createStore(leanReducer);
         const renderSpy = jest.fn();
@@ -72,7 +71,6 @@ describe("performance", () => {
         let handler = null;
 
         class Hello extends React.PureComponent {
-
             render() {
                 handler = this.props.setName;
                 return <div>Hello {name}</div>;
@@ -104,7 +102,6 @@ describe("performance", () => {
         const mapSpy = jest.fn();
 
         class Hello extends React.PureComponent {
-
             render() {
                 return <div>Hello {name}</div>;
             }
@@ -139,7 +136,6 @@ describe("performance", () => {
         const mapSpy = jest.fn();
 
         class Hello extends React.PureComponent {
-
             render() {
                 return <div>Hello {name}</div>;
             }
@@ -174,7 +170,6 @@ describe("performance", () => {
         const mapSpy = jest.fn();
 
         class Hello extends React.PureComponent {
-
             render() {
                 return <div>Hello {name}</div>;
             }
@@ -225,5 +220,4 @@ describe("performance", () => {
         setProps({scope: ["foo", "bar"]});
         expect(spy).toHaveBeenCalledTimes(renderCount);
     });
-
 });

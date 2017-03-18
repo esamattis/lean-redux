@@ -1,4 +1,3 @@
-
 import React from "react";
 import {createStore} from "redux";
 
@@ -7,7 +6,6 @@ import {leanReducer, connectLean} from "../src/lean";
 import {render} from "./helpers";
 
 describe("handler context", () => {
-
     test("has state from initial state", () => {
         const spy = jest.fn();
         const store = createStore(leanReducer);
@@ -228,5 +226,4 @@ describe("handler context", () => {
         render(store, Wrap);
         expect(spy).toHaveBeenLastCalledWith("bar");
     });
-
 });

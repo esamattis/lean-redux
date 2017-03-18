@@ -6,7 +6,6 @@ export const render = (store, Component) => {
     const res = {};
     class Main extends React.Component {
         render() {
-
             if (!res.setProps) {
                 // eslint-disable-next-line react/jsx-no-bind
                 res.setProps = this.setState.bind(this);
@@ -20,6 +19,6 @@ export const render = (store, Component) => {
         }
     }
 
-    res.component =  renderer.create(<Main />);
+    res.component = renderer.create(<Main />);
     return res;
 };

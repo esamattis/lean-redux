@@ -32,6 +32,8 @@
     "eslint": "^3.7.1",
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-react": "^6.3.0",
+    "jest": "^19.0.2",
+    "prettier": "^0.22.0",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-test-renderer": "^15.3.2",
@@ -40,7 +42,6 @@
     "reselect": "^2.5.4",
     "updeep": "^1.0.0",
     "webpack": "^1.13.2",
-    "jest": "^19.0.2",
     "webpack-dev-server": "^1.16.2"
   },
   "dependencies": {

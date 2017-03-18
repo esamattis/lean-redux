@@ -6,7 +6,6 @@ import {leanReducer, connectLean} from "../src/lean";
 import {render} from "./helpers";
 
 describe("map state", () => {
-
     test("gets initial state", () => {
         const spy = jest.fn();
         const store = createStore(leanReducer);
@@ -83,6 +82,4 @@ describe("map state", () => {
         expect(propSpy).toHaveBeenLastCalledWith("parent prop");
         expect(stateSpy).toHaveBeenLastCalledWith(undefined);
     });
-
 });
-
