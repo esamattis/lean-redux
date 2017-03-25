@@ -53,8 +53,8 @@ NamedCounters = connectLean({
         // function to update the state. Here we use the update() function from
         // lodash/fp to update items deeply in the state. It's curried function
         // which means it returns a function when all arguments are not given
-        // to it. It needs three PATH, UPDATER, DATA. We do give the DATA here
-        // so it returns a funtion waiting for the data.
+        // to it. It needs three args PATH, UPDATER nad DATA. We do not give the
+        // DATA arg here so it returns a function waiting for the data.
         this.setState(update(
             ["counters", this.state.nextCounterId],
             () => ({
