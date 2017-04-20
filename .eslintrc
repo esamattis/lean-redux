@@ -15,6 +15,7 @@
   },
   "env": {
       "node": true,
+      "jest": true,
       "browser": true
   },
   "plugins": [
@@ -22,11 +23,7 @@
     "import"
   ],
   "globals": {
-    "Promise": true,
-    "jest": true,
-    "describe": true,
-    "test": true,
-    "expect": true
+    "Promise": true
   },
   "rules": {
     "no-constant-condition": 0,

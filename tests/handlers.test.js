@@ -176,7 +176,6 @@ describe("handler context", () => {
         test(`should not pass ${method} as a handler`, () => {
             const spy = jest.fn();
             const store = createStore(leanReducer);
-            let handler = null;
 
             let Hello = props => {
                 spy(props[method]);
