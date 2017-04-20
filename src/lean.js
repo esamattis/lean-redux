@@ -67,6 +67,8 @@ function createCache({isEqual = shallowEqual, initial = plain} = plain) {
 
 const plain = {};
 
+var globalScope = null;
+
 export function connectLean(options = plain) {
     return connectAdvanced(
         dispatch => {
@@ -111,6 +113,17 @@ export function connectLean(options = plain) {
                     ...ownProps,
                     scope,
                 });
+
+                if (globalScope) {
+                    fullState = {
+                        ...getOr(
+                            plain,
+                            disableLodashPath(globalScope),
+                            fullState,
+                        ),
+                    };
+                }
+
                 var scopedState = fullState || plain;
 
                 if (!isEmpty(scope)) {
@@ -229,8 +242,9 @@ const actionPattern = /^LEAN_UPDATE/;
 
 export function leanReducer(state, action) {
     if (!actionPattern.test(action.type)) {
-        return state;
+        return state || {};
     }
+
     let {scope, initialState, update, props} = action;
 
     const doUpdate = state => {
@@ -249,5 +263,12 @@ export function leanReducer(state, action) {
 
     return doUpdate(state);
 }
+
+export function setGlobalScope(scope) {
+    globalScope = scope;
+    return leanReducer;
+}
+
+leanReducer.setGlobalScope = setGlobalScope;
 
 export default leanReducer;

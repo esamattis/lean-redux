@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can be used with combineReducers works 1`] = `
+Object {
+  "lean": Object {
+    "ascope": Object {
+      "name": "foo",
+    },
+  },
+}
+`;
+
+exports[`can be used with combineReducers works 2`] = `
+<div>
+  Hello 
+  foo
+</div>
+`;

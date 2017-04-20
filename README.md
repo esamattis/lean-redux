@@ -85,6 +85,23 @@ Checkout the [index.js in
 examples](https://github.com/epeli/lean-redux/blob/master/examples/index.js)
 for complete example.
 
+### Usage with the Redux `combineReducers` helper
+
+The `combineReducers` helper function does not like dynamically generated top
+level state keys so Lean Redux must be scoped under a specific key in the Redux
+state when used with the `combineReducers` helper.
+
+```js
+import {createStore, combineReducers} from "redux";
+import {leanReducer} from "lean-redux";
+
+leanReducer.setGlobalScope("lean");
+
+const store = createStore(combineReducers({
+    lean: leanReducer
+}));
+```
+
 ## API
 
 Functions exported by the `lean-redux` module.
