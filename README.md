@@ -50,7 +50,12 @@ To learn more checkout the [live examples](https://epeli.github.io/lean-redux/ex
 
 ## Setup
 
+    yarn add lean-redux
+
+or
+
     npm install --save lean-redux
+
 
 Just add the `leanReducer` to your store and start creating components with
 `connectLean`.
