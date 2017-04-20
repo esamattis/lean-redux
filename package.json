@@ -34,7 +34,7 @@
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-react": "^6.3.0",
     "jest": "^19.0.2",
-    "prettier": "^0.22.0",
+    "prettier": "^1.2.2",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-test-renderer": "^15.3.2",
