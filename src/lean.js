@@ -96,6 +96,14 @@ export function connectLean(options = plain) {
             return (fullState, ownProps) => {
                 var scope = options.scope;
 
+                // mappedStateCache might not be called at all here. In that
+                // case it has not changed at all so ensure it stays false.
+                // Mark other caches false too to be on the safe side
+                mappedStateCache.changed = false;
+                scopedStateCache.changed = false;
+                propsCache.changed = false;
+                scopeCache.changed = false;
+
                 if (typeof options.scope === "function") {
                     scope = options.scope(ownProps);
                 } else if (ownProps.scope) {

@@ -220,4 +220,33 @@ describe("performance", () => {
         setProps({scope: ["foo", "bar"]});
         expect(spy).toHaveBeenCalledTimes(renderCount);
     });
+
+    test("render is called only once per change", () => {
+        const store = createStore(leanReducer);
+        let hello1Handler = null;
+        const renderSpy = jest.fn();
+
+        class Hello extends React.Component {
+            render() {
+                hello1Handler = this.props.setName;
+                renderSpy();
+                return <div>Hello {name}</div>;
+            }
+        }
+        Hello = connectLean({
+            scope: "hello1",
+            getInitialState() {
+                return {name: "hello1 value"};
+            },
+            setName() {
+                this.setState({name: "hello1 another value"});
+            },
+        })(Hello);
+
+        render(store, Hello);
+        hello1Handler();
+        // 1. is for the initial render
+        // 2. is for the state change
+        expect(renderSpy).toHaveBeenCalledTimes(2);
+    });
 });
