@@ -1,5 +1,5 @@
 
-# Lean Redux [![Build Status](https://secure.travis-ci.org/epeli/lean-redux.png?branch=master)](http://travis-ci.org/epeli/lean-redux)
+# Lean Redux [![Build Status](https://secure.travis-ci.org/epeli/lean-redux.png?branch=master)](http://travis-ci.org/epeli/lean-redux) [![Greenkeeper badge](https://badges.greenkeeper.io/epeli/lean-redux.svg)](https://greenkeeper.io/)
 
 [Redux](http://redux.js.org/) state like local component state.
 
